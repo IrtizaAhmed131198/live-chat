@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\MessageController;
 use App\Events\TestMessage;
 
 
@@ -24,7 +25,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('admin/chat', [AdminController::class, 'chat'])->name('admin.chat');
-    Route::post('admin/send-message', [MessageController::class, 'send']);
+    Route::post('admin/send-message', [MessageController::class, 'send'])->name('admin.chat.send');
+    Route::get('admin/chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
 
     Route::get('admin/users', [UserController::class, 'index'])->name('admin.users');
     Route::get('admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
@@ -47,4 +49,10 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/test-socket', function () {
     broadcast(new TestMessage());
+});
+
+Route::get('/widget.js', function () {
+    return response()->file(public_path('widget/widget.js'), [
+        'Content-Type' => 'application/javascript'
+    ]);
 });

@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 
 <html lang="en" class="layout-navbar-fixed layout-compact layout-menu-fixed   " dir="ltr" data-skin="default"
-    data-assets-path="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/"
-    data-base-url="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1"
+    data-assets-path=""
+    data-base-url=""
     data-framework="laravel" data-template="vertical-menu-template" data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
@@ -84,6 +85,7 @@
 
     <link rel="preload" as="style" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
     <link rel="modulepreload" href="{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" /><link rel="stylesheet" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
+    {{-- @vite(['resources/js/app.js']) --}}
 
 
 @yield('css')
@@ -124,6 +126,7 @@
 <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
 <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" /><script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 
 @yield('js')
 

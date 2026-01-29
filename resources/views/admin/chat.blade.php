@@ -128,7 +128,7 @@
                             </li>
                             @forelse ($user as $val)
                                 <li class="chat-contact-list-item mb-1">
-                                    <a class="d-flex align-items-center" href="javascript:void(0);" role="button">
+                                    <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->id }}">
                                         <div class="flex-shrink-0 avatar avatar-online">
                                             <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/13.png"
                                                 alt="Avatar" class="rounded-circle">
@@ -170,257 +170,8 @@
                 </div>
                 <!-- /Chat conversation -->
                 <!-- Chat History -->
-                <div class="col app-chat-histor y d-none" id="app-chat-history">
-                    <div class="chat-history-wrapper">
-                        <div class="chat-history-header border-bottom">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex overflow-hidden align-items-center">
-                                    <i class="icon-base bx bx-menu icon-lg cursor-pointer d-lg-none d-block me-4"
-                                        data-bs-toggle="sidebar" data-overlay="" data-target="#app-chat-contacts"></i>
-                                    <div class="flex-shrink-0 avatar avatar-online">
-                                        <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                            alt="Avatar" class="rounded-circle" data-bs-toggle="sidebar" data-overlay=""
-                                            data-target="#app-chat-sidebar-right">
-                                    </div>
-                                    <div class="chat-contact-info flex-grow-1 ms-4">
-                                        <h6 class="m-0 fw-normal">Felecia Rower</h6>
-                                        <small class="user-status text-body">NextJS developer</small>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="dropdown">
-                                        <button
-                                            class="btn btn-icon btn-text-secondary text-secondary rounded-pill dropdown-toggle hide-arrow"
-                                            data-bs-toggle="dropdown" aria-expanded="true" id="chat-header-actions"><i
-                                                class="icon-base bx bx-dots-vertical-rounded icon-md"></i></button>
-                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="chat-header-actions">
-                                            <a class="dropdown-item" href="javascript:void(0);">View Contact</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Mute Notifications</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Block Contact</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Clear Chat</a>
-                                            <a class="dropdown-item" href="javascript:void(0);">Report</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chat-history-body ps">
-                            <ul class="list-unstyled chat-history">
-                                <li class="chat-message chat-message-right">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">How can we help? We're here for you! 😄</p>
-                                            </div>
-                                            <div class="text-end text-body-secondary mt-1">
-                                                <i class="icon-base bx bx-check-double icon-16px text-success me-1"></i>
-                                                <small>10:00 AM</small>
-                                            </div>
-                                        </div>
-                                        <div class="user-avatar flex-shrink-0 ms-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="user-avatar flex-shrink-0 me-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Hey John, I am looking for the best admin template.</p>
-                                                <p class="mb-0">Could you please help me to find it out? 🤔</p>
-                                            </div>
-                                            <div class="chat-message-text mt-2">
-                                                <p class="mb-0">It should be Bootstrap 5 compatible.</p>
-                                            </div>
-                                            <div class="text-body-secondary mt-1">
-                                                <small>10:02 AM</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message chat-message-right">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">
-                                                    sneat has all
-                                                    the components you'll ever need in a app.
-                                                </p>
-                                            </div>
-                                            <div class=" text-end text-body-secondary mt-1">
-                                                <i class="icon-base bx bx-check-double icon-16px text-success me-1"></i>
-                                                <small>10:03 AM</small>
-                                            </div>
-                                        </div>
-                                        <div class="user-avatar flex-shrink-0 ms-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="user-avatar flex-shrink-0 me-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Looks clean and fresh UI. 😃</p>
-                                            </div>
-                                            <div class="chat-message-text mt-2">
-                                                <p class="mb-0">It's perfect for my next project.</p>
-                                            </div>
-                                            <div class="chat-message-text mt-2">
-                                                <p class="mb-0">How can I purchase it?</p>
-                                            </div>
-                                            <div class="text-body-secondary mt-1">
-                                                <small>10:05 AM</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message chat-message-right">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Thanks, you can purchase it.</p>
-                                            </div>
-                                            <div class="text-end text-body-secondary mt-1">
-                                                <i class="icon-base bx bx-check-double icon-16px text-success me-1"></i>
-                                                <small>10:06 AM</small>
-                                            </div>
-                                        </div>
-                                        <div class="user-avatar flex-shrink-0 ms-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="user-avatar flex-shrink-0 me-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">I will purchase it for sure. 👍</p>
-                                            </div>
-                                            <div class="chat-message-text mt-2">
-                                                <p class="mb-0">Thanks.</p>
-                                            </div>
-                                            <div class="text-body-secondary mt-1">
-                                                <small>10:08 AM</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message chat-message-right">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Great, Feel free to get in touch.</p>
-                                            </div>
-                                            <div class="text-end text-body-secondary mt-1">
-                                                <i class="icon-base bx bx-check-double icon-16px text-success me-1"></i>
-                                                <small>10:10 AM</small>
-                                            </div>
-                                        </div>
-                                        <div class="user-avatar flex-shrink-0 ms-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="user-avatar flex-shrink-0 me-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                        <div class="chat-message-wrapper flex-grow-1">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Do you have design files for
-                                                    sneat?
-                                                </p>
-                                            </div>
-                                            <div class=" text-body-secondary mt-1">
-                                                <small>10:15 AM</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="chat-message chat-message-right">
-                                    <div class="d-flex overflow-hidden">
-                                        <div class="chat-message-wrapper flex-grow-1 w-50">
-                                            <div class="chat-message-text">
-                                                <p class="mb-0">Yes that's correct documentation file, Design files are
-                                                    included with the template.
-                                                </p>
-                                            </div>
-                                            <div class="text-end text-body-secondary mt-1">
-                                                <i class="icon-base bx bx-check-double icon-16px me-1"></i>
-                                                <small>10:15 AM</small>
-                                            </div>
-                                        </div>
-                                        <div class="user-avatar flex-shrink-0 ms-4">
-                                            <div class="avatar avatar-sm">
-                                                <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                                    alt="Avatar" class="rounded-circle">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                            <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-                                <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-                            </div>
-                            <div class="ps__rail-y" style="top: 0px; right: 0px;">
-                                <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div>
-                            </div>
-                        </div>
-                        <!-- Chat message form -->
-                        <div class="chat-history-footer shadow-xs">
-                            <form class="form-send-message d-flex justify-content-between align-items-center ">
-                                <input class="form-control message-input border-0 me-4 shadow-none"
-                                    placeholder="Type your message here...">
-                                <div class="message-actions d-flex align-items-center">
-                                    <label for="attach-doc" class="form-label mb-0">
-                                        <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer mx-1">
-                                            <i class="icon-base bx bx-paperclip icon-md text-heading"></i>
-                                        </span>
-                                        <input type="file" id="attach-doc" hidden="">
-                                    </label>
-                                    <button class="btn btn-primary d-flex send-msg-btn">
-                                        <span class="align-middle d-md-inline-block d-none">Send</span>
-                                        <i class="icon-base bx bx-paper-plane icon-sm ms-md-2 ms-0"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <div class="col app-chat-history d-none" id="app-chat-history">
+
                 </div>
                 <!-- /Chat History -->
                 <!-- Sidebar Right -->
@@ -507,26 +258,71 @@
 
 @section('js')
 <script>
-const chatId = 1; // dynamic later
 
-Echo.channel(`chat.${chatId}`)
-    .listen('.new-message', (e) => {
-        if (e.sender === 'visitor') {
-            appendMessage(e.message, 'visitor');
-        }
+Pusher.logToConsole = true;
+
+const pusher = new Pusher('6d2b8f974bbba728216c', {
+    cluster: 'ap1',
+    forceTLS: true
+});
+
+let chatId = {{ $chatId ?? 'null' }};
+let channel = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (chatId) {
+        subscribeToChat(chatId);
+    }
+});
+
+function subscribeToChat(chatId) {
+    // Unsubscribe previous channel
+    if (channel) {
+        pusher.unsubscribe(channel.name);
+    }
+
+    const channelName = `chat.${chatId}`;
+    channel = pusher.subscribe(channelName);
+
+    channel.bind('NewMessage', function (data) {
+        appendMessage(data.message, data.sender);
     });
+}
 
-function appendMessage(text, type) {
+function appendMessage(text, sender) {
     const ul = document.querySelector('.chat-history');
-    const li = document.createElement('li');
 
-    li.className = type === 'agent'
+    const noMessage = document.getElementById('no-message');
+    if (noMessage) {
+        noMessage.remove();
+    }
+
+    const li = document.createElement('li');
+    li.className = sender === 'agent'
         ? 'chat-message chat-message-right'
         : 'chat-message';
 
     li.innerHTML = `
-        <div class="chat-message-text">
-            <p class="mb-0">${text}</p>
+        <div class="d-flex overflow-hidden">
+            ${sender === 'visitor' ? `
+            <div class="user-avatar flex-shrink-0 me-4">
+                <div class="avatar avatar-sm">
+                    <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
+                </div>
+            </div>` : ''}
+
+            <div class="chat-message-wrapper flex-grow-1">
+                <div class="chat-message-text">
+                    <p class="mb-0">${text}</p>
+                </div>
+            </div>
+
+            ${sender === 'agent' ? `
+            <div class="user-avatar flex-shrink-0 ms-4">
+                <div class="avatar avatar-sm">
+                    <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
+                </div>
+            </div>` : ''}
         </div>
     `;
 
@@ -534,28 +330,54 @@ function appendMessage(text, type) {
     ul.scrollTop = ul.scrollHeight;
 }
 
-document.querySelector('.form-send-message')
-.addEventListener('submit', function (e) {
-    e.preventDefault();
+document.querySelectorAll('.chat-user').forEach(item => {
+    item.addEventListener('click', function (e) {
+        e.preventDefault();
 
-    const input = document.querySelector('.message-input');
-    const message = input.value;
+        chatId = this.dataset.chatId;
 
-    fetch('/admin/send-message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document
-                .querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            message: message
-        })
+        let getChat = "{{ route('admin.chat.show', ':id') }}";
+        getChat = getChat.replace(':id', chatId);
+
+        fetch(getChat)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('app-chat-history').innerHTML = html;
+                document.getElementById('app-chat-history').classList.remove('d-none');
+                subscribeToChat(chatId);
+            });
     });
-
-    appendMessage(message, 'agent');
-    input.value = '';
 });
+
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.send-msg-btn')) {
+        const form = e.target.closest('.form-send-message');
+        const input = form.querySelector('.message-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        const chatId = form.dataset.chatId;
+
+        fetch("{{ route('admin.chat.send') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                chat_id: chatId,
+                message: message
+            })
+        })
+        .then(res => res.json())
+        .then(() => {
+            appendMessage(message, 'agent');
+            input.value = '';
+        })
+        .catch(err => console.error(err));
+    }
+});
+
 </script>
 @endsection

@@ -8,7 +8,13 @@ class Chat extends Model
 {
     protected $fillable = ['visitor_id', 'agent_id', 'status'];
 
-    public function messages() {
+    public function messages()
+    {
         return $this->hasMany(Message::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

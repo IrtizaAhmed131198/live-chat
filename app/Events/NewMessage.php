@@ -35,11 +35,11 @@ class NewMessage
      */
     public function broadcastOn(): array
     {
-        return ['chat.' . $this->chatId];
+        return new Channel('chat.' . $this->chatId);
     }
 
     public function broadcastAs()
     {
-        return 'new-message';
+        return 'NewMessage';
     }
 }
