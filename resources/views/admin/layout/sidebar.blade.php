@@ -74,6 +74,12 @@
                 <div>Chat</div>
             </a>
         </li>
+        <li class="menu-item ">
+            <a href="{{ route('admin.users') }}" class="menu-link">
+                <i class="icon-base bx bx-user icon-md me-3"></i>
+                <div>Add User</div>
+            </a>
+        </li>
     </ul>
 
 </aside>
