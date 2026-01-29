@@ -44,11 +44,8 @@
         href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="preload" as="style"
-        href="{{asset("assets/css/app-chat-B_Ac8XJQ.css")}}" />
-    <link rel="stylesheet"
-        href="{{asset("assets/css/app-chat-B_Ac8XJQ.css")}}"
-        class="" />
+    <link rel="preload" as="style" href="{{ asset('assets/css/app-chat-B_Ac8XJQ.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/app-chat-B_Ac8XJQ.css') }}" class="" />
     <!-- Fonts Icons -->
     <link rel="preload" as="style" href="{{ asset('assets/css/iconify-DDZnTNbY.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/iconify-DDZnTNbY.css') }}" class="" />
@@ -112,21 +109,17 @@
     <link rel="modulepreload"
         href="{{ asset('assets/js/helpers-0nSKkh37.js') }}" />
     <script type="module" src="{{ asset('assets/js/helpers-0nSKkh37.js') }}"></script>
-    <link rel="modulepreload"
-        href="{{ asset('assets/js/app-l0sNRNKZ.js') }}" />
-    <script type="module" src="{{ asset('assets/js/app-l0sNRNKZ.js') }}">
+    {{-- <link rel="modulepreload"
+        href="{{ asset('assets/js/app-l0sNRNKZ.js') }}" /> --}}
+    {{-- <script type="module" src="{{ asset('assets/js/app-l0sNRNKZ.js') }}">
         < script type = "module"
         src = "{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" >
-    </script>
+    </script> --}}
   <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
   <link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" /><script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" /><script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script><script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script><script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script><script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
     <link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" /><link rel="modulepreload" href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/build/assets/_commonjsHelpers-D6-XlEtG.js" /><link rel="modulepreload" href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/build/assets/hammer-DLEdXtvS.js" /><link rel="modulepreload" href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/build/assets/menu-Cc3Gq5JA.js" /><script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script><script type="module"
-    src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/build/assets/hammer-DLEdXtvS.js">
-</script><script type="module"
-    src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/build/assets/menu-Cc3Gq5JA.js">
-</script>
+<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset("assets/js/hammer-DLEdXtvS.js") }}" /><link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" /><script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script><script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script><script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
@@ -184,4 +177,3 @@
 </body>
 
 </html>
-
