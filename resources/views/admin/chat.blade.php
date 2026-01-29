@@ -126,56 +126,29 @@
                             <li class="chat-contact-list-item chat-contact-list-item-title mt-0">
                                 <h5 class="text-primary mb-0">Chats</h5>
                             </li>
-                            <li class="chat-contact-list-item chat-list-item-0 d-none">
-                                <h6 class="text-body-secondary mb-0">No Chats Found</h6>
-                            </li>
-                            <li class="chat-contact-list-item mb-1">
-                                <a class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 avatar avatar-online">
-                                        <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/13.png"
-                                            alt="Avatar" class="rounded-circle">
-                                    </div>
-                                    <div class="chat-contact-info flex-grow-1 ms-4">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="chat-contact-name text-truncate m-0 fw-normal">Waldemar Mannering
-                                            </h6>
-                                            <small class="chat-contact-list-item-time">5 Minutes</small>
+                            @forelse ($user as $val)
+                                <li class="chat-contact-list-item mb-1">
+                                    <a class="d-flex align-items-center" href="javascript:void(0);" role="button">
+                                        <div class="flex-shrink-0 avatar avatar-online">
+                                            <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/13.png"
+                                                alt="Avatar" class="rounded-circle">
                                         </div>
-                                        <small class="chat-contact-status text-truncate">Refer friends. Get rewards.</small>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="chat-contact-list-item mb-1">
-                                <a class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 avatar avatar-offline">
-                                        <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                            alt="Avatar" class="rounded-circle">
-                                    </div>
-                                    <div class="chat-contact-info flex-grow-1 ms-4">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="chat-contact-name text-truncate fw-normal m-0">Felecia Rower</h6>
-                                            <small class="chat-contact-list-item-time">30 Minutes</small>
+                                        <div class="chat-contact-info flex-grow-1 ms-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="chat-contact-name text-truncate m-0 fw-normal">
+                                                    {{ $val->name }}
+                                                </h6>
+                                                <small class="chat-contact-list-item-time">5 Minutes</small>
+                                            </div>
+                                            <small class="chat-contact-status text-truncate">Refer friends. Get rewards.</small>
                                         </div>
-                                        <small class="chat-contact-status text-truncate">I will purchase it for sure.
-                                            👍</small>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="chat-contact-list-item mb-0">
-                                <a class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 avatar avatar-busy">
-                                        <span class="avatar-initial rounded-circle bg-label-success">CM</span>
-                                    </div>
-                                    <div class="chat-contact-info flex-grow-1 ms-4">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="chat-contact-name text-truncate fw-normal m-0">Calvin Moore</h6>
-                                            <small class="chat-contact-list-item-time">1 Day</small>
-                                        </div>
-                                        <small class="chat-contact-status text-truncate">If it takes long you can mail inbox
-                                            user</small>
-                                    </div>
-                                </a>
-                            </li>
+                                    </a>
+                                </li>
+                            @empty
+                                <li class="chat-contact-list-item chat-list-item-0">
+                                    <h6 class="text-body-secondary mb-0">No Chats Found</h6>
+                                </li>
+                            @endforelse
                         </ul>
                         <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
                             <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
@@ -197,7 +170,7 @@
                 </div>
                 <!-- /Chat conversation -->
                 <!-- Chat History -->
-                <div class="col app-chat-history d-none" id="app-chat-history">
+                <div class="col app-chat-histor y d-none" id="app-chat-history">
                     <div class="chat-history-wrapper">
                         <div class="chat-history-header border-bottom">
                             <div class="d-flex justify-content-between align-items-center">
@@ -530,4 +503,59 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('js')
+<script>
+const chatId = 1; // dynamic later
+
+Echo.channel(`chat.${chatId}`)
+    .listen('.new-message', (e) => {
+        if (e.sender === 'visitor') {
+            appendMessage(e.message, 'visitor');
+        }
+    });
+
+function appendMessage(text, type) {
+    const ul = document.querySelector('.chat-history');
+    const li = document.createElement('li');
+
+    li.className = type === 'agent'
+        ? 'chat-message chat-message-right'
+        : 'chat-message';
+
+    li.innerHTML = `
+        <div class="chat-message-text">
+            <p class="mb-0">${text}</p>
+        </div>
+    `;
+
+    ul.appendChild(li);
+    ul.scrollTop = ul.scrollHeight;
+}
+
+document.querySelector('.form-send-message')
+.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const input = document.querySelector('.message-input');
+    const message = input.value;
+
+    fetch('/admin/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            chat_id: chatId,
+            message: message
+        })
+    });
+
+    appendMessage(message, 'agent');
+    input.value = '';
+});
+</script>
 @endsection

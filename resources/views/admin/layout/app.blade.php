@@ -125,7 +125,7 @@
 
 <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" /><script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
 
-
+@yield('js')
 
 
 

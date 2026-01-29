@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Events\TestMessage;
 
 
 Route::get('/', function () {
@@ -25,6 +26,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('admin/chat', [AdminController::class, 'chat'])->name('admin.chat');
+    Route::post('admin/send-message', [MessageController::class, 'send']);
 });
 
 Route::get('/memory-test', function () {
@@ -35,4 +37,8 @@ Route::get('/memory-test', function () {
 Route::middleware('auth')->group(function () {
     Route::redirect('/login', 'admin/dashboard');
     Route::redirect('/register', 'admin/dashboard');
+});
+
+Route::get('/test-socket', function () {
+    broadcast(new TestMessage());
 });
