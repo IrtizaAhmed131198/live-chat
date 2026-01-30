@@ -10,7 +10,9 @@ use App\Events\TestMessage;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check()
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('login');
 });
 
 Route::middleware('guest')->group(function () {
@@ -20,7 +22,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/signup', [RegisterController::class, 'register'])->name('register.post');
 });
 
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -42,10 +44,10 @@ Route::middleware(['auth'])->group(function () {
 // });
 
 
-Route::middleware('auth')->group(function () {
-    Route::redirect('/login', 'admin/dashboard');
-    Route::redirect('/register', 'admin/dashboard');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::redirect('/login', 'admin/dashboard');
+//     Route::redirect('/register', 'admin/dashboard');
+// });
 
 Route::get('/test-socket', function () {
     broadcast(new TestMessage());

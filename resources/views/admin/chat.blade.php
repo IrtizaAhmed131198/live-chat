@@ -259,15 +259,13 @@
 @section('js')
 <script>
 
-Pusher.logToConsole = true;
-
-const pusher = new Pusher('6d2b8f974bbba728216c', {
+const pusherChat = new Pusher('6d2b8f974bbba728216c', {
     cluster: 'ap1',
     forceTLS: true
 });
 
 let chatId = {{ $chatId ?? 'null' }};
-let channel = null;
+let chatChannel = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     if (chatId) {
@@ -276,15 +274,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function subscribeToChat(chatId) {
-    // Unsubscribe previous channel
-    if (channel) {
-        pusher.unsubscribe(channel.name);
+    if (chatChannel) {
+        pusherChat.unsubscribe(chatChannel.name);
     }
 
     const channelName = `chat.${chatId}`;
-    channel = pusher.subscribe(channelName);
+    chatChannel = pusherChat.subscribe(channelName);
 
-    channel.bind('NewMessage', function (data) {
+    chatChannel.bind('NewMessage', function (data) {
         appendMessage(data.message, data.sender);
     });
 }

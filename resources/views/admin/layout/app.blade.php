@@ -126,7 +126,63 @@
 <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
 <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" /><script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+
+<script>
+Pusher.logToConsole = true;
+
+var pusher = new Pusher("6d2b8f974bbba728216c", {
+    cluster: "ap1",
+});
+
+var channel = pusher.subscribe('admin-notifications');
+
+channel.bind('visitor-joined', function (data) {
+    // 🔔 SweetAlert popup
+    Swal.fire({
+        icon: 'info',
+        title: 'New Visitor 🎉',
+        html: `
+            <strong>Website:</strong> ${data.website.domain}<br>
+            <strong>Session:</strong> ${data.visitor.session_id}
+        `,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000,
+        timerProgressBar: true,
+    });
+
+    const notificationHTML = `
+        <li class="list-group-item list-group-item-action dropdown-notifications-item">
+            <div class="d-flex">
+                <div class="flex-grow-1">
+                    <h6 class="small mb-0">New Visitor 🎉</h6>
+                    <small class="mb-1 d-block text-body">
+                        ${data.website.domain} – Session ${data.visitor.session_id}
+                    </small>
+                    <small class="text-body-secondary">Just now</small>
+                </div>
+                <div class="flex-shrink-0 dropdown-notifications-actions">
+                    <a href="javascript:void(0)" class="dropdown-notifications-read">
+                        <span class="badge badge-dot"></span>
+                    </a>
+                </div>
+            </div>
+        </li>
+    `;
+
+    document
+        .getElementById('notificationList')
+        .insertAdjacentHTML('afterbegin', notificationHTML);
+
+    // show red dot
+    document
+        .querySelector('.badge-notifications')
+        .classList.remove('d-none');
+});
+</script>
 
 @yield('js')
 

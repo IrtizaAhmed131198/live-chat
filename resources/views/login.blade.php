@@ -301,11 +301,11 @@
   <!--/ Content -->
   <!--/ Layout Content -->
 
-  
+
   {{-- <div class="buy-now">
     <a href="https://themeselection.com/item/sneat-dashboard-pro-laravel/" target="_blank" class="btn btn-danger btn-buy-now">Buy Now</a>
   </div> --}}
-  
+
 
   <!-- Include Scripts -->
   <!-- $isFront is used to append the front layout scripts only on the front layout otherwise the variable will be blank -->

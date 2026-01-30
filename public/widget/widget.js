@@ -1,5 +1,12 @@
 (function () {
 
+    const WEBSITE_DOMAIN = window.location.hostname;
+
+    let SESSION_ID = localStorage.getItem('chat_session_id');
+    if (!SESSION_ID) {
+        SESSION_ID = Math.random().toString(36).substring(2);
+        localStorage.setItem('chat_session_id', SESSION_ID);
+    }
     /* ================= CONFIG ================= */
 
     const CHAT_ID = window.CHAT_ID || Math.floor(Math.random() * 100000);
@@ -14,6 +21,7 @@
     script.src = 'https://js.pusher.com/8.4.0/pusher.min.js';
     script.onload = initChat;
     document.head.appendChild(script);
+
 
     function initChat() {
 
@@ -107,6 +115,19 @@
                 addMsg(input.value, 'visitor');
                 input.value = '';
             }
+        });
+
+        fetch('http://localhost/live-chat/public/api/visitor-init', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: WEBSITE_DOMAIN,
+                session_id: SESSION_ID
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            window.CHAT_ID = data.chat_id;
         });
 
         /* ================= RECEIVE (PUSHER) ================= */
