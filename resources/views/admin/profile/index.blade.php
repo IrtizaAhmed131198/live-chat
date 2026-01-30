@@ -23,7 +23,7 @@
                             <div class="mb-3 text-center">
                                 <label class="form-label d-block">Profile Image</label>
                                 <div class="position-relative d-inline-block">
-                                    <img src="{{ asset($user->image ?? 'assets/images/avatars/profile.jfif') }}"
+                                    <img src="{{ asset($user->image ?? 'assets/images/default.png') }}"
                                         alt="Profile Image" class="rounded-circle border"
                                         style="width:120px; height:120px; object-fit:cover; cursor:pointer;">
 
