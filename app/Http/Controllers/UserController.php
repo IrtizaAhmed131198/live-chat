@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -22,16 +23,25 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
+            'image' => 'nullable|file',
             'phone' => 'required|string|max:20',
             'address' => 'nullable|string',
             'about' => 'nullable|string',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string',
         ]);
 
-        $validated['role'] = 'user';
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('upload/profile_image'), $filename);
+            $validated['image'] = 'upload/profile_image/' . $filename;
+        }
+        
         $validated['password'] = bcrypt($validated['password']);
-
+        
         User::create($validated);
+        // dd($validated);
         return redirect()->route('admin.users')->with('success', 'User created successfully!');
     }
     public function edit($id)
@@ -46,12 +56,21 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
+            'image' => 'nullable|file',
             'phone' => 'required|string|max:20',
             'address' => 'nullable|string',
             'about' => 'nullable|string',
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'user',
+            'role' => 'required|string',
         ]);
+
+        // Image upload
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('upload/profile_image'), $filename);
+            $user->image = 'upload/profile_image/' . $filename;
+        }
 
         if (!empty($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']);

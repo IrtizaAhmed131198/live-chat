@@ -8,7 +8,7 @@
                 <h5 class="mb-0">Add New User</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.users.store') }}">
+                <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Name Field -->
@@ -23,6 +23,22 @@
                         <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" id="email" name="email"
                             placeholder="Enter email address" required>
+                    </div>
+
+                    <!-- Image Field -->
+                    <div class="mb-4">
+                        <label for="image" class="form-label">Image <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="image" name="image"
+                            placeholder="Upload user image" required>
+                    </div>
+
+                    <!-- Image Field -->
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select mb-6" id="acceptPaymentsVia" name="role" required>
+                            <option value="2">Client</option>
+                            <option value="3">Agent</option>
+                        </select>
                     </div>
 
                     <!-- Phone Field -->
