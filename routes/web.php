@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProfileController;
 use App\Events\TestMessage;
 
 
@@ -27,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/chat', [AdminController::class, 'chat'])->name('admin.chat');
     Route::post('admin/send-message', [MessageController::class, 'send'])->name('admin.chat.send');
     Route::get('admin/chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
+    Route::get('admin/chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
+    Route::get('/admin/profile', [ProfileController::class, 'profile'])->name('admin.profile.index');
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     Route::get('admin/users', [UserController::class, 'index'])->name('admin.users');
     Route::get('admin/users/create', [UserController::class, 'create'])->name('admin.users.create');

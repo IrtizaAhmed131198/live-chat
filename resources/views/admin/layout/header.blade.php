@@ -53,24 +53,27 @@
             </li>
             <!-- / Style Switcher-->
 
+            @php
+                $user = DB::table('users')
+                    ->where('id', auth()->user()->id)
+                    ->first();
+            @endphp
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
-                    data-bs-toggle="dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                            alt class="rounded-circle" />
+                        <img src="{{ asset($user->image ?? 'assets/images/avatars/profile.jfif') }}" alt
+                            class="rounded-circle" />
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item"
-                            href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/pages/profile-user">
+                        <a class="dropdown-item" href="{{ route('admin.profile.index') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
-                                            alt class="w-px-40 h-auto rounded-circle" />
+                                        <img src="{{ asset($user->image ?? 'assets/images/avatars/profile.jfif') }}" alt
+                                            class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
@@ -86,8 +89,7 @@
                         <div class="dropdown-divider my-1"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item"
-                            href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/pages/profile-user">
+                        <a class="dropdown-item" href="{{ route('admin.profile.index') }}">
                             <i class="icon-base bx bx-user icon-md me-3"></i><span>My Profile</span>
                         </a>
                     </li>
