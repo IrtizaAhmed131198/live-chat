@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 
 <html lang="en" class="layout-navbar-fixed layout-compact layout-menu-fixed   " dir="ltr" data-skin="default"
-    data-assets-path=""
-    data-base-url=""
-    data-framework="laravel" data-template="vertical-menu-template" data-bs-theme="dark">
+    data-assets-path="" data-base-url="" data-framework="laravel" data-template="vertical-menu-template"
+    data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8" />
@@ -39,6 +38,9 @@
     <!-- $isFront is used to append the front layout styles only on the front layout otherwise the variable will be blank -->
     <!-- BEGIN: Theme CSS-->
     <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -121,7 +123,7 @@
   <link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" /><script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" /><script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script><script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script><script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script><script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
     <link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset("assets/js/hammer-DLEdXtvS.js") }}" /><link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" /><script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script><script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script><script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
+<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/hammer-DLEdXtvS.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" /><script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script><script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script><script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script>
 <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
