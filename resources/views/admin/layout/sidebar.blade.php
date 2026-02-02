@@ -80,6 +80,12 @@
                 <div>Add User</div>
             </a>
         </li>
+        <li class="menu-item ">
+            <a href="{{ route('admin.notification') }}" class="menu-link">
+                <i class="icon-base bx bx-bell icon-md me-3"></i>
+                <div>Notification</div>
+            </a>
+        </li>
     </ul>
 
 </aside>

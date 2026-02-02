@@ -23,6 +23,10 @@ class AdminController extends Controller
 
         return view('admin.chat', compact('user', 'messages', 'chatId'));
     }
+    public function notification()
+    {
+        return view('admin.notification');
+    }
 
     public function show($chatId, Request $request)
     {
