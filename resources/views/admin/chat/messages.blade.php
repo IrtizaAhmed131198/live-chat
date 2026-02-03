@@ -34,10 +34,10 @@
 
         <ul class="list-unstyled chat-history">
             @forelse($messages as $msg)
-                <li class="chat-message {{ $msg->sender === 'agent' ? 'chat-message-right' : '' }}">
+                <li class="chat-message {{ $msg->user->role != 3 ? 'chat-message-right' : '' }}">
                     <div class="d-flex overflow-hidden">
 
-                        @if($msg->sender === 'visitor')
+                        @if($msg->user->role == 3)
                             <div class="user-avatar flex-shrink-0 me-4">
                                 <div class="avatar avatar-sm">
                                     <img src="{{ asset('assets/images/default.png') }}"
@@ -50,12 +50,12 @@
                             <div class="chat-message-text">
                                 <p class="mb-0">{{ $msg->message }}</p>
                             </div>
-                            <div class="text-body-secondary mt-1 {{ $msg->sender === 'agent' ? 'text-end' : '' }}">
+                            <div class="text-body-secondary mt-1 {{ $msg->user->role != 3 ? 'text-end' : '' }}">
                                 <small>{{ $msg->created_at->format('h:i A') }}</small>
                             </div>
                         </div>
 
-                        @if($msg->sender === 'agent')
+                        @if($msg->user->role != 3)
                             <div class="user-avatar flex-shrink-0 ms-4">
                                 <div class="avatar avatar-sm">
                                     <img src="{{ asset('assets/images/default.png') }}"

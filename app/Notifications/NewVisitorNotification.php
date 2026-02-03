@@ -22,7 +22,7 @@ class NewVisitorNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast'];
+        return ['database'];
     }
 
     public function toDatabase($notifiable)
@@ -31,20 +31,8 @@ class NewVisitorNotification extends Notification
             'title' => 'New Visitor',
             'message' => 'New visitor on ' . $this->website->domain,
             'website_id' => $this->website->id,
+            'visitor_id' => $this->visitor->id,
             'session_id' => $this->visitor->session_id,
         ];
-    }
-
-    public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage([
-            'website' => [
-                'id' => $this->website->id,
-                'domain' => $this->website->domain,
-            ],
-            'visitor' => [
-                'session_id' => $this->visitor->session_id,
-            ],
-        ]);
     }
 }

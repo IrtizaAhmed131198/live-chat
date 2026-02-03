@@ -58,7 +58,9 @@
                     data-bs-auto-close="outside" aria-expanded="false">
                     <span class="position-relative">
                         <i class="icon-base bx bx-bell icon-md"></i>
-                        <span class="badge rounded-pill bg-danger badge-dot badge-notifications border"></span>
+                        <span id="notificationBadge" class="badge rounded-pill bg-danger badge-dot badge-notifications border">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
                     </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end p-0">
@@ -66,7 +68,7 @@
                         <div class="dropdown-header d-flex align-items-center py-3">
                             <h6 class="mb-0 me-auto">Notification</h6>
                             <div class="d-flex align-items-center h6 mb-0">
-                                <span class="badge bg-label-primary me-2">8 New</span>
+                                <span class="badge bg-label-primary me-2" id="notificationBadge2">{{ auth()->user()->unreadNotifications->count() }} New</span>
                                 <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read"><i
                                         class="icon-base bx bx-envelope-open text-heading"></i></a>
@@ -76,6 +78,12 @@
                     <li class="dropdown-notifications-list scrollable-container">
                         <ul id="notificationList" class="list-group list-group-flush">
                             <!-- Notifications will be injected here -->
+                            @foreach(auth()->user()->unreadNotifications as $notification)
+                                <li class="list-group-item dropdown-notifications-item">
+                                    <strong>{{ $notification->data['title'] }}</strong><br>
+                                    <small>{{ $notification->data['message'] }}</small>
+                                </li>
+                            @endforeach
                         </ul>
                     </li>
                     <li class="border-top">

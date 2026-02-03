@@ -14,9 +14,9 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-    public function chat()
+    public function chat($chatId = null)
     {
-        $user = User::where('role', 'User')->get();
+        $user = User::where('role', 3)->get();
 
         $messages = collect();
         $chatId = null;
@@ -27,7 +27,7 @@ class AdminController extends Controller
     public function show($chatId, Request $request)
     {
         // Get all messages for this chat
-        $messages = Message::where('chat_id', $chatId)
+        $messages = Message::with('user')->where('chat_id', $chatId)
             ->orderBy('id')
             ->get();
 

@@ -281,12 +281,13 @@ function subscribeToChat(chatId) {
     const channelName = `chat.${chatId}`;
     chatChannel = pusherChat.subscribe(channelName);
 
-    chatChannel.bind('NewMessage', function (data) {
-        appendMessage(data.message, data.sender);
+    // ✅ SAME EVENT NAME AS BACKEND
+    chatChannel.bind('new-message', function (data) {
+        appendMessage(data.message, data.role);
     });
 }
 
-function appendMessage(text, sender) {
+function appendMessage(text, role) {
     const ul = document.querySelector('.chat-history');
 
     const noMessage = document.getElementById('no-message');
@@ -295,13 +296,13 @@ function appendMessage(text, sender) {
     }
 
     const li = document.createElement('li');
-    li.className = sender === 'agent'
+    li.className = role != 3
         ? 'chat-message chat-message-right'
         : 'chat-message';
 
     li.innerHTML = `
         <div class="d-flex overflow-hidden">
-            ${sender === 'visitor' ? `
+            ${role == 3 ? `
             <div class="user-avatar flex-shrink-0 me-4">
                 <div class="avatar avatar-sm">
                     <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
@@ -314,7 +315,7 @@ function appendMessage(text, sender) {
                 </div>
             </div>
 
-            ${sender === 'agent' ? `
+            ${role != 3 ? `
             <div class="user-avatar flex-shrink-0 ms-4">
                 <div class="avatar avatar-sm">
                     <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
@@ -330,19 +331,7 @@ function appendMessage(text, sender) {
 document.querySelectorAll('.chat-user').forEach(item => {
     item.addEventListener('click', function (e) {
         e.preventDefault();
-
-        chatId = this.dataset.chatId;
-
-        let getChat = "{{ route('admin.chat.show', ':id') }}";
-        getChat = getChat.replace(':id', chatId);
-
-        fetch(getChat)
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('app-chat-history').innerHTML = html;
-                document.getElementById('app-chat-history').classList.remove('d-none');
-                subscribeToChat(chatId);
-            });
+        openChat(this.dataset.chatId);
     });
 });
 
@@ -369,12 +358,46 @@ document.addEventListener('click', function (e) {
         })
         .then(res => res.json())
         .then(() => {
-            appendMessage(message, 'agent');
+            appendMessage(message, 2);
             input.value = '';
         })
         .catch(err => console.error(err));
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    let params = new URLSearchParams(window.location.search);
+    let urlChatId = params.get('chatId');
+
+    if (urlChatId) {
+        openChat(urlChatId);
+    }
+});
+
+function openChat(chatId) {
+    let getChat = "{{ route('admin.chat.show', ':id') }}";
+    getChat = getChat.replace(':id', chatId);
+
+    fetch(getChat)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('app-chat-history').innerHTML = html;
+            document.getElementById('app-chat-history').classList.remove('d-none');
+
+            // Hide empty state
+            document.getElementById('app-chat-conversation')?.classList.add('d-none');
+
+            // Highlight active chat
+            document.querySelectorAll('.chat-user').forEach(el =>
+                el.classList.remove('active')
+            );
+            document
+                .querySelector(`.chat-user[data-chat-id="${chatId}"]`)
+                ?.classList.add('active');
+
+            subscribeToChat(chatId);
+        });
+}
 
 </script>
 @endsection

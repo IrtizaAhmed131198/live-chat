@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('messages', function (Blueprint $table) {
-            $table->id();
-            $table->integer('chat_id')->nullable();
-            $table->integer('sender')->nullable();
-            $table->text('message');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->integer('visitor_id')->after('remember_token');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('messages');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('visitor_id');
+        });
     }
 };

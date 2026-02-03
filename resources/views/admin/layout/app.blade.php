@@ -131,59 +131,85 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 
+
 <script>
-Pusher.logToConsole = true;
+    Pusher.logToConsole = true;
+    document.addEventListener('DOMContentLoaded', function() {
 
-var pusher = new Pusher("6d2b8f974bbba728216c", {
-    cluster: "ap1",
-});
+        // 1️⃣ Hide badge if no unread notifications
+        const badge = document.getElementById('notificationBadge');
+        const badge2 = document.getElementById('notificationBadge2');
+        if (parseInt(badge.innerText) === 0) {
+            badge.classList.add('d-none');
+            badge2.classList.add('d-none');
+        }
 
-var channel = pusher.subscribe('admin-notifications');
+        // 2️⃣ Mark all as read click
+        document.querySelector('.dropdown-notifications-all').addEventListener('click', function () {
+            fetch("{{ route('notifications.markRead') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    badge.classList.add('d-none');
+                    badge2.classList.add('d-none');
+                    document.querySelectorAll('#notificationList .badge-dot').forEach(el => el.remove());
+                }
+            });
+        });
 
-channel.bind('visitor-joined', function (data) {
-    // 🔔 SweetAlert popup
-    Swal.fire({
-        icon: 'info',
-        title: 'New Visitor 🎉',
-        html: `
-            <strong>Website:</strong> ${data.website.domain}<br>
-            <strong>Session:</strong> ${data.visitor.session_id}
-        `,
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
+        // 3️⃣ Pusher listener for new notifications
+        var pusher = new Pusher("6d2b8f974bbba728216c", { cluster: "ap1" });
+        var channel = pusher.subscribe('admin-notifications');
+
+        channel.bind('visitor-joined', function (data) {
+            Swal.fire({
+                icon: 'info',
+                title: 'New Visitor 🎉',
+                html: `<p>${data.website.domain} just visited.</p>`,
+                showConfirmButton: true,
+                confirmButtonText: 'Start Chat',
+                allowOutsideClick: false,
+                preConfirm: () => {
+                    return fetch("{{ route('admin.chat.start') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({
+                            visitor_id: data.visitor.id,
+                            website_id: data.website.id
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(resp => {
+                        window.location.href ="{{ route('admin.chat') }}" + "?chatId=" + resp.chat_id;
+                    })
+                    .catch(err => {
+                        Swal.showValidationMessage('Failed to start chat');
+                        console.error(err);
+                    });
+                }
+            });
+
+            // Append to dropdown notification
+            const html = `
+                <li class="list-group-item dropdown-notifications-item">
+                    <strong>New Visitor</strong><br>
+                    <small>${data.website.domain}</small>
+                    <span class="badge badge-dot"></span>
+                </li>
+            `;
+            document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
+            document.getElementById('notificationBadge').classList.remove('d-none');
+        });
     });
-
-    const notificationHTML = `
-        <li class="list-group-item list-group-item-action dropdown-notifications-item">
-            <div class="d-flex">
-                <div class="flex-grow-1">
-                    <h6 class="small mb-0">New Visitor 🎉</h6>
-                    <small class="mb-1 d-block text-body">
-                        ${data.website.domain} – Session ${data.visitor.session_id}
-                    </small>
-                    <small class="text-body-secondary">Just now</small>
-                </div>
-                <div class="flex-shrink-0 dropdown-notifications-actions">
-                    <a href="javascript:void(0)" class="dropdown-notifications-read">
-                        <span class="badge badge-dot"></span>
-                    </a>
-                </div>
-            </div>
-        </li>
-    `;
-
-    document
-        .getElementById('notificationList')
-        .insertAdjacentHTML('afterbegin', notificationHTML);
-
-    // show red dot
-    document
-        .querySelector('.badge-notifications')
-        .classList.remove('d-none');
-});
 </script>
 
 @yield('js')

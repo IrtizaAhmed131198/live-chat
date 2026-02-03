@@ -1,15 +1,23 @@
 (function () {
 
-    const WEBSITE_DOMAIN = window.location.hostname;
-
-    let SESSION_ID = localStorage.getItem('chat_session_id');
-    if (!SESSION_ID) {
-        SESSION_ID = Math.random().toString(36).substring(2);
-        localStorage.setItem('chat_session_id', SESSION_ID);
+    /* ================= SAFE DOM READY ================= */
+    function onDOMReady(cb) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', cb);
+        } else {
+            cb();
+        }
     }
+
     /* ================= CONFIG ================= */
 
-    const CHAT_ID = window.CHAT_ID || Math.floor(Math.random() * 100000);
+    const WEBSITE_DOMAIN = window.location.hostname;
+
+    let SESSION_ID = sessionStorage.getItem('chat_session_id');
+    if (!SESSION_ID) {
+        SESSION_ID = Math.random().toString(36).substring(2);
+        sessionStorage.setItem('chat_session_id', SESSION_ID);
+    }
 
     const PUSHER_KEY = '6d2b8f974bbba728216c';
     const PUSHER_CLUSTER = 'ap1';
@@ -19,11 +27,19 @@
 
     const script = document.createElement('script');
     script.src = 'https://js.pusher.com/8.4.0/pusher.min.js';
-    script.onload = initChat;
+
+    script.onload = () => {
+        onDOMReady(initChat);
+    };
+
     document.head.appendChild(script);
 
+    /* ================= INIT ================= */
 
     function initChat() {
+
+        // ❗ Prevent duplicate widget
+        if (document.getElementById('live-chat-btn')) return;
 
         const pusher = new Pusher(PUSHER_KEY, {
             cluster: PUSHER_CLUSTER,
@@ -66,7 +82,6 @@
         const btn = document.createElement('div');
         btn.id = 'live-chat-btn';
         btn.innerHTML = '💬';
-        document.body.appendChild(btn);
 
         const box = document.createElement('div');
         box.id = 'live-chat-box';
@@ -77,6 +92,8 @@
             <div id="live-chat-messages"></div>
             <input id="live-chat-input" placeholder="Type message..." />
         `;
+
+        document.body.appendChild(btn);
         document.body.appendChild(box);
 
         btn.onclick = () => {
@@ -86,14 +103,20 @@
         const input = document.getElementById('live-chat-input');
         const messages = document.getElementById('live-chat-messages');
 
+        if (!input || !messages) {
+            console.error('Chat DOM not ready');
+            return;
+        }
+
         function addMsg(text, from) {
             const div = document.createElement('div');
             div.style.margin = '6px 0';
-            div.style.textAlign = from === 'visitor' ? 'right' : 'left';
-            div.innerHTML =
-                `<span style="padding:6px 10px;border-radius:6px;background:#f1f1f1;display:inline-block">
+            div.style.textAlign = from == 3 ? 'right' : 'left';
+            div.innerHTML = `
+                <span style="padding:6px 10px;border-radius:6px;background:#f1f1f1;display:inline-block">
                     ${text}
-                </span>`;
+                </span>
+            `;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
         }
@@ -107,15 +130,16 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        chat_id: CHAT_ID,
                         message: input.value
                     })
                 });
 
-                addMsg(input.value, 'visitor');
+                addMsg(input.value, 3);
                 input.value = '';
             }
         });
+
+        /* ================= INIT VISITOR ================= */
 
         fetch('http://localhost/live-chat/public/api/visitor-init', {
             method: 'POST',
@@ -124,20 +148,30 @@
                 domain: WEBSITE_DOMAIN,
                 session_id: SESSION_ID
             })
+        });
+
+        /* ================= LOAD CHAT + SUBSCRIBE ================= */
+
+        let channel = null;
+
+        fetch('http://localhost/live-chat/public/api/visitor-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: SESSION_ID })
         })
         .then(res => res.json())
         .then(data => {
-            window.CHAT_ID = data.chat_id;
-        });
 
-        /* ================= RECEIVE (PUSHER) ================= */
+            if (!data.chat_id) return;
 
-        const channel = pusher.subscribe(`chat.${CHAT_ID}`);
+            data.messages.forEach(msg => {
+                addMsg(msg.message, msg.user.role);
+            });
 
-        channel.bind('NewMessage', function (data) {
-            if (data.sender === 'agent') {
-                addMsg(data.message, 'agent');
-            }
+            channel = pusher.subscribe(`chat.${data.chat_id}`);
+            channel.bind('new-message', data => {
+                addMsg(data.message, data.user.role);
+            });
         });
     }
 
