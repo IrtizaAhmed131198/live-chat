@@ -28,6 +28,7 @@ Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->
 Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('admin/chat', [AdminController::class, 'chat'])->name('admin.chat');
+    Route::get('admin/notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::post('admin/send-message', [MessageController::class, 'send'])->name('admin.chat.send');
     Route::post('admin/chat/start', [MessageController::class, 'chartStart'])->name('admin.chat.start');
     Route::get('admin/chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
