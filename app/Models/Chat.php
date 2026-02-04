@@ -17,4 +17,14 @@ class Chat extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function agent()
+    {
+        return $this->hasOne(User::class, 'id', 'agent_id');
+    }
+
+    public function visitor()
+    {
+        return $this->hasOne(User::class, 'visitor_id', 'visitor_id');
+    }
 }

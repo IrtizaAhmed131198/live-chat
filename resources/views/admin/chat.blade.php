@@ -266,19 +266,20 @@ const pusherChat = new Pusher('6d2b8f974bbba728216c', {
 
 let chatId = {{ $chatId ?? 'null' }};
 let chatChannel = null;
+const currentUserId = {{ auth()->id() }};
 
 document.addEventListener('DOMContentLoaded', function () {
-    if (chatId) {
-        subscribeToChat(chatId);
+    if (currentUserId) {
+        subscribeToChat(currentUserId);
     }
 });
 
-function subscribeToChat(chatId) {
+function subscribeToChat(currentUserId) {
     if (chatChannel) {
         pusherChat.unsubscribe(chatChannel.name);
     }
 
-    const channelName = `chat.${chatId}`;
+    const channelName = `chat.${currentUserId}`;
     chatChannel = pusherChat.subscribe(channelName);
 
     // ✅ SAME EVENT NAME AS BACKEND

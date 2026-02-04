@@ -178,9 +178,11 @@
                 preConfirm: () => {
                     return fetch("{{ route('admin.chat.start') }}", {
                         method: 'POST',
+                        credentials: 'same-origin',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             visitor_id: data.visitor.id,

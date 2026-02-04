@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Message;
+use App\Models\Chat;
 
 class AdminController extends Controller
 {
@@ -35,8 +36,10 @@ class AdminController extends Controller
             ->orderBy('id')
             ->get();
 
+        $visitorId = Chat::where('id', $chatId)->value('visitor_id');
+
         // Get the user who owns the chat (from the first message)
-        $user = User::where('id', $chatId)->first();
+        $user = User::where('id', $visitorId)->first();
 
         return view('admin.chat.messages', compact('messages', 'chatId', 'user'));
     }

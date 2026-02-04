@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\Visitor;
 use App\Models\Chat;
 use App\Models\Message;
+use App\Models\Website;
+use App\Models\User;
+use Illuminate\Notifications\Notifiable;
+use App\Notifications\NewVisitorNotification;
+use Illuminate\Support\Str;
 
 class VisitorController extends Controller
 {
@@ -27,9 +32,11 @@ class VisitorController extends Controller
         }
 
         // 2️⃣ Get existing chat
-        $chat = Chat::where('visitor_id', $visitor->id)
+        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)
             ->where('status', 'open')
             ->first();
+        $userId = $chat->agent->id;
+        $roleId = $chat->agent->role;
 
         if (!$chat) {
             return response()->json([
@@ -45,30 +52,59 @@ class VisitorController extends Controller
 
         return response()->json([
             'chat_id' => $chat->id,
-            'messages' => $messages
+            'messages' => $messages,
+            'user_id' => $userId,
+            'role' => $roleId
         ]);
     }
 
     public function postVisitorMessage(Request $request)
     {
         $request->validate([
-            'chat_id' => 'required',
-            'message' => 'required|string'
+            'message' => 'required|string',
+            'session_id' => 'required'
         ]);
 
+        // 1️⃣ Get visitor via session
+        $visitor = Visitor::where('session_id', $request->session_id)
+            ->with('user')
+            ->first();
+
+        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
+        dd($chat);
+
+        if (!$visitor) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Visitor not found'
+            ], 404);
+        }
+
+        $roleId = optional($visitor->user)->role;
+        $userId = optional($visitor->user)->id;
+
         Message::create([
-            'chat_id' => $request->chat_id,
-            'sender'  => 'visitor',
+            'chat_id' => $chat->id,
+            'sender'  => $userId,
             'message' => $request->message
         ]);
 
-        broadcast(new NewMessage(
-            $request->chat_id,
-            $request->message,
-            'visitor'
-        ));
+        emit_pusher_notification(
+            'chat.' . $userId, // channel
+            'new-message',                // event
+            [
+                'chat_id' => $chat->id,
+                'user_id' => $userId,
+                'message' => $request->message,
+                'sender'  => $userId,
+                'role'  => $roleId,
+            ]
+        );
 
-        return response()->json(['ok' => true]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Message sent successfully',
+        ], 200);
     }
 
     public function postVisitorInit(Request $request)

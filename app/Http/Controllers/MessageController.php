@@ -11,22 +11,31 @@ class MessageController extends Controller
 {
     public function send(Request $request)
     {
-        $userId = auth()->id(); // get currently logged in user id (admin/agent)
-        $roleId = auth()->user()->role;
+        $request->validate([
+            'chat_id' => 'required',
+        ]);
+
+        $chat = Chat::with('visitor', 'agent')->find($request->chat_id);
+        if(!$chat){
+            return response()->json(['error' => 'Chat not found'], 404);
+        }
+        $visitorId = $chat->visitor->id; // get currently logged in user id (admin/agent)
+        $roleId = $chat->visitor->role;
 
         $msg = Message::create([
             'chat_id' => $request->chat_id,
-            'sender'  => $userId, // store the ID
+            'sender'  => auth()->id(), // store the ID
             'message' => $request->message
         ]);
 
         emit_pusher_notification(
-            'chat.' . $request->chat_id, // channel
+            'chat.' . $visitorId, // channel
             'new-message',                // event
             [
                 'chat_id' => $request->chat_id,
+                'user_id' => $visitorId,
                 'message' => $request->message,
-                'sender'  => 'agent',
+                'sender'  => auth()->id(),
                 'role'  => $roleId,
             ]
         );

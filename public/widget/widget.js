@@ -130,11 +130,13 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: input.value
+                        message: input.value,
+                        session_id: SESSION_ID,
+                        chat_id: window.CHAT_ID // 🔥 REQUIRED
                     })
                 });
 
-                addMsg(input.value, 3);
+                addMsg(input.value, 3); // visitor
                 input.value = '';
             }
         });
@@ -162,15 +164,15 @@
         .then(res => res.json())
         .then(data => {
 
-            if (!data.chat_id) return;
+            if (data.session_id && data.session_id === SESSION_ID) return;
 
             data.messages.forEach(msg => {
                 addMsg(msg.message, msg.user.role);
             });
 
-            channel = pusher.subscribe(`chat.${data.chat_id}`);
+            channel = pusher.subscribe(`chat.${data.user_id}`);
             channel.bind('new-message', data => {
-                addMsg(data.message, data.user.role);
+                addMsg(data.message, data.role);
             });
         });
     }
