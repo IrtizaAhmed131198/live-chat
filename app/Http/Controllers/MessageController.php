@@ -29,14 +29,16 @@ class MessageController extends Controller
         ]);
 
         emit_pusher_notification(
-            'chat.' . $visitorId, // channel
+            'chat.' . $chat->id, // channel
             'new-message',                // event
             [
-                'chat_id' => $request->chat_id,
-                'user_id' => $visitorId,
+                'chat_id' => $chat->id,
+                'user_id' => auth()->id(),
                 'message' => $request->message,
                 'sender'  => auth()->id(),
-                'role'  => $roleId,
+                'role'  => auth()->user()->role ?? 2,
+                'created_at'  => $msg->created_at,
+                'id'  => $msg->id,
             ]
         );
 
@@ -61,5 +63,31 @@ class MessageController extends Controller
         return response()->json([
             'chat_id' => $chat->id
         ]);
+    }
+
+    public function typing(Request $request)
+    {
+        emit_pusher_notification(
+            'chat.' . $request->chat_id,
+            'typing',
+            ['role' => 2]
+        );
+
+        return response()->json(['status' => true]);
+    }
+
+    public function markRead(Request $request)
+    {
+        $chat = Chat::with('visitor')->where('id', $request->chat_id)->first();
+        if(!$chat){
+            return response()->json(['error' => true]);
+        }
+
+        Message::where('chat_id', $chat->id)
+            ->where('sender', $chat->visitor->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['status' => true]);
     }
 }

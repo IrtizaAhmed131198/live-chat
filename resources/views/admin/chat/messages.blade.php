@@ -33,7 +33,19 @@
     <div class="chat-history-body ps">
 
         <ul class="list-unstyled chat-history">
-            @forelse($messages as $msg)
+            <li class="text-center py-2">
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    id="load-more-btn"
+                    style="display:none"
+                >
+                    Load more
+                </button>
+            </li>
+            <li class="text-center text-muted py-3" id="no-message">
+                No messages yet
+            </li>
+            {{-- @forelse($messages as $msg)
                 <li class="chat-message {{ $msg->user->role != 3 ? 'chat-message-right' : '' }}">
                     <div class="d-flex overflow-hidden">
 
@@ -70,8 +82,12 @@
                 <li class="text-center text-muted py-3" id="no-message">
                     No messages yet
                 </li>
-            @endforelse
+            @endforelse --}}
         </ul>
+        <div id="typing-indicator"
+            style="font-size:12px;color:#888;padding:6px;display:none">
+            Visitor is typing...
+        </div>
         <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
             <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
         </div>
@@ -85,12 +101,12 @@
             <input class="form-control message-input border-0 me-4 shadow-none"
                 placeholder="Type your message here...">
             <div class="message-actions d-flex align-items-center">
-                <label for="attach-doc" class="form-label mb-0">
+                {{-- <label for="attach-doc" class="form-label mb-0">
                     <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer mx-1">
                         <i class="icon-base bx bx-paperclip icon-md text-heading"></i>
                     </span>
                     <input type="file" id="attach-doc" hidden="">
-                </label>
+                </label> --}}
                 <button type="button" class="btn btn-primary d-flex send-msg-btn">
                     <span class="align-middle d-md-inline-block d-none">Send</span>
                     <i class="icon-base bx bx-paper-plane icon-sm ms-md-2 ms-0"></i>

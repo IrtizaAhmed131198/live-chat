@@ -1,4 +1,24 @@
 @extends('admin.layout.app')
+
+@section('css')
+<style>
+    .chat-history-body {
+        max-height: 400px !important;
+        overflow-y: auto !important;
+        scroll-behavior: smooth !important;
+    }
+
+    .chat-system-message {
+        justify-content: center !important;
+    }
+
+    .app-chat .app-chat-history .chat-history-body .chat-history .chat-message:not(:last-child) {
+        margin-bottom: 1rem !important;
+    }
+
+</style>
+@endsection
+
 @section('content')
     <!-- Content wrapper -->
     <!-- Content -->
@@ -127,8 +147,13 @@
                                 <h5 class="text-primary mb-0">Chats</h5>
                             </li>
                             @forelse ($user as $val)
+                                @php
+                                    $count = App\Models\Message::where('sender', $val->id)->where('is_read', false)->count();
+                                    $lastMessage = App\Models\Message::where('chat_id', $val->get_chat->id)->latest()->value('message');
+                                @endphp
                                 <li class="chat-contact-list-item mb-1">
-                                    <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->id }}">
+                                    <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->get_chat->id }}"
+                                        data-user-id="{{ $val->id }}">
                                         <div class="flex-shrink-0 avatar avatar-online">
                                             <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/13.png"
                                                 alt="Avatar" class="rounded-circle">
@@ -138,9 +163,15 @@
                                                 <h6 class="chat-contact-name text-truncate m-0 fw-normal">
                                                     {{ $val->name }}
                                                 </h6>
+                                                {{-- ✅ unread badge --}}
+                                                <span class="badge bg-danger ms-2 unread-badge" style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
+                                                    {{ $count }}
+                                                </span>
                                                 <small class="chat-contact-list-item-time">5 Minutes</small>
                                             </div>
-                                            <small class="chat-contact-status text-truncate">Refer friends. Get rewards.</small>
+                                            <small class="chat-contact-status text-truncate last-message">
+                                                {{ $lastMessage ?? 'No messages yet' }}
+                                            </small>
                                         </div>
                                     </a>
                                 </li>
@@ -258,6 +289,23 @@
 
 @section('js')
 <script>
+let notifySound;
+
+document.addEventListener('DOMContentLoaded', () => {
+    notifySound = new Audio("{{ asset('assets/audio/notify.mp3') }}");
+    notifySound.volume = 0.7;
+});
+
+document.addEventListener('click', function unlockAudio() {
+    notifySound.play()
+        .then(() => {
+            notifySound.pause();
+            notifySound.currentTime = 0;
+            console.log('🔓 Audio unlocked');
+            document.removeEventListener('click', unlockAudio);
+        })
+        .catch(err => console.error('Unlock failed', err));
+});
 
 const pusherChat = new Pusher('6d2b8f974bbba728216c', {
     cluster: 'ap1',
@@ -267,28 +315,209 @@ const pusherChat = new Pusher('6d2b8f974bbba728216c', {
 let chatId = {{ $chatId ?? 'null' }};
 let chatChannel = null;
 const currentUserId = {{ auth()->id() }};
+let currentPage = 1;
+let lastPage = null;
+let lastMessageId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    if (currentUserId) {
-        subscribeToChat(currentUserId);
+
+    // Subscribe currently open chat
+    if (chatId) {
+        subscribeToChat(chatId);
     }
+
+    // Subscribe sidebar chats globally for unread / last message / sound
+    document.querySelectorAll('.chat-user').forEach(el => {
+        const id = el.dataset.chatId;
+        if (!id) return;
+
+        const channel = pusherChat.subscribe(`chat.${id}`);
+
+        channel.bind('new-message', data => {
+            // Only visitor messages trigger unread
+            if (data.role !== 3) return;
+
+            // Update unread badge if chat not active
+            if (!isChatActive(id)) {
+                const badge = getUnreadBadge(id);
+                if (badge) {
+                    let count = parseInt(badge.innerText || 0);
+                    badge.innerText = ++count;
+                    badge.style.display = 'inline-block'; // now it works
+                }
+                notifySound.currentTime = 0;
+                notifySound.play().catch(() => {});
+            }else{
+                markMessagesRead(id);
+            }
+
+            notifySound.currentTime = 0;
+            notifySound.play().catch(err => {
+                console.error('Sound play failed:', err);
+            });
+
+            // Update last message in sidebar
+            updateLastMessage(id, data.message);
+        });
+    });
 });
 
-function subscribeToChat(currentUserId) {
+// ================= Active chat messages =================
+
+function subscribeToChat(chatId) {
+    if (chatChannel?.name === `chat.${chatId}`) return;
+
     if (chatChannel) {
         pusherChat.unsubscribe(chatChannel.name);
     }
 
-    const channelName = `chat.${currentUserId}`;
-    chatChannel = pusherChat.subscribe(channelName);
+    chatChannel = pusherChat.subscribe(`chat.${chatId}`);
 
-    // ✅ SAME EVENT NAME AS BACKEND
-    chatChannel.bind('new-message', function (data) {
-        appendMessage(data.message, data.role);
+    chatChannel.bind('new-message', data => {
+        appendMessage(data.message, data.role, data.user?.image, data.formatted_created_at);
+
+        setTimeout(() => {
+            const chatBody = document.querySelector('.chat-history-body');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 0);
+
+        // Reset unread badge if any
+        const badge = getUnreadBadge(chatId);
+        if (badge) {
+            badge.innerText = 0;
+            badge.style.display = 'none';
+        }
+    });
+
+    chatChannel.bind('typing', data => {
+        if (data.role == 3) { // visitor typing
+            const typing = document.getElementById('typing-indicator');
+            if (!typing) return;
+
+            typing.style.display = 'block';
+
+            clearTimeout(window.typingTimeout);
+            window.typingTimeout = setTimeout(() => {
+                typing.style.display = 'none';
+            }, 1500);
+        }
+    });
+
+    chatChannel.bind('activity', data => {
+        const ul = document.querySelector('.chat-history');
+        ul.appendChild(renderSystemMessage(data.message));
+        setTimeout(() => {
+            const body = document.querySelector('.chat-history-body');
+            body.scrollTop = body.scrollHeight;
+        }, 0);
     });
 }
 
-function appendMessage(text, role) {
+// ================= Helper functions =================
+
+function getUnreadBadge(chatId) {
+    return document.querySelector(
+        `.chat-user[data-chat-id="${chatId}"] .unread-badge`
+    );
+}
+
+function isChatActive(chatId) {
+    return document
+        .querySelector(`.chat-user[data-chat-id="${chatId}"]`)
+        ?.classList.contains('active');
+}
+
+function updateLastMessage(chatId, message) {
+    const el = document.querySelector(
+        `.chat-user[data-chat-id="${chatId}"] .last-message`
+    );
+    if (el) {
+        el.innerText = message.length > 30
+            ? message.substring(0, 30) + '...'
+            : message;
+    }
+}
+
+function markMessagesRead(chatId) {
+    clearTimeout(readTimeout);
+    readTimeout = setTimeout(() => {
+        fetch("{{ route('admin.chat.markRead') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ chat_id: chatId})
+        });
+    }, 300);
+}
+
+let readTimeout = null;
+
+function renderMessage(text, role, userAvatar = null, created_at = null) {
+    const li = document.createElement('li');
+
+    li.className = role != 3
+        ? 'chat-message chat-message-right'
+        : 'chat-message';
+
+    const avatar = userAvatar || "{{ asset('assets/images/default.png') }}";
+
+    li.innerHTML = `
+        <div class="d-flex overflow-hidden">
+            ${role == 3 ? `
+            <div class="user-avatar flex-shrink-0 me-4">
+                <div class="avatar avatar-sm">
+                    <img src="${avatar}" class="rounded-circle">
+                </div>
+            </div>` : ''}
+
+            <div class="chat-message-wrapper flex-grow-1">
+                <div class="chat-message-text">
+                    <p class="mb-0">${text}</p>
+                </div>
+                <div class="text-end text-body-secondary mt-1">
+                    <small>${created_at}</small>
+                </div>
+            </div>
+
+            ${role != 3 ? `
+            <div class="user-avatar flex-shrink-0 ms-4">
+                <div class="avatar avatar-sm">
+                    <img src="${avatar}" class="rounded-circle">
+                </div>
+            </div>` : ''}
+        </div>
+    `;
+
+    return li;
+}
+
+function renderSystemMessage(text) {
+    const li = document.createElement('li');
+    li.className = 'chat-message chat-system-message';
+
+    let badgeColor;
+    if (text == "Visitor opened the chat") {
+        badgeColor = 'bg-label-success';
+    } else if (text == "Visitor closed the chat") {
+        badgeColor = 'bg-label-danger';
+    } else {
+        badgeColor = 'bg-label-secondary';
+    }
+
+    li.innerHTML = `
+        <div class="d-flex justify-content-center my-2">
+            <span class="badge ${badgeColor} px-3 py-1 rounded-pill text-muted">
+                ${text}
+            </span>
+        </div>
+    `;
+
+    return li;
+}
+
+function appendMessage(text, role, userAvatar = null, created_at = null) {
     const ul = document.querySelector('.chat-history');
 
     const noMessage = document.getElementById('no-message');
@@ -301,18 +530,23 @@ function appendMessage(text, role) {
         ? 'chat-message chat-message-right'
         : 'chat-message';
 
+    const avatar = userAvatar || "{{ asset('assets/images/default.png') }}";
+
     li.innerHTML = `
         <div class="d-flex overflow-hidden">
             ${role == 3 ? `
             <div class="user-avatar flex-shrink-0 me-4">
                 <div class="avatar avatar-sm">
-                    <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
+                    <img src="${avatar}" class="rounded-circle">
                 </div>
             </div>` : ''}
 
             <div class="chat-message-wrapper flex-grow-1">
                 <div class="chat-message-text">
                     <p class="mb-0">${text}</p>
+                </div>
+                <div class="text-end text-body-secondary mt-1">
+                    <small>${created_at}</small>
                 </div>
             </div>
 
@@ -326,8 +560,67 @@ function appendMessage(text, role) {
     `;
 
     ul.appendChild(li);
-    ul.scrollTop = ul.scrollHeight;
+
+    // ✅ Scroll chat container to bottom
+    const chatBody = document.querySelector('.chat-history-body');
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
+
+let limit = 20;
+let offset = 0;
+let loading = false;
+let allLoaded = false;
+
+function loadMessages(chatId, prepend = false) {
+    if (loading || allLoaded) return;
+    loading = true;
+
+    const container = document.querySelector('.chat-history-body');
+    const ul = container.querySelector('.chat-history');
+    const oldScrollHeight = container.scrollHeight;
+    const oldScrollTop = container.scrollTop;
+
+    fetch(`{{ route('admin.chat.messages', ':id') }}`.replace(':id', chatId) + `?limit=${limit}&offset=${offset}&prepend=${prepend ? 1 : 0}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.count || !data.data.length) {
+                allLoaded = true;
+                return;
+            }
+
+            let messages = data.data;
+
+            // No need to reverse, backend sends oldest first
+            messages.forEach(msg => {
+                if (!msg.user) {
+                    const li = renderSystemMessage(msg.message);
+                    prepend ? ul.prepend(li) : ul.appendChild(li);
+                    return;
+                }
+                const role = msg.user.role == 3 ? 3 : 1;
+                const li = renderMessage(msg.message, role, msg.user.image, msg.formatted_created_at);
+                prepend ? ul.prepend(li) : ul.appendChild(li);
+            });
+
+            // Maintain scroll position
+            if (prepend) {
+                container.scrollTop = container.scrollHeight - oldScrollHeight + oldScrollTop;
+            } else {
+                container.scrollTop = container.scrollHeight; // scroll to bottom initially
+            }
+
+            offset += data.count;
+            allLoaded = !data.has_more;
+        })
+        .finally(() => {
+            loading = false;
+        });
+}
+
+document.getElementById('load-more-btn')
+    ?.addEventListener('click', () => {
+        loadMessages(window.chatId, true);
+    });
 
 document.querySelectorAll('.chat-user').forEach(item => {
     item.addEventListener('click', function (e) {
@@ -336,35 +629,72 @@ document.querySelectorAll('.chat-user').forEach(item => {
     });
 });
 
+let isSending = false;
+
 document.addEventListener('click', function (e) {
-    if (e.target.closest('.send-msg-btn')) {
+
+    const btn = e.target.closest('.send-msg-btn');
+    if (!btn) return;
+
+    if (isSending) return;
+
+    const form = btn.closest('.form-send-message');
+    const input = form.querySelector('.message-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    sendMessage(form, input, message);
+});
+
+document.addEventListener('keydown', function (e) {
+
+    if (!e.target.classList.contains('message-input')) return;
+
+    // Shift + Enter = new line
+    if (e.key === 'Enter' && e.shiftKey) return;
+
+    // Enter press
+    if (e.key === 'Enter') {
+        e.preventDefault();
+
+        if (isSending) return; // 🚫 disable enter while sending
+
         const form = e.target.closest('.form-send-message');
-        const input = form.querySelector('.message-input');
+        const input = e.target;
         const message = input.value.trim();
         if (!message) return;
 
-        const chatId = form.dataset.chatId;
-
-        fetch("{{ route('admin.chat.send') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                chat_id: chatId,
-                message: message
-            })
-        })
-        .then(res => res.json())
-        .then(() => {
-            appendMessage(message, 2);
-            input.value = '';
-        })
-        .catch(err => console.error(err));
+        sendMessage(form, input, message);
     }
 });
+
+function sendMessage(form, input, message) {
+
+    isSending = true;
+    input.disabled = true;
+
+    fetch("{{ route('admin.chat.send') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            chat_id: form.dataset.chatId,
+            message: message
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        input.value = '';
+    })
+    .finally(() => {
+        isSending = false;
+        input.disabled = false;
+        input.focus();
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     let params = new URLSearchParams(window.location.search);
@@ -376,27 +706,57 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function openChat(chatId) {
-    let getChat = "{{ route('admin.chat.show', ':id') }}";
-    getChat = getChat.replace(':id', chatId);
+    let getChat = "{{ route('admin.chat.show', ':id') }}".replace(':id', chatId);
 
     fetch(getChat)
         .then(res => res.text())
         .then(html => {
-            document.getElementById('app-chat-history').innerHTML = html;
-            document.getElementById('app-chat-history').classList.remove('d-none');
-
-            // Hide empty state
+            const chatHistoryContainer = document.getElementById('app-chat-history');
+            chatHistoryContainer.innerHTML = html;
+            chatHistoryContainer.classList.remove('d-none');
             document.getElementById('app-chat-conversation')?.classList.add('d-none');
 
-            // Highlight active chat
-            document.querySelectorAll('.chat-user').forEach(el =>
-                el.classList.remove('active')
-            );
-            document
-                .querySelector(`.chat-user[data-chat-id="${chatId}"]`)
-                ?.classList.add('active');
+            // Active user highlight
+            document.querySelectorAll('.chat-user').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.chat-user[data-chat-id="${chatId}"]`)?.classList.add('active');
 
+            window.chatId = chatId;
+
+            // 🔹 RESET PAGINATION
+            offset = 0;
+            allLoaded = false;
+            loading = false;
+
+            // 🔹 Clear old messages
+            const ul = document.querySelector('.chat-history-body .chat-history');
+            ul.innerHTML = '';
+
+            // 🔹 Scroll listener
+            const chatBody = document.querySelector('.chat-history-body');
+            // remove old listener (clone trick)
+            const newChatBody = chatBody.cloneNode(true);
+            chatBody.parentNode.replaceChild(newChatBody, chatBody);
+
+            newChatBody.addEventListener('scroll', () => {
+                if (newChatBody.scrollTop === 0 && !loading && !allLoaded) {
+                    loadMessages(window.chatId, true);
+                }
+            });
+
+            // 🔹 First load
+            loadMessages(chatId);
+
+            // 🔹 Subscribe Pusher
             subscribeToChat(chatId);
+
+            // 🔹 Mark read
+            markMessagesRead(chatId);
+
+            const badge = getUnreadBadge(chatId);
+            if (badge) {
+                badge.innerText = 0;
+                badge.style.display = 'none';
+            }
         });
 }
 

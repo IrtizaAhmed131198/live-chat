@@ -18,43 +18,63 @@ class VisitorController extends Controller
     public function getChatBySession(Request $request)
     {
         $request->validate([
-            'session_id' => 'required'
+            'session_id' => 'required',
+            'limit' => 'nullable|integer',
+            'before_id' => 'nullable|integer',
         ]);
 
-        // 1️⃣ Get visitor via session
-        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        $limit = $request->limit ?? 20;
 
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
         if (!$visitor) {
             return response()->json([
                 'chat_id' => null,
-                'messages' => []
+                'messages' => [],
+                'unread_count' => 0
             ]);
         }
 
-        // 2️⃣ Get existing chat
-        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)
+        $chat = Chat::with('agent', 'visitor')
+            ->where('visitor_id', $visitor->id)
             ->where('status', 'open')
             ->first();
-        $userId = $chat->agent->id;
-        $roleId = $chat->agent->role;
 
         if (!$chat) {
             return response()->json([
                 'chat_id' => null,
-                'messages' => []
+                'messages' => [],
+                'unread_count' => 0
             ]);
         }
 
-        // 3️⃣ Fetch messages
-        $messages = Message::with('user')->where('chat_id', $chat->id)
-            ->orderBy('created_at')
-            ->get(['message', 'sender', 'created_at']);
+        $query = Message::with('user')
+            ->where('chat_id', $chat->id)
+            ->orderBy('id', 'desc'); // newest first
+
+        if ($request->before_id) {
+            $query->where('id', '<', $request->before_id);
+        }
+
+        $messages = $query->take($limit)->get()->sortBy('id')->values();
+
+        $unreadCount = Message::where('chat_id', $chat->id)
+            ->where('sender', $chat->agent_id)
+            ->where('is_read', false)
+            ->count();
+
+        $data = $messages->map(function($msg) {
+            return [
+                'id' => $msg->id,
+                'message' => $msg->message,
+                'role' => $msg->user->role ?? $msg->sender,
+                'created_at' => $msg->created_at
+            ];
+        });
 
         return response()->json([
             'chat_id' => $chat->id,
-            'messages' => $messages,
-            'user_id' => $userId,
-            'role' => $roleId
+            'messages' => $data,
+            'unread_count' => $unreadCount
         ]);
     }
 
@@ -71,7 +91,6 @@ class VisitorController extends Controller
             ->first();
 
         $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
-        dd($chat);
 
         if (!$visitor) {
             return response()->json([
@@ -83,21 +102,24 @@ class VisitorController extends Controller
         $roleId = optional($visitor->user)->role;
         $userId = optional($visitor->user)->id;
 
-        Message::create([
+        $msg = Message::create([
             'chat_id' => $chat->id,
             'sender'  => $userId,
             'message' => $request->message
         ]);
 
         emit_pusher_notification(
-            'chat.' . $userId, // channel
+            'chat.' . $chat->id, // channel
             'new-message',                // event
             [
                 'chat_id' => $chat->id,
                 'user_id' => $userId,
                 'message' => $request->message,
                 'sender'  => $userId,
-                'role'  => $roleId,
+                'sender_type' => 'visitor',
+                'role'  => 3,
+                'created_at' => $msg->created_at,
+                'id' => $msg->id
             ]
         );
 
@@ -105,6 +127,37 @@ class VisitorController extends Controller
             'status' => true,
             'message' => 'Message sent successfully',
         ], 200);
+    }
+
+    public function loadMore(Request $request)
+    {
+        $request->validate([
+            'chat_id' => 'required|integer',
+            'before_id' => 'required|integer',
+        ]);
+
+        $chat = Chat::find($request->chat_id);
+        if (!$chat) return response()->json(['messages' => []]);
+
+        $messages = Message::where('chat_id', $chat->id)
+            ->where('id', '<', $request->before_id)
+            ->orderBy('id', 'desc')
+            ->limit(10) // fetch 10 older messages
+            ->get();
+
+        // return in ascending order
+        $messages = $messages->sortBy('id')->values();
+
+        $data = $messages->map(function($msg){
+            return [
+                'id' => $msg->id,
+                'message' => $msg->message,
+                'sender_role' => $msg->user->role ?? $msg->sender,
+                'created_at' => $msg->created_at
+            ];
+        });
+
+        return response()->json(['messages' => $data]);
     }
 
     public function postVisitorInit(Request $request)
@@ -167,5 +220,64 @@ class VisitorController extends Controller
         return response()->json([
             'visitor' => $visitor->id
         ]);
+    }
+
+    public function typing(Request $request)
+    {
+        $visitor = Visitor::where('session_id', $request->session_id)
+            ->with('user')
+            ->first();
+
+        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
+
+        emit_pusher_notification(
+            'chat.' . $chat->id,
+            'typing',
+            ['role' => 3]
+        );
+
+        return response()->json(['status' => true]);
+    }
+
+    public function markRead(Request $request)
+    {
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) return response()->json();
+
+        $chat = Chat::where('visitor_id', $visitor->id)->first();
+        if (!$chat) return response()->json();
+
+        Message::where('chat_id', $chat->id)
+            ->where('sender', $chat->agent_id) // ✅ ONLY admin messages
+            ->update(['is_read' => true]);
+
+        return response()->json(['status' => true]);
+    }
+
+    public function chatActivity(Request $request)
+    {
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) return response()->json();
+
+        $chat = Chat::where('visitor_id', $visitor->id)->first();
+        if (!$chat) return response()->json();
+
+        $msg = Message::create([
+            'chat_id' => $chat->id,
+            'sender'  => null, // 👈 SYSTEM MESSAGE
+            'message' => $request->message,
+            'is_read' => true
+        ]);
+
+        emit_pusher_notification(
+            'chat.' . $chat->id,
+            'activity',
+            [
+                'message' => $request->message,
+                'created_at' => $msg->created_at
+            ]
+        );
+
+        return response()->json(['status' => true]);
     }
 }

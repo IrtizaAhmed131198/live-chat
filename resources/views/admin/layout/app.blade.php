@@ -73,20 +73,20 @@
     <link rel="stylesheet" href="{{ asset('assets/css/apex-charts-DWhxKQx9.css') }}" class="" />
     <!-- Page Styles -->
 
-    <!-- app CSS -->
-
-    </script><!-- END: app CSS-->
 
     <!-- Include Scripts for customizer, helper, analytics, config -->
     <!-- $isFront is used to append the front layout scriptsIncludes only on the front layout otherwise the variable will be blank -->
     <!-- laravel style -->
     <!-- beautify ignore:start -->
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-    <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
+        <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
 
 
     <link rel="preload" as="style" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
     <link rel="modulepreload" href="{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" /><link rel="stylesheet" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
+    <!-- app CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" class="" />
+    <!-- END: app CSS-->
     {{-- @vite(['resources/js/app.js']) --}}
 
 

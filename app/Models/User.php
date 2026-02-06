@@ -61,4 +61,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Visitor::class, 'id', 'visitor_id');
     }
+
+    public function get_chat()
+    {
+        return $this->hasOne(Chat::class, 'visitor_id', 'visitor_id');
+    }
+
+    public function assignedChats()
+    {
+        return $this->hasMany(Chat::class, 'agent_id', 'id');
+    }
 }
