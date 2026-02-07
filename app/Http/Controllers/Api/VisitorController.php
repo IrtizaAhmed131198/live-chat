@@ -67,7 +67,8 @@ class VisitorController extends Controller
                 'id' => $msg->id,
                 'message' => $msg->message,
                 'role' => $msg->user->role ?? $msg->sender,
-                'created_at' => $msg->created_at
+                'created_at' => $msg->created_at,
+                'formatted_created_at' => $msg->formatted_created_at,
             ];
         });
 
@@ -118,7 +119,8 @@ class VisitorController extends Controller
                 'sender'  => $userId,
                 'sender_type' => 'visitor',
                 'role'  => 3,
-                'created_at' => $msg->created_at,
+                'created_at' => $msg->formatted_created_at,
+                'formatted_created_at' => $msg->formatted_created_at,
                 'id' => $msg->id
             ]
         );
@@ -153,7 +155,8 @@ class VisitorController extends Controller
                 'id' => $msg->id,
                 'message' => $msg->message,
                 'sender_role' => $msg->user->role ?? $msg->sender,
-                'created_at' => $msg->created_at
+                'created_at' => $msg->created_at,
+                'formatted_created_at' => $msg->formatted_created_at,
             ];
         });
 
@@ -274,7 +277,8 @@ class VisitorController extends Controller
             'activity',
             [
                 'message' => $request->message,
-                'created_at' => $msg->created_at
+                'created_at' => $msg->created_at,
+                'formatted_created_at' => $msg->formatted_created_at,
             ]
         );
 

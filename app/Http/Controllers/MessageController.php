@@ -37,6 +37,7 @@ class MessageController extends Controller
                 'message' => $request->message,
                 'sender'  => auth()->id(),
                 'role'  => auth()->user()->role ?? 2,
+                'formatted_created_at'  => $msg->formatted_created_at,
                 'created_at'  => $msg->created_at,
                 'id'  => $msg->id,
             ]

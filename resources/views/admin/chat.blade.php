@@ -151,7 +151,7 @@
                                     $count = App\Models\Message::where('sender', $val->id)->where('is_read', false)->count();
                                     $lastMessage = App\Models\Message::where('chat_id', $val->get_chat->id)->latest()->value('message');
                                 @endphp
-                                <li class="chat-contact-list-item mb-1">
+                                <li class="chat-contact-list-item mb-1 {{ request('chatId') == $val->get_chat->id ? 'active' : '' }}">
                                     <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->get_chat->id }}"
                                         data-user-id="{{ $val->id }}">
                                         <div class="flex-shrink-0 avatar avatar-online">

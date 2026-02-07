@@ -222,13 +222,7 @@
             // format timestamp
             let timeText = '';
             if (createdAt) {
-                const date = new Date(createdAt);
-                const hours = date.getHours().toString().padStart(2, '0');
-                const minutes = date.getMinutes().toString().padStart(2, '0');
-                const day = date.getDate().toString().padStart(2, '0');
-                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                const year = date.getFullYear();
-                timeText = `${day}/${month}/${year} ${hours}:${minutes}`;
+                timeText = createdAt;
             }
 
             div.innerHTML = `
@@ -328,10 +322,29 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                domain: WEBSITE_DOMAIN,
+                domain: getWebsiteDomain(),
                 session_id: SESSION_ID
             })
         });
+
+        function getWebsiteDomain() {
+            const { hostname, pathname } = window.location;
+
+            // ✅ NOT localhost → normal domain
+            if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                return hostname;
+            }
+
+            // ✅ localhost → pick project name from path
+            // /filter-cms/public/  → filter-cms
+            // /xtend-hrms/         → xtend-hrms
+            // /abc                 → abc
+            const segments = pathname
+                .split('/')
+                .filter(seg => seg && seg !== 'public');
+
+            return segments.length ? segments[0] : 'localhost';
+        }
 
         /* ================= LOAD CHAT + SUBSCRIBE ================= */
 
@@ -362,7 +375,7 @@
                     // INITIAL LOAD → latest to oldest
                     data.messages.forEach(msg => {
                         if (msg.sender === null) return;
-                        addMsg(msg.message, msg.role, msg.created_at, false, false, msg.id);
+                        addMsg(msg.message, msg.role, msg.formatted_created_at, false, false, msg.id);
                     });
 
                     // unread count
@@ -376,7 +389,7 @@
                     channel = pusher.subscribe(`chat.${data.chat_id}`);
                     channel.bind('new-message', data => {
                         if (data.sender === null) return;
-                        addMsg(data.message, data.role, data.created_at, true, false, data.id);
+                        addMsg(data.message, data.role, data.formatted_created_at, true, false, data.id);
                         if (box.style.display === 'flex') {
                             fetch('http://localhost/live-chat/public/api/visitor-read', {
                                 method: 'POST',
@@ -410,7 +423,7 @@
 
                     // reverse messages so oldest comes first
                     data.messages.reverse().forEach(msg => {
-                        addMsg(msg.message, msg.role, msg.created_at, false, true, msg.id);
+                        addMsg(msg.message, msg.role, msg.formatted_created_at, false, true, msg.id);
                     });
                 }
             })
