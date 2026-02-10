@@ -101,12 +101,9 @@
             <input class="form-control message-input border-0 me-4 shadow-none"
                 placeholder="Type your message here...">
             <div class="message-actions d-flex align-items-center">
-                {{-- <label for="attach-doc" class="form-label mb-0">
-                    <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer mx-1">
-                        <i class="icon-base bx bx-paperclip icon-md text-heading"></i>
-                    </span>
-                    <input type="file" id="attach-doc" hidden="">
-                </label> --}}
+                <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer emoji-btn">
+                    <i class="fa-regular fa-face-grin"></i>
+                </span>
                 <button type="button" class="btn btn-primary d-flex send-msg-btn">
                     <span class="align-middle d-md-inline-block d-none">Send</span>
                     <i class="icon-base bx bx-paper-plane icon-sm ms-md-2 ms-0"></i>

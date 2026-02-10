@@ -148,8 +148,8 @@
                             </li>
                             @forelse ($user as $val)
                                 @php
-                                    $count = App\Models\Message::where('sender', $val->id)->where('is_read', false)->count();
-                                    $lastMessage = App\Models\Message::where('chat_id', $val->get_chat->id)->latest()->value('message');
+                                    $count = App\Models\Message::where('chat_id', $val->get_chat->id)->where('is_read', false)->count();
+                                    $lastMessage = App\Models\Message::where('chat_id', $val->get_chat->id)->whereNotNull('sender')->latest('id')->value('message');
                                 @endphp
                                 <li class="chat-contact-list-item mb-1 {{ request('chatId') == $val->get_chat->id ? 'active' : '' }}">
                                     <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->get_chat->id }}"
@@ -288,6 +288,52 @@
 @endsection
 
 @section('js')
+<script type="module">
+    import { EmojiButton } from 'https://cdn.skypack.dev/@joeattardi/emoji-button';
+
+    const picker = new EmojiButton({
+        position: 'top-start',
+        theme: 'auto'
+    });
+
+    let activeInput = null;
+
+    // 🔹 When emoji selected
+    picker.on('emoji', selection => {
+        if (!activeInput) return;
+
+        const start = activeInput.selectionStart;
+        const end = activeInput.selectionEnd;
+        const text = activeInput.value;
+
+        // Insert emoji at cursor position
+        activeInput.value =
+            text.slice(0, start) +
+            selection.emoji +
+            text.slice(end);
+
+        // Move cursor after emoji
+        const newPos = start + selection.emoji.length;
+        activeInput.setSelectionRange(newPos, newPos);
+
+        activeInput.focus();
+    });
+
+    // 🔹 Open picker on emoji button click
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.emoji-btn');
+        if (!btn) return;
+
+        // Find related message input
+        const form = btn.closest('.form-send-message');
+        if (!form) return;
+
+        activeInput = form.querySelector('.message-input');
+        if (!activeInput) return;
+
+        picker.togglePicker(btn);
+    });
+</script>
 <script>
 let notifySound;
 
@@ -474,7 +520,7 @@ function renderMessage(text, role, userAvatar = null, created_at = null) {
 
             <div class="chat-message-wrapper flex-grow-1">
                 <div class="chat-message-text">
-                    <p class="mb-0">${text}</p>
+                    <p class="mb-0">${escapeHtml(text)}</p>
                 </div>
                 <div class="text-end text-body-secondary mt-1">
                     <small>${created_at}</small>
@@ -498,18 +544,31 @@ function renderSystemMessage(text) {
     li.className = 'chat-message chat-system-message';
 
     let badgeColor;
-    if (text == "Visitor opened the chat") {
+    if (text === "Visitor opened the chat") {
         badgeColor = 'bg-label-success';
-    } else if (text == "Visitor closed the chat") {
+    } else if (text === "Visitor closed the chat") {
         badgeColor = 'bg-label-danger';
     } else {
         badgeColor = 'bg-label-secondary';
     }
 
+    // 🔹 URL detection and replacement
+    const urlMatch = text.match(/https?:\/\/[^\s]+/g); // match all URLs
+    let formattedText = text;
+
+    if (urlMatch) {
+        urlMatch.forEach(url => {
+            formattedText = formattedText.replace(
+                url,
+                `<a href="${url}" target="_blank" style="text-decoration: underline; color: #696cff;">Site</a>`
+            );
+        });
+    }
+
     li.innerHTML = `
         <div class="d-flex justify-content-center my-2">
             <span class="badge ${badgeColor} px-3 py-1 rounded-pill text-muted">
-                ${text}
+                ${formattedText}
             </span>
         </div>
     `;
@@ -543,7 +602,7 @@ function appendMessage(text, role, userAvatar = null, created_at = null) {
 
             <div class="chat-message-wrapper flex-grow-1">
                 <div class="chat-message-text">
-                    <p class="mb-0">${text}</p>
+                    <p class="mb-0">${escapeHtml(text)}</p>
                 </div>
                 <div class="text-end text-body-secondary mt-1">
                     <small>${created_at}</small>
@@ -758,6 +817,17 @@ function openChat(chatId) {
                 badge.style.display = 'none';
             }
         });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 </script>

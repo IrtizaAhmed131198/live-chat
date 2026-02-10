@@ -65,6 +65,8 @@ class AdminController extends Controller
         $offset = $request->get('offset', 0);
         $prepend = $request->get('prepend', 0); // 1 if load more
 
+        $chat = Chat::with('visitor')->find($chatId);
+
         // Fetch messages
         $messages = Message::with('user')
             ->where('chat_id', $chatId)
@@ -86,6 +88,7 @@ class AdminController extends Controller
             'data' => $messages,
             'has_more' => ($offset + $messages->count()) < $total,
             'count' => $messages->count(),
+            'url' => $chat->visitor->last_url ?? null
         ]);
     }
 }

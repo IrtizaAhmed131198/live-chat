@@ -11,6 +11,8 @@ Route::post('/visitor-typing', [VisitorController::class, 'typing']);
 Route::post('/visitor-read', [VisitorController::class, 'markRead']);
 Route::post('/visitor-load-more', [VisitorController::class, 'loadMore']);
 Route::post('/visitor-chat-activity', [VisitorController::class, 'chatActivity']);
+Route::post('/visitor-activity', [VisitorController::class, 'visitorActivity']);
+Route::post('/visitor-heartbeat', [VisitorController::class, 'visitorHeartbeat']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

@@ -17,4 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
+    })->withSchedule(function (Schedule $schedule) {
+        $schedule->command('chat:handle-inactive')->everyMinute();
     })->create();

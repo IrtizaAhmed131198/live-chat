@@ -49,6 +49,7 @@ class VisitorController extends Controller
 
         $query = Message::with('user')
             ->where('chat_id', $chat->id)
+            ->whereNotNull('sender')
             ->orderBy('id', 'desc'); // newest first
 
         if ($request->before_id) {
@@ -59,6 +60,7 @@ class VisitorController extends Controller
 
         $unreadCount = Message::where('chat_id', $chat->id)
             ->where('sender', $chat->agent_id)
+            ->whereNotNull('sender')
             ->where('is_read', false)
             ->count();
 
@@ -67,6 +69,7 @@ class VisitorController extends Controller
                 'id' => $msg->id,
                 'message' => $msg->message,
                 'role' => $msg->user->role ?? $msg->sender,
+                'sender' => $msg->sender ?? null,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
             ];
@@ -92,6 +95,8 @@ class VisitorController extends Controller
             ->first();
 
         $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
+        $chat->last_visitor_activity_at = now();
+        $chat->save();
 
         if (!$visitor) {
             return response()->json([
@@ -143,6 +148,7 @@ class VisitorController extends Controller
 
         $messages = Message::where('chat_id', $chat->id)
             ->where('id', '<', $request->before_id)
+            ->whereNotNull('sender')
             ->orderBy('id', 'desc')
             ->limit(10) // fetch 10 older messages
             ->get();
@@ -155,6 +161,7 @@ class VisitorController extends Controller
                 'id' => $msg->id,
                 'message' => $msg->message,
                 'sender_role' => $msg->user->role ?? $msg->sender,
+                'sender' => $msg->user->role ?? $msg->sender,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
             ];
@@ -179,10 +186,10 @@ class VisitorController extends Controller
         $sessionId = $request->session_id;
 
         // 2️⃣ Visitor
-        $visitor = Visitor::firstOrCreate([
-            'website_id' => $website->id,
-            'session_id' => $request->session_id
-        ]);
+        $visitor = Visitor::firstOrCreate(
+            ['session_id' => $request->session_id],
+            ['website_id' => $website->id]
+        );
 
         $visitorUser = User::firstOrCreate(
             ['visitor_id' => $visitor->id], // optional: link user to visitor
@@ -283,5 +290,58 @@ class VisitorController extends Controller
         );
 
         return response()->json(['status' => true]);
+    }
+
+    public function visitorActivity(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required',
+            'url' => 'required|string'
+        ]);
+
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) return response()->json(['status' => false]);
+
+        $visitor->last_url = $request->url;
+        $visitor->save();
+
+        $chat = Chat::where('visitor_id', $visitor->id)->first();
+        if ($chat) {
+            $msg = Message::create([
+                'chat_id' => $chat->id,
+                'sender' => null,
+                'message' => "Visitor navigated to: " . $request->url,
+                'is_read' => true
+            ]);
+
+            emit_pusher_notification(
+                'chat.' . $chat->id,
+                'activity',
+                [
+                    'message' => "Visitor navigated to: " . $request->url,
+                    'created_at' => $msg->created_at,
+                    'formatted_created_at' => $msg->formatted_created_at,
+                ]
+            );
+        }
+
+        return response()->json(['status' => true]);
+    }
+
+    public function heartbeat(Request $request)
+    {
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) return response()->json();
+
+        $chat = Chat::where('visitor_id', $visitor->id)
+            ->where('status','open')
+            ->first();
+
+        if ($chat) {
+            $chat->last_visitor_activity_at = now();
+            $chat->save();
+        }
+
+        return response()->json(['status'=>true]);
     }
 }

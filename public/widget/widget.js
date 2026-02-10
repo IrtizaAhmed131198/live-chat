@@ -11,6 +11,7 @@
     /* ================= CONFIG ================= */
 
     const WEBSITE_DOMAIN = window.location.hostname;
+    let currentUrl = window.location.href;
 
     let SESSION_ID = sessionStorage.getItem('chat_session_id');
     if (!SESSION_ID) {
@@ -21,6 +22,14 @@
     const PUSHER_KEY = '6d2b8f974bbba728216c';
     const PUSHER_CLUSTER = 'ap1';
     const API_URL = 'http://localhost/live-chat/public/api/visitor-message';
+
+    const emojiScript = document.createElement('script');
+    emojiScript.type = 'module';
+    emojiScript.innerHTML = `
+        import { EmojiButton } from 'https://cdn.skypack.dev/@joeattardi/emoji-button';
+        window.EmojiButton = EmojiButton;
+    `;
+    document.head.appendChild(emojiScript);
 
     /* ================= LOAD PUSHER ================= */
 
@@ -137,7 +146,32 @@
                 Agent is typing...
             </div>
 
-            <input id="live-chat-input" placeholder="Type message..." />
+            <div style="display:flex;align-items:center;border-top:1px solid #eee;">
+                <button id="emoji-btn"
+                    style="
+                        background:none;
+                        border:none;
+                        font-size:20px;
+                        cursor:pointer;
+                        padding:8px;
+                    ">😊</button>
+
+                <input id="live-chat-input"
+                    placeholder="Type message..."
+                    style="flex:1;border:none;padding:10px;outline:none;"
+                />
+
+                <button id="send-btn"
+                    style="
+                        background:none;
+                        border:none;
+                        font-size:18px;
+                        cursor:pointer;
+                        padding:8px;
+                        color:#696cff;
+                    ">➤</button>
+            </div>
+
         `;
 
         document.body.appendChild(btn);
@@ -177,6 +211,28 @@
         };
 
         const input = document.getElementById('live-chat-input');
+
+        const emojiBtn = document.getElementById('emoji-btn');
+
+        let picker = null;
+
+        emojiBtn.addEventListener('click', async () => {
+            if (!window.EmojiButton) return;
+
+            if (!picker) {
+                picker = new window.EmojiButton({
+                    position: 'top-end'
+                });
+
+                picker.on('emoji', selection => {
+                    input.value += selection.emoji;
+                    input.focus();
+                });
+            }
+
+            picker.togglePicker(emojiBtn);
+        });
+
         const messages = document.getElementById('live-chat-messages');
 
         if (!input || !messages) {
@@ -299,22 +355,32 @@
                 // optional: stop typing
             }, 1500);
 
-            if (e.key === 'Enter' && input.value.trim()) {
-
-                fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: input.value,
-                        session_id: SESSION_ID,
-                        chat_id: window.CHAT_ID // 🔥 REQUIRED
-                    })
-                });
-
-                // addMsg(input.value, 3); // visitor
-                input.value = '';
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
             }
         });
+
+        /* ================== INITIALIZE send btn ================== */
+        const sendBtn = document.getElementById('send-btn');
+
+        function sendMessage() {
+            if (!input.value.trim()) return;
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: input.value,
+                    session_id: SESSION_ID,
+                    chat_id: window.CHAT_ID
+                })
+            });
+
+            input.value = '';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
 
         /* ================= INIT VISITOR ================= */
 
@@ -323,7 +389,8 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 domain: getWebsiteDomain(),
-                session_id: SESSION_ID
+                session_id: SESSION_ID,
+                url: currentUrl
             })
         });
 
@@ -444,6 +511,46 @@
         // initial fetch
         fetchChat(false);
 
+        function notifyPageChange() {
+            const currentUrl = window.location.href;
+
+            // check if we've already notified for this URL
+            if (window.lastNotifiedUrl === currentUrl) return;
+            window.lastNotifiedUrl = currentUrl;
+
+            fetch('http://localhost/live-chat/public/api/visitor-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: SESSION_ID,
+                    url: currentUrl
+                }),
+                keepalive: true // allows fetch on unload
+            }).catch(() => {});
+        }
+
+        // page reload / close / navigate
+        window.addEventListener('beforeunload', notifyPageChange);
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                notifyPageChange();
+            }
+        });
+
+
+        function sendHeartbeat() {
+            fetch('http://localhost/live-chat/public/api/visitor-heartbeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: SESSION_ID
+                })
+            }).catch(()=>{});
+        }
+
+        ['click','keydown','mousemove','scroll'].forEach(evt => {
+            window.addEventListener(evt, throttle(sendHeartbeat, 60000));
+        });
     }
 
 })();
