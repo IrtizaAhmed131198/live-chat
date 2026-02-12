@@ -29,7 +29,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('admin/chat', [AdminController::class, 'chat'])->name('admin.chat');
     Route::get('admin/chat/{chatId}/messages', [AdminController::class, 'messages'])->name('admin.chat.messages');
-    Route::get('admin/notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::post('admin/send-message', [MessageController::class, 'send'])->name('admin.chat.send');
     Route::post('admin/chat/start', [MessageController::class, 'chartStart'])->name('admin.chat.start');
     Route::post('admin/chat/typing', [MessageController::class, 'typing'])->name('admin.chat.typing');
@@ -47,6 +46,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('admin/users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('admin/users/{id}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+    Route::get('admin/notification', [AdminController::class, 'notification'])->name('admin.notification');
+    Route::get('admin/notification/data', [AdminController::class, 'getNotification'])->name('admin.notification.data');
+    Route::post('admin/notifications/mark-as-read', [AdminController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
 });
 
 

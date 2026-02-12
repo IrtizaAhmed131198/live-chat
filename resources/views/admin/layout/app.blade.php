@@ -11,25 +11,10 @@
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
     <title>
-        Dashboard - CRM | sneat
-        - Sneat Bootstrap 5 HTML + Laravel Admin Template
+        Dashboard | {{ ($title = trim($__env->yieldContent('title'))) ? $title . ' - ' : '' }}{{ config('app.name', 'Live Chat') }}
     </title>
-    <meta name="description"
-        content="Most Powerful &amp; Comprehensive Bootstrap 5 + Laravel HTML Admin Dashboard Template built for developers!" />
-    <meta name="keywords" content="dashboard, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5" />
-    <meta property="og:title" content="Sneat Bootstrap 5 HTML + Laravel Admin Template by ThemeSelection" />
-    <meta property="og:type" content="product" />
-    <meta property="og:url" content="https://themeselection.com/item/sneat-dashboard-pro-laravel/" />
-    <meta property="og:image"
-        content="https://ts-assets.b-cdn.net/ts-assets/sneat/sneat-bootstrap-laravel-admin-template/marketing/sneat-bootstrap-laravel-admin-template-smm.png" />
-    <meta property="og:description"
-        content="Most Powerful &amp; Comprehensive Bootstrap 5 + Laravel HTML Admin Dashboard Template built for developers!" />
-    <meta property="og:site_name" content="ThemeSelection" />
-    <meta name="robots" content="noindex, nofollow" />
-    <!-- laravel CRUD token -->
-    <meta name="csrf-token" content="ZyS4RInKtto0hBChsuoktHMNJ8OujnPNYesBiXij" />
     <!-- Canonical SEO -->
-    <link rel="canonical" href="https://themeselection.com/item/sneat-dashboard-pro-laravel/" />
+    <link rel="canonical" href="{{ url()->current() }}" />
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon"
         href="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/favicon/favicon.ico" />
@@ -71,23 +56,15 @@
     <link rel="preload" as="style" href="{{ asset('assets/css/apex-charts-DWhxKQx9.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/flag-icons-TUQATJgS.css') }}" class="" />
     <link rel="stylesheet" href="{{ asset('assets/css/apex-charts-DWhxKQx9.css') }}" class="" />
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
     <!-- Page Styles -->
-
-
-    <!-- Include Scripts for customizer, helper, analytics, config -->
-    <!-- $isFront is used to append the front layout scriptsIncludes only on the front layout otherwise the variable will be blank -->
-    <!-- laravel style -->
-    <!-- beautify ignore:start -->
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-        <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
-
 
     <link rel="preload" as="style" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
     <link rel="modulepreload" href="{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" /><link rel="stylesheet" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
     <!-- app CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" class="" />
     <!-- END: app CSS-->
-    {{-- @vite(['resources/js/app.js']) --}}
 
 
 @yield('css')
@@ -108,29 +85,43 @@
    </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-
-    <link rel="modulepreload"
-        href="{{ asset('assets/js/helpers-0nSKkh37.js') }}" />
-    <script type="module" src="{{ asset('assets/js/helpers-0nSKkh37.js') }}"></script>
-    {{-- <link rel="modulepreload"
-        href="{{ asset('assets/js/app-l0sNRNKZ.js') }}" /> --}}
-    {{-- <script type="module" src="{{ asset('assets/js/app-l0sNRNKZ.js') }}">
-        < script type = "module"
-        src = "{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" >
-    </script> --}}
+<link rel="modulepreload"
+    href="{{ asset('assets/js/helpers-0nSKkh37.js') }}" />
+<script type="module" src="{{ asset('assets/js/helpers-0nSKkh37.js') }}"></script>
   <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-  <link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" /><script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" /><script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script><script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script><script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script><script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
-    <link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/hammer-DLEdXtvS.js') }}" /><link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" /><script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script><script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script><script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script>
+<link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" /><script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
+{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /> --}}
+{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /> --}}
+<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /> --}}
+<link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" />
+{{-- <script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script> --}}
+<script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script>
+<script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script>
+<script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
+<link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+<script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
+<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/hammer-DLEdXtvS.js') }}" />
+<link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" />
+<script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script>
+<script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script>
+<script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
+{{-- <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script> --}}
 <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
 <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" /><script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
-
 
 <script>
     Pusher.logToConsole = true;
@@ -145,29 +136,32 @@
         }
 
         // 2️⃣ Mark all as read click
-        document.querySelector('.dropdown-notifications-all').addEventListener('click', function () {
+        document.querySelector('.dropdown-notifications-all').addEventListener('click', function() {
             fetch("{{ route('notifications.markRead') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                },
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    badge.classList.add('d-none');
-                    badge2.classList.add('d-none');
-                    document.querySelectorAll('#notificationList .badge-dot').forEach(el => el.remove());
-                }
-            });
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        badge.classList.add('d-none');
+                        badge2.classList.add('d-none');
+                        document.querySelectorAll('#notificationList .badge-dot').forEach(el => el
+                            .remove());
+                    }
+                });
         });
 
         // 3️⃣ Pusher listener for new notifications
-        var pusher = new Pusher("6d2b8f974bbba728216c", { cluster: "ap1" });
+        var pusher = new Pusher("6d2b8f974bbba728216c", {
+            cluster: "ap1"
+        });
         var channel = pusher.subscribe('admin-notifications');
 
-        channel.bind('visitor-joined', function (data) {
+        channel.bind('visitor-joined', function(data) {
             Swal.fire({
                 icon: 'info',
                 title: 'New Visitor 🎉',
@@ -177,26 +171,27 @@
                 allowOutsideClick: false,
                 preConfirm: () => {
                     return fetch("{{ route('admin.chat.start') }}", {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            visitor_id: data.visitor.id,
-                            website_id: data.website.id
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                visitor_id: data.visitor.id,
+                                website_id: data.website.id
+                            })
                         })
-                    })
-                    .then(res => res.json())
-                    .then(resp => {
-                        window.location.href ="{{ route('admin.chat') }}" + "?chatId=" + resp.chat_id;
-                    })
-                    .catch(err => {
-                        Swal.showValidationMessage('Failed to start chat');
-                        console.error(err);
-                    });
+                        .then(res => res.json())
+                        .then(resp => {
+                            window.location.href = "{{ route('admin.chat') }}" +
+                                "?chatId=" + resp.chat_id;
+                        })
+                        .catch(err => {
+                            Swal.showValidationMessage('Failed to start chat');
+                            console.error(err);
+                        });
                 }
             });
 
@@ -216,52 +211,49 @@
 
 @yield('js')
 
+<script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize template customizer after DOM is loaded
+        if (window.TemplateCustomizer) {
+            try {
+                // Get the skin currently applied to the document
+                const appliedSkin = document.documentElement.getAttribute('data-skin') || "default";
 
+                window.templateCustomizer = new TemplateCustomizer({
+                    defaultTextDir: "ltr",
+                    defaultTheme: "light",
+                    defaultSkin: appliedSkin,
+                    defaultSemiDark: false,
+                    defaultShowDropdownOnHover: "1",
+                    displayCustomizer: "1",
+                    lang: 'en',
+                    'controls': ["color", "theme", "skins", "semiDark", "layoutCollapsed",
+                        "layoutNavbarOptions", "headerType", "contentLayout", "rtl"
+                    ],
+                });
 
-
-    <script type="module">
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize template customizer after DOM is loaded
-            if (window.TemplateCustomizer) {
-                try {
-                    // Get the skin currently applied to the document
-                    const appliedSkin = document.documentElement.getAttribute('data-skin') || "default";
-
-                    window.templateCustomizer = new TemplateCustomizer({
-                        defaultTextDir: "ltr",
-                        defaultTheme: "light",
-                        defaultSkin: appliedSkin,
-                        defaultSemiDark: false,
-                        defaultShowDropdownOnHover: "1",
-                        displayCustomizer: "1",
-                        lang: 'en',
-                        'controls': ["color", "theme", "skins", "semiDark", "layoutCollapsed",
-                            "layoutNavbarOptions", "headerType", "contentLayout", "rtl"
-                        ],
-                    });
-
-                    // Ensure color is applied on page load
-                } catch (error) {
-                    console.warn('Template customizer initialization error:', error);
-                }
+                // Ensure color is applied on page load
+            } catch (error) {
+                console.warn('Template customizer initialization error:', error);
             }
+        }
+    });
+</script>
+<script>
+    (function(w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start': new Date().getTime(),
+            event: 'gtm.js'
         });
-    </script>
-      <script>
-          (function(w, d, s, l, i) {
-              w[l] = w[l] || [];
-              w[l].push({
-                  'gtm.start': new Date().getTime(),
-                  event: 'gtm.js'
-              });
-              var f = d.getElementsByTagName(s)[0],
-                  j = d.createElement(s),
-                  dl = l != 'dataLayer' ? '&l=' + l : '';
-              j.async = true;
-              j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-              f.parentNode.insertBefore(j, f);
-          })(window, document, 'script', 'dataLayer', 'GTM-5DDHKGP');
-      </script>
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-5DDHKGP');
+</script>
 
 </body>
 

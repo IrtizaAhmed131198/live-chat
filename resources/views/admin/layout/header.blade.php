@@ -53,12 +53,19 @@
             </li>
             <!-- / Style Switcher-->
 
+            @php
+                $latestNotifications = auth()->user()
+                    ->unreadNotifications()
+                    ->latest()
+                    ->take(5)
+                    ->get();
+            @endphp
             <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"
                     data-bs-auto-close="outside" aria-expanded="false">
                     <span class="position-relative">
                         <i class="icon-base bx bx-bell icon-md"></i>
-                        <span id="notificationBadge" class="badge rounded-pill bg-danger badge-dot badge-notifications border">
+                        <span id="notificationBadge">
                             {{ auth()->user()->unreadNotifications->count() }}
                         </span>
                     </span>
@@ -70,25 +77,30 @@
                             <div class="d-flex align-items-center h6 mb-0">
                                 <span class="badge bg-label-primary me-2" id="notificationBadge2">{{ auth()->user()->unreadNotifications->count() }} New</span>
                                 <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
-                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read"><i
-                                        class="icon-base bx bx-envelope-open text-heading"></i></a>
+                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read">
+                                    <i class="icon-base bx bx-envelope-open text-heading"></i>
+                                </a>
                             </div>
                         </div>
                     </li>
                     <li class="dropdown-notifications-list scrollable-container">
                         <ul id="notificationList" class="list-group list-group-flush">
                             <!-- Notifications will be injected here -->
-                            @foreach(auth()->user()->unreadNotifications as $notification)
+                            @forelse($latestNotifications as $notification)
                                 <li class="list-group-item dropdown-notifications-item">
                                     <strong>{{ $notification->data['title'] }}</strong><br>
                                     <small>{{ $notification->data['message'] }}</small>
                                 </li>
-                            @endforeach
+                            @empty
+                                <li class="list-group-item text-center">
+                                    No new notifications
+                                </li>
+                            @endforelse
                         </ul>
                     </li>
                     <li class="border-top">
                         <div class="d-grid p-4">
-                            <a class="btn btn-primary btn-sm d-flex" href="javascript:void(0);">
+                            <a class="btn btn-primary btn-sm d-flex" href="{{ route('admin.notification') }}">
                                 <small class="align-middle">View all notifications</small>
                             </a>
                         </div>

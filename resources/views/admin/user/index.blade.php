@@ -1,4 +1,7 @@
 @extends('admin.layout.app')
+
+@section('title', 'Users Management')
+
 @section('content')
     <!-- Content wrapper -->
     <!-- Content -->

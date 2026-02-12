@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Message;
 use App\Models\Chat;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class AdminController extends Controller
 {
@@ -32,26 +33,70 @@ class AdminController extends Controller
         return view('admin.notification');
     }
 
-    // public function show($chatId, Request $request)
-    // {
-    //     $chat = Chat::findOrFail($chatId);
-    //     // Get all messages for this chat
-    //     $messages = Message::with('user')->where('chat_id', $chatId)
-    //         ->orderBy('id')
-    //         ->get();
+    public function getNotification()
+    {
+        $notifications = auth()->user()
+            ->notifications()
+            ->latest();
 
-    //     $visitorId = Chat::where('id', $chatId)->value('visitor_id');
+        return DataTables::of($notifications)
 
-    //     // Get the user who owns the chat (from the first message)
-    //     $user = User::where('visitor_id', $visitorId)->first();
+            ->addColumn('title', function ($row) {
+                return $row->data['title'] ?? '-';
+            })
 
-    //     Message::where('chat_id', $chat->id)
-    //         ->where('sender', $user->id)
-    //         ->where('is_read', 0)
-    //         ->update(['is_read' => 1]);
+            ->addColumn('message', function ($row) {
+                return $row->data['message'] ?? '-';
+            })
 
-    //     return view('admin.chat.messages', compact('messages', 'chatId', 'user'));
-    // }
+            ->addColumn('status', function ($row) {
+                if (is_null($row->read_at)) {
+                    return '<span class="badge bg-label-danger">Unread</span>';
+                }
+                return '<span class="badge bg-label-success">Read</span>';
+            })
+
+            ->addColumn('date', function ($row) {
+                return $row->created_at->diffForHumans();
+            })
+
+            ->addColumn('action', function ($row) {
+                return '
+                    <div class="dropdown">
+                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
+                            data-bs-toggle="dropdown">
+                            <i class="icon-base bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item mark-read" data-id="'.$row->id.'" href="javascript:void(0);">
+                                <i class="icon-base bx bx-check me-1"></i> Mark as Read
+                            </a>
+                            <a class="dropdown-item text-danger delete-noti" data-id="'.$row->id.'" href="javascript:void(0);">
+                                <i class="icon-base bx bx-trash me-1"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                ';
+            })
+
+            ->rawColumns(['status', 'action'])
+            ->make(true);
+    }
+
+    public function markAsRead(Request $request)
+    {
+        $notification = auth()->user()
+            ->notifications()
+            ->where('id', $request->id)
+            ->first();
+
+        if ($notification) {
+            $notification->markAsRead();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false]);
+    }
 
     public function show($chatId)
     {
