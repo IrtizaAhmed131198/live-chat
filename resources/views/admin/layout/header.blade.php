@@ -133,9 +133,9 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">
-                                        John Doe
+                                        {{ auth()->user()->name ?? 'Unknown Name' }}
                                     </h6>
-                                    <small class="text-body-secondary">Admin</small>
+                                    <small class="text-body-secondary">{{ auth()->user()->isRole() }}</small>
                                 </div>
                             </div>
                         </a>
