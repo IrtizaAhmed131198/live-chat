@@ -5,7 +5,7 @@
                 <i class="icon-base bx bx-menu icon-lg cursor-pointer d-lg-none d-block me-4"
                     data-bs-toggle="sidebar" data-overlay="" data-target="#app-chat-contacts"></i>
                 <div class="flex-shrink-0 avatar avatar-online">
-                    <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
+                    <img src="{{ $user->image ? asset($user->image) : asset('assets/images/default.png')  }}"
                         alt="Avatar" class="rounded-circle" data-bs-toggle="sidebar" data-overlay=""
                         data-target="#app-chat-sidebar-right">
                 </div>
@@ -22,7 +22,7 @@
                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="chat-header-actions">
                         <a class="dropdown-item" href="javascript:void(0);">View Contact</a>
                         <a class="dropdown-item" href="javascript:void(0);">Mute Notifications</a>
-                        <a class="dropdown-item" href="javascript:void(0);">Block Contact</a>
+                        <a class="dropdown-item close-chat-btn" href="javascript:void(0);" data-chat-id="{{ $user->get_chat->id }}">Close Chat</a>
                         <a class="dropdown-item" href="javascript:void(0);">Clear Chat</a>
                         <a class="dropdown-item" href="javascript:void(0);">Report</a>
                     </div>
@@ -45,44 +45,6 @@
             <li class="text-center text-muted py-3" id="no-message">
                 No messages yet
             </li>
-            {{-- @forelse($messages as $msg)
-                <li class="chat-message {{ $msg->user->role != 3 ? 'chat-message-right' : '' }}">
-                    <div class="d-flex overflow-hidden">
-
-                        @if($msg->user->role == 3)
-                            <div class="user-avatar flex-shrink-0 me-4">
-                                <div class="avatar avatar-sm">
-                                    <img src="{{ asset('assets/images/default.png') }}"
-                                        class="rounded-circle">
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="chat-message-wrapper flex-grow-1">
-                            <div class="chat-message-text">
-                                <p class="mb-0">{{ $msg->message }}</p>
-                            </div>
-                            <div class="text-body-secondary mt-1 {{ $msg->user->role != 3 ? 'text-end' : '' }}">
-                                <small>{{ $msg->created_at->format('h:i A') }}</small>
-                            </div>
-                        </div>
-
-                        @if($msg->user->role != 3)
-                            <div class="user-avatar flex-shrink-0 ms-4">
-                                <div class="avatar avatar-sm">
-                                    <img src="{{ asset('assets/images/default.png') }}"
-                                        class="rounded-circle">
-                                </div>
-                            </div>
-                        @endif
-
-                    </div>
-                </li>
-            @empty
-                <li class="text-center text-muted py-3" id="no-message">
-                    No messages yet
-                </li>
-            @endforelse --}}
         </ul>
         <div id="typing-indicator"
             style="font-size:12px;color:#888;padding:6px;display:none">

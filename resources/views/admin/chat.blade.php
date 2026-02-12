@@ -30,11 +30,11 @@
                     <div
                         class="chat-sidebar-left-user sidebar-header d-flex flex-column justify-content-center align-items-center flex-wrap px-6 pt-12">
                         <div class="avatar avatar-xl avatar-online chat-sidebar-avatar">
-                            <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
+                            <img src="{{ auth()->user()->image ? asset(auth()->user()->image) : asset('assets/images/default.png')  }}"
                                 alt="Avatar" class="rounded-circle">
                         </div>
-                        <h5 class="mt-4 mb-0">John Doe</h5>
-                        <span>Admin</span>
+                        <h5 class="mt-4 mb-0">{{ auth()->user()->name ?? 'Guest' }}</h5>
+                        <span>{{ auth()->user()->isRole() ?? 'Unknown Role' }}</span>
                         <i class="icon-base bx bx-x icon-lg cursor-pointer close-sidebar" data-bs-toggle="sidebar"
                             data-overlay="" data-target="#app-chat-sidebar-left"></i>
                     </div>
@@ -127,7 +127,7 @@
                             <div class="flex-shrink-0 avatar avatar-online me-4" data-bs-toggle="sidebar"
                                 data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-left">
                                 <img class="user-avatar rounded-circle cursor-pointer"
-                                    src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/1.png"
+                                    src="{{ auth()->user()->image ? asset(auth()->user()->image) : asset('assets/images/default.png')  }}"
                                     alt="Avatar">
                             </div>
                             <div class="flex-grow-1 input-group input-group-merge rounded-pill">
@@ -146,40 +146,61 @@
                             <li class="chat-contact-list-item chat-contact-list-item-title mt-0">
                                 <h5 class="text-primary mb-0">Chats</h5>
                             </li>
-                            @forelse ($user as $val)
+                            @forelse ($chats as $chat)
                                 @php
-                                    $count = App\Models\Message::where('chat_id', $val->get_chat->id)->where('is_read', false)->count();
-                                    $lastMessage = App\Models\Message::where('chat_id', $val->get_chat->id)->whereNotNull('sender')->latest('id')->value('message');
+                                    $count = $chat->messages()->where('is_read', false)->count();
+                                    $lastMessage = $chat->messages()
+                                        ->whereNotNull('sender')
+                                        ->latest()
+                                        ->value('message');
                                 @endphp
-                                <li class="chat-contact-list-item mb-1 {{ request('chatId') == $val->get_chat->id ? 'active' : '' }}">
-                                    <a class="d-flex align-items-center chat-user" href="{{ route('admin.chat.show', $val->id) }}" data-chat-id="{{ $val->get_chat->id }}"
-                                        data-user-id="{{ $val->id }}">
+
+                                <li class="chat-contact-list-item mb-1 {{ request('chatId') == $chat->id ? 'active' : '' }}">
+
+                                    <a class="d-flex align-items-center chat-user"
+                                    href="{{ route('admin.chat.show', $chat->id) }}"
+                                    data-chat-id="{{ $chat->id }}"
+                                    data-user-id="{{ $chat->visitor->id }}"
+                                    data-chat-status="{{ $chat->status }}">
+
                                         <div class="flex-shrink-0 avatar avatar-online">
-                                            <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/13.png"
-                                                alt="Avatar" class="rounded-circle">
+                                            <img src="{{ $chat->visitor->image ? asset($chat->visitor->image) : asset('assets/images/default.png')  }}"
+                                                alt="Avatar"
+                                                class="rounded-circle">
                                         </div>
+
                                         <div class="chat-contact-info flex-grow-1 ms-4">
+
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h6 class="chat-contact-name text-truncate m-0 fw-normal">
-                                                    {{ $val->name }}
+                                                    {{ $chat->visitor->name }}
                                                 </h6>
-                                                {{-- ✅ unread badge --}}
-                                                <span class="badge bg-danger ms-2 unread-badge" style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
+
+                                                <span class="badge bg-danger ms-2 unread-badge"
+                                                    style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
                                                     {{ $count }}
                                                 </span>
-                                                <small class="chat-contact-list-item-time">5 Minutes</small>
+
+                                                <small class="chat-contact-list-item-time">
+                                                    {{ optional($chat->updated_at)->diffForHumans() }}
+                                                </small>
                                             </div>
+
                                             <small class="chat-contact-status text-truncate last-message">
                                                 {{ $lastMessage ?? 'No messages yet' }}
                                             </small>
+
                                         </div>
                                     </a>
+
                                 </li>
+
                             @empty
                                 <li class="chat-contact-list-item chat-list-item-0">
                                     <h6 class="text-body-secondary mb-0">No Chats Found</h6>
                                 </li>
                             @endforelse
+
                         </ul>
                         <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
                             <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
@@ -452,10 +473,14 @@ function subscribeToChat(chatId) {
     chatChannel.bind('activity', data => {
         const ul = document.querySelector('.chat-history');
         ul.appendChild(renderSystemMessage(data.message));
-        setTimeout(() => {
-            const body = document.querySelector('.chat-history-body');
-            body.scrollTop = body.scrollHeight;
-        }, 0);
+
+        if (data.chat_status === 'closed') {
+            disableChatForm('Chat closed due to inactivity');
+
+            // 🔁 sidebar dataset update
+            const el = document.querySelector(`.chat-user[data-chat-id="${data.chat_id}"]`);
+            if (el) el.dataset.chatStatus = 'closed';
+        }
     });
 }
 
@@ -684,7 +709,7 @@ document.getElementById('load-more-btn')
 document.querySelectorAll('.chat-user').forEach(item => {
     item.addEventListener('click', function (e) {
         e.preventDefault();
-        openChat(this.dataset.chatId);
+        openChat(this.dataset.chatId, this.dataset.chatStatus);
     });
 });
 
@@ -764,60 +789,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-function openChat(chatId) {
+function openChat(chatId, chatStatus = 'open') {
+
     let getChat = "{{ route('admin.chat.show', ':id') }}".replace(':id', chatId);
 
     fetch(getChat)
         .then(res => res.text())
         .then(html => {
+
             const chatHistoryContainer = document.getElementById('app-chat-history');
             chatHistoryContainer.innerHTML = html;
             chatHistoryContainer.classList.remove('d-none');
             document.getElementById('app-chat-conversation')?.classList.add('d-none');
 
-            // Active user highlight
+            // Active highlight
             document.querySelectorAll('.chat-user').forEach(el => el.classList.remove('active'));
             document.querySelector(`.chat-user[data-chat-id="${chatId}"]`)?.classList.add('active');
 
             window.chatId = chatId;
 
-            // 🔹 RESET PAGINATION
+            // 🔹 RESET pagination
             offset = 0;
             allLoaded = false;
             loading = false;
 
-            // 🔹 Clear old messages
+            // 🔹 Clear messages
             const ul = document.querySelector('.chat-history-body .chat-history');
             ul.innerHTML = '';
 
-            // 🔹 Scroll listener
-            const chatBody = document.querySelector('.chat-history-body');
-            // remove old listener (clone trick)
-            const newChatBody = chatBody.cloneNode(true);
-            chatBody.parentNode.replaceChild(newChatBody, chatBody);
-
-            newChatBody.addEventListener('scroll', () => {
-                if (newChatBody.scrollTop === 0 && !loading && !allLoaded) {
-                    loadMessages(window.chatId, true);
-                }
-            });
-
-            // 🔹 First load
+            // 🔹 Load messages
             loadMessages(chatId);
 
-            // 🔹 Subscribe Pusher
+            // 🔹 Subscribe pusher
             subscribeToChat(chatId);
 
             // 🔹 Mark read
             markMessagesRead(chatId);
 
-            const badge = getUnreadBadge(chatId);
-            if (badge) {
-                badge.innerText = 0;
-                badge.style.display = 'none';
+            // 🔴 IMPORTANT: disable input if chat closed
+            if (chatStatus === 'closed') {
+                disableChatForm('Chat closed');
+            } else {
+                enableChatForm();
             }
         });
 }
+
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -829,6 +846,67 @@ function escapeHtml(str) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+function disableChatForm(reason = 'Chat closed') {
+    const form = document.querySelector('.form-send-message');
+    if (!form) return;
+
+    const input = form.querySelector('.message-input');
+    const sendBtn = form.querySelector('.send-msg-btn');
+    const emojiBtn = form.querySelector('.emoji-btn');
+
+    input.disabled = true;
+    input.placeholder = reason;
+
+    sendBtn.disabled = true;
+    emojiBtn.style.pointerEvents = 'none';
+    emojiBtn.style.opacity = '0.5';
+}
+
+function enableChatForm() {
+    const form = document.querySelector('.form-send-message');
+    if (!form) return;
+
+    const input = form.querySelector('.message-input');
+    const sendBtn = form.querySelector('.send-msg-btn');
+    const emojiBtn = form.querySelector('.emoji-btn');
+
+    input.disabled = false;
+    input.placeholder = 'Type your message here...';
+
+    sendBtn.disabled = false;
+    emojiBtn.style.pointerEvents = 'auto';
+    emojiBtn.style.opacity = '1';
+}
+
+document.addEventListener('click', function (e) {
+
+    const btn = e.target.closest('.close-chat-btn');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const chatId = btn.dataset.chatId;
+
+    if (!chatId) return;
+
+    if (!confirm('Close this chat?')) return;
+
+    fetch("{{ route('admin.chat.close') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ chat_id: chatId })
+    })
+    .then(res => res.json())
+    .then(() => {
+        // optional UX
+        disableChatForm('Chat closed');
+    });
+});
+
 
 </script>
 @endsection

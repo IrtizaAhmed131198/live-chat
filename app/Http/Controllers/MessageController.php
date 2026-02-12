@@ -91,4 +91,36 @@ class MessageController extends Controller
 
         return response()->json(['status' => true]);
     }
+
+     public function closeChat(Request $request)
+     {
+         $chat = Chat::find($request->chat_id);
+         if (!$chat) {
+             return response()->json(['error' => 'Chat not found'], 404);
+         }
+
+         $chat->update([
+             'status' => 'closed',
+             'closed_at' => now()
+         ]);
+
+         Message::create([
+             'chat_id' => $chat->id,
+             'sender' => null,
+             'message' => 'Chat closed by agent',
+             'is_read' => true
+         ]);
+
+         emit_pusher_notification(
+             'chat.' . $chat->id,
+             'activity',
+             [
+                 'message' => "Chat closed by agent",
+                 'chat_status' => 'closed',
+                 'chat_id' => $chat->id,
+             ]
+         );
+
+         return response()->json(['status' => true]);
+     }
 }

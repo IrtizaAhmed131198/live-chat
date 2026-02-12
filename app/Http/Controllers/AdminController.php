@@ -18,11 +18,14 @@ class AdminController extends Controller
     public function chat($chatId = null)
     {
         $user = User::with('get_chat')->where('role', 3)->get();
+        $chats = Chat::with('visitor')->where('status', 'open')
+            ->latest() // latest chat on top
+            ->get();
 
         $messages = collect();
         $chatId = null;
 
-        return view('admin.chat', compact('user', 'messages', 'chatId'));
+        return view('admin.chat', compact('user', 'messages', 'chatId', 'chats'));
     }
     public function notification()
     {
@@ -52,11 +55,11 @@ class AdminController extends Controller
 
     public function show($chatId)
     {
-        $chat = Chat::findOrFail($chatId);
+        $chat = Chat::with('visitor')->findOrFail($chatId);
         $visitorId = Chat::where('id', $chatId)->value('visitor_id');
-        $user = User::where('visitor_id', $visitorId)->first();
+        $user = User::with('get_chat')->where('visitor_id', $visitorId)->first();
 
-        return view('admin.chat.messages', compact('chatId', 'user'));
+        return view('admin.chat.messages', compact('chatId', 'user', 'chat'));
     }
 
     public function messages(Request $request, $chatId)

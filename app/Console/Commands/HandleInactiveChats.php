@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Chat;
 use App\Models\Message;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Pusher\Pusher;
 
 class HandleInactiveChats extends Command
 {
@@ -13,7 +16,7 @@ class HandleInactiveChats extends Command
      *
      * @var string
      */
-    protected $signature = 'app:handle-inactive-chats';
+    protected $signature = 'chat:handle-inactive';
 
     /**
      * The console command description.
@@ -27,17 +30,24 @@ class HandleInactiveChats extends Command
      */
     public function handle()
     {
+        // Log::info('chat:handle-inactive command started');
         $now = now();
 
         $chats = Chat::where('status', 'open')->get();
 
         foreach ($chats as $chat) {
-            $inactiveMinutes = $chat->last_activity_at
-                ? $chat->last_activity_at->diffInMinutes($now)
+
+            // Log::info("Checking chat ID: {$chat->id}");
+
+            $inactiveMinutes = $chat->last_visitor_activity_at
+                ? Carbon::parse($chat->last_visitor_activity_at)->diffInMinutes($now)
                 : 999;
+
+            // Log::info("Chat {$chat->id} inactive minutes: {$inactiveMinutes}");
 
             // 🟡 2–5 min → agent warning
             if ($inactiveMinutes >= 2 && $inactiveMinutes < 5 && !$chat->agent_warned) {
+
                 Message::create([
                     'chat_id' => $chat->id,
                     'sender' => null,
@@ -50,6 +60,7 @@ class HandleInactiveChats extends Command
 
             // 🟠 10–15 min → system message
             if ($inactiveMinutes >= 10 && $inactiveMinutes < 15 && !$chat->system_notified) {
+
                 Message::create([
                     'chat_id' => $chat->id,
                     'sender' => null,
@@ -60,8 +71,9 @@ class HandleInactiveChats extends Command
                 $chat->update(['system_notified' => true]);
             }
 
-            // 🔴 20–30 min → auto close
-            if ($inactiveMinutes >= 20) {
+            // 🔴 20+ min → auto close
+            if ($inactiveMinutes >= 20 && $chat->status === 'open') {
+
                 Message::create([
                     'chat_id' => $chat->id,
                     'sender' => null,
@@ -73,6 +85,16 @@ class HandleInactiveChats extends Command
                     'status' => 'closed',
                     'closed_at' => now()
                 ]);
+
+                emit_pusher_notification(
+                    'chat.' . $chat->id,
+                    'activity',
+                    [
+                        'message' => "❌ Chat closed due to inactivity",
+                        'chat_status' => 'closed',
+                        'chat_id' => $chat->id,
+                    ]
+                );
             }
         }
     }

@@ -71,4 +71,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Chat::class, 'agent_id', 'id');
     }
+
+    public function isRole()
+    {
+        $role = $this->role;
+        if ($role == 1) {
+            return 'Admin';
+        } elseif ($role == 2) {
+            return 'Agent';
+        } else {
+            return 'Visitor';
+        }
+    }
 }

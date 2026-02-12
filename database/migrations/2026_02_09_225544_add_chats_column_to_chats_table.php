@@ -15,8 +15,9 @@ return new class extends Migration
             $table->after('status', function ($table) {
                 $table->timestamp('last_visitor_activity_at')->nullable();
                 $table->timestamp('last_agent_activity_at')->nullable();
-                $table->timestamp('inactive_warning_sent_at')->nullable();
-                $table->timestamp('auto_close_sent_at')->nullable();
+                $table->timestamp('warned_at')->nullable();
+                $table->timestamp('system_message_at')->nullable();
+                $table->timestamp('closed_at')->nullable();
                 $table->string('closed_reason')->nullable();
             });
         });

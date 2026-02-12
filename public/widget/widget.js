@@ -1,4 +1,14 @@
 (function () {
+    function throttle(fn, delay) {
+        let lastCall = 0;
+        return function (...args) {
+            const now = Date.now();
+            if (now - lastCall >= delay) {
+                lastCall = now;
+                fn.apply(this, args);
+            }
+        };
+    }
     /* ================= SAFE DOM READY ================= */
     function onDOMReady(cb) {
         if (document.readyState === 'loading') {
@@ -375,7 +385,7 @@
                     session_id: SESSION_ID,
                     chat_id: window.CHAT_ID
                 })
-            });
+            })
 
             input.value = '';
         }
@@ -539,6 +549,7 @@
 
 
         function sendHeartbeat() {
+            console.log('Sending heartbeat');
             fetch('http://localhost/live-chat/public/api/visitor-heartbeat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

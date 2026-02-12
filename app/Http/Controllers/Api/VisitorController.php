@@ -94,16 +94,29 @@ class VisitorController extends Controller
             ->with('user')
             ->first();
 
-        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
-        $chat->last_visitor_activity_at = now();
-        $chat->save();
-
         if (!$visitor) {
             return response()->json([
                 'status' => false,
                 'message' => 'Visitor not found'
             ], 404);
         }
+
+        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->latest()->first();
+
+        if (!$chat || $chat->status === 'closed') {
+            $chat = Chat::create([
+                'visitor_id' => $visitor->id,
+                'website_id' => $visitor->website_id,
+                'agent_id' => $chat->agent_id ?? 1,
+                'status' => 'open',
+                'last_visitor_activity_at' => now()
+            ]);
+        } else {
+            $chat->update([
+                'last_visitor_activity_at' => now()
+            ]);
+        }
+
 
         $roleId = optional($visitor->user)->role;
         $userId = optional($visitor->user)->id;
@@ -132,6 +145,7 @@ class VisitorController extends Controller
 
         return response()->json([
             'status' => true,
+            'chat_id' => $chat->id,
             'message' => 'Message sent successfully',
         ], 200);
     }
@@ -238,13 +252,18 @@ class VisitorController extends Controller
             ->with('user')
             ->first();
 
-        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->first();
+        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)
+            ->where('status', 'open')
+            ->first();
 
-        emit_pusher_notification(
-            'chat.' . $chat->id,
-            'typing',
-            ['role' => 3]
-        );
+        if($chat){
+            emit_pusher_notification(
+                'chat.' . $chat->id,
+                'typing',
+                ['role' => 3]
+            );
+        }
+
 
         return response()->json(['status' => true]);
     }
@@ -254,11 +273,13 @@ class VisitorController extends Controller
         $visitor = Visitor::where('session_id', $request->session_id)->first();
         if (!$visitor) return response()->json();
 
-        $chat = Chat::where('visitor_id', $visitor->id)->first();
-        if (!$chat) return response()->json();
+        $chat = Chat::where('visitor_id', $visitor->id)
+            ->where('status', 'open')
+            ->first();
+        if (!$chat) return response()->json(['status' => false]);
 
         Message::where('chat_id', $chat->id)
-            ->where('sender', $chat->agent_id) // ✅ ONLY admin messages
+            ->where('sender', $chat->agent_id)
             ->update(['is_read' => true]);
 
         return response()->json(['status' => true]);
@@ -269,12 +290,14 @@ class VisitorController extends Controller
         $visitor = Visitor::where('session_id', $request->session_id)->first();
         if (!$visitor) return response()->json();
 
-        $chat = Chat::where('visitor_id', $visitor->id)->first();
-        if (!$chat) return response()->json();
+        $chat = Chat::where('visitor_id', $visitor->id)
+            ->where('status', 'open')
+            ->first();
+        if (!$chat) return response()->json(['status' => false]);
 
         $msg = Message::create([
             'chat_id' => $chat->id,
-            'sender'  => null, // 👈 SYSTEM MESSAGE
+            'sender'  => null,
             'message' => $request->message,
             'is_read' => true
         ]);
@@ -305,7 +328,7 @@ class VisitorController extends Controller
         $visitor->last_url = $request->url;
         $visitor->save();
 
-        $chat = Chat::where('visitor_id', $visitor->id)->first();
+        $chat = Chat::where('visitor_id', $visitor->id)->where('status', 'open')->first();
         if ($chat) {
             $msg = Message::create([
                 'chat_id' => $chat->id,
@@ -328,7 +351,7 @@ class VisitorController extends Controller
         return response()->json(['status' => true]);
     }
 
-    public function heartbeat(Request $request)
+    public function visitorHeartbeat(Request $request)
     {
         $visitor = Visitor::where('session_id', $request->session_id)->first();
         if (!$visitor) return response()->json();

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('visitors', function (Blueprint $table) {
-            $table->text('last_url')->nullable()->after('session_id');
-            $table->timestamp('last_seen_at')->nullable()->after('last_url');
+        Schema::table('chats', function (Blueprint $table) {
+            $table->boolean('agent_warned')->default(false);
+            $table->boolean('system_notified')->default(false);
         });
     }
 
@@ -22,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('visitors', function (Blueprint $table) {
-            $table->dropColumn(['last_url', 'last_seen_at']);
+        Schema::table('chats', function (Blueprint $table) {
+            $table->dropColumn(['agent_warned', 'system_notified']);
         });
     }
 };
