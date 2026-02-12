@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('admin/users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('admin/users/{id}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('admin/users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
 
     Route::get('admin/notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::get('admin/notification/data', [AdminController::class, 'getNotification'])->name('admin.notification.data');

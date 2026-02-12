@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+
 
 class UserController extends Controller
 {
@@ -13,6 +15,18 @@ class UserController extends Controller
     {
         $users = User::all();
         return view('admin.user.index', compact('users'));
+    }
+    public function getUsers()
+    {
+        $users = User::select(['id', 'name', 'email', 'phone', 'address']);
+
+        return DataTables::of($users)
+            ->addIndexColumn()
+            ->addColumn('actions', function ($user) {
+                return view('admin.user.partials.actions', compact('user'))->render();
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
     public function create()
     {
@@ -37,9 +51,9 @@ class UserController extends Controller
             $file->move(public_path('upload/profile_image'), $filename);
             $validated['image'] = 'upload/profile_image/' . $filename;
         }
-        
+
         $validated['password'] = bcrypt($validated['password']);
-        
+
         User::create($validated);
         // dd($validated);
         return redirect()->route('admin.users')->with('success', 'User created successfully!');

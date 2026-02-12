@@ -8,6 +8,16 @@
                 <h5 class="mb-0">Edit User</h5>
             </div>
             <div class="card-body">
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <form method="POST" action="{{ route('admin.users.update', $user->id) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
@@ -88,15 +98,6 @@
                         </div>
                     </div>
                 </form>
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
             </div>
         </div>
     </div>
