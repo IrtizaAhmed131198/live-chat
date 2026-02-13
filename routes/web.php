@@ -38,13 +38,13 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::get('admin/users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
 
 
-    Route::get('admin/brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
-    Route::get('admin/brand', [BrandController::class, 'index'])->name('admin.brand');
-    Route::get('admin/brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
-    Route::post('admin/brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
-    Route::get('admin/brand/edit/{brand}', [BrandController::class, 'edit'])->name('admin.brand.edit');
-    Route::put('admin/brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
-    Route::delete('admin/brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
+    Route::get('brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
+    Route::get('brand', [BrandController::class, 'index'])->name('admin.brand');
+    Route::get('brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
+    Route::post('brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
+    Route::get('brand/edit/{brand}', [BrandController::class, 'edit'])->name('admin.brand.edit');
+    Route::put('brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
+    Route::delete('brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
 });
 
 Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
