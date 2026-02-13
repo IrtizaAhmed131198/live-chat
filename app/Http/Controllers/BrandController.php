@@ -10,53 +10,28 @@ use Illuminate\Support\Facades\DB;
 
 class BrandController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->ajax()) {
-            $brands = Brand::with('user')->select('brands.*');
-            return DataTables::of($brands)
-                ->addColumn('user', fn($row) => $row->user->name ?? '')
-                ->addColumn('actions', function ($row) {
-                    $edit = route('admin.brand.edit', $row->id);
-                    $delete = route('admin.brand.destroy', $row->id);
-                    return '
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end m-0">
-                            <a class="dropdown-item" href="' . $edit . '"><i class="bx bx-edit me-2"></i>Edit</a>
-                            <form action="' . $delete . '" method="POST" style="display:inline;">
-                                ' . csrf_field() . method_field('DELETE') . '
-                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm(\'Are you sure?\')">
-                                    <i class="bx bx-trash me-2"></i>Delete
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                ';
-                })
-                ->rawColumns(['actions'])
-                ->make(true);
-        }
-
-        // Pass brands to Blade view
         $brand = DB::table('brand')->get();
+        foreach ($brand as $item) {
+            $item->logo = asset($item->logo);
+        }
         return view('admin.brand.index', compact('brand'));
     }
 
-    // public function getUsers()
-    // {
-    //     $users = User::select(['id', 'name', 'email', 'phone', 'address']);
+    public function getdata() // Changed from getUsers() to getdata()
+    {
+        $brand = Brand::select(['id', 'logo', 'name', 'email', 'phone']);
 
-    //     return DataTables::of($users)
-    //         ->addIndexColumn()
-    //         ->addColumn('actions', function ($user) {
-    //             return view('admin.user.partials.actions', compact('user'))->render();
-    //         })
-    //         ->rawColumns(['actions'])
-    //         ->make(true);
-    // }
+        return DataTables::of($brand)
+            ->addIndexColumn()
+            ->addColumn('actions', function ($brand) {
+                return view('admin.brand.partials.actions', compact('brand'))->render();
+            })
+            ->rawColumns(['actions', 'logo'])
+            ->make(true);
+    }
+
     public function create()
     {
         $users = User::where('role', 2)->get(); // Only role=2 users

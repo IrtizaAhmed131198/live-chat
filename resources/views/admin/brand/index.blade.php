@@ -30,7 +30,9 @@
                         @forelse($brand as $index => $brand)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td><img height="100px" src="{{ asset($brand->logo) }}" alt=""></td>
+                                <td>
+                                    <img height="100px" src="{{ asset($brand->logo) }}" alt="">
+                                </td>
                                 <td>
                                     <strong>{{ $brand->name }}</strong>
                                 </td>
@@ -83,21 +85,32 @@
 @section('js')
     <script>
         $(function() {
-            $('#brands-table').DataTable({
+            $('#users-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('admin.brand') }}",
+                ajax: "{{ route('admin.brand.getdata') }}",
                 columns: [{
                         data: 'id',
                         name: 'id'
+                    },
+                    {
+                        data: 'logo', // Added comma here
+                        name: 'logo',
+                        render: function(data) {
+                            return '<img height="100px" src="{{ asset('') }}' + data + '" alt="">';
+                        }
                     },
                     {
                         data: 'name',
                         name: 'name'
                     },
                     {
-                        data: 'user',
-                        name: 'user'
+                        data: 'email',
+                        name: 'email'
+                    },
+                    {
+                        data: 'phone',
+                        name: 'phone'
                     },
                     {
                         data: 'actions',

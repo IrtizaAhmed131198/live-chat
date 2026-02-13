@@ -38,6 +38,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::get('admin/users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
 
 
+    Route::get('admin/brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
     Route::get('admin/brand', [BrandController::class, 'index'])->name('admin.brand');
     Route::get('admin/brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
     Route::post('admin/brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
