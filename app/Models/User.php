@@ -83,4 +83,9 @@ class User extends Authenticatable
             return 'Visitor';
         }
     }
+
+    public function brands()
+    {
+        return $this->hasMany(Brand::class, 'user_id');
+    }
 }

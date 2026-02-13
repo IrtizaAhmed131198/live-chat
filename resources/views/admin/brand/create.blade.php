@@ -63,7 +63,6 @@
                     <div class="mb-3">
                         <label for="logo" class="form-label">Brand Logo</label>
                         <input type="file" class="form-control" id="logo" name="logo">
-                        <!-- name="logo" karo -->
                     </div>
 
                     <div class="mb-3">

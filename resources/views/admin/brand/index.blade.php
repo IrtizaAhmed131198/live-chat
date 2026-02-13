@@ -31,6 +31,7 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
+                                    {{-- @dd($brand->logo) --}}
                                     <img height="100px" src="{{ asset($brand->logo) }}" alt="">
                                 </td>
                                 <td>

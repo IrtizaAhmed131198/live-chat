@@ -7,12 +7,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class BrandController extends Controller
 {
     public function index()
     {
-        $brand = DB::table('brand')->get();
+        $brand = Brand::with('user')->get();
         foreach ($brand as $item) {
             $item->logo = asset($item->logo);
         }
@@ -21,7 +22,7 @@ class BrandController extends Controller
 
     public function getdata() // Changed from getUsers() to getdata()
     {
-        $brand = Brand::select(['id', 'logo', 'name', 'email', 'phone']);
+        $brand =  Brand::with('user')->select(['id', 'logo', 'name', 'email', 'phone']);
 
         return DataTables::of($brand)
             ->addIndexColumn()
@@ -34,7 +35,7 @@ class BrandController extends Controller
 
     public function create()
     {
-        $users = User::where('role', 2)->get(); // Only role=2 users
+        $users = User::where('role', 2)->get();
         return view('admin.brand.create', compact('users'));
     }
 
@@ -52,12 +53,26 @@ class BrandController extends Controller
         ]);
 
         $validated['url'] = $request->url;
+        $validated['user_id'] = Auth::id();
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = time() . '_' . $file->getClientOriginalName();
+
+            // Generate unique filename
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Move file to public/upload/logo directory
             $file->move(public_path('upload/logo'), $filename);
+
+            // Save path in database
             $validated['logo'] = 'upload/logo/' . $filename;
+
+            // Debug - check if file moved
+            if (file_exists(public_path('upload/logo/' . $filename))) {
+                \Log::info('Logo uploaded successfully: ' . $filename);
+            } else {
+                \Log::error('Logo upload failed');
+            }
         }
 
         Brand::create($validated);

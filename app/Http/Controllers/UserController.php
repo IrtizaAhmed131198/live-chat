@@ -45,6 +45,8 @@ class UserController extends Controller
             'role' => 'required|string',
         ]);
 
+        $validated['visitor_id'] = 2;
+
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
@@ -79,6 +81,8 @@ class UserController extends Controller
         ]);
 
         // Image upload
+        $validated['visitor_id'] = 2;
+
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = time() . '_' . $file->getClientOriginalName();
