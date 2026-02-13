@@ -7,6 +7,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BrandController;
 
 
 Route::get('/', function () {
@@ -36,6 +37,13 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::delete('users/{id}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('admin/users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
 
+
+    Route::get('admin/brand', [BrandController::class, 'index'])->name('admin.brand');
+    Route::get('admin/brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
+    Route::post('admin/brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
+    Route::get('admin/brand/edit/{brand}', [BrandController::class, 'edit'])->name('admin.brand.edit');
+    Route::put('admin/brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
+    Route::delete('admin/brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
 });
 
 Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
@@ -54,7 +62,6 @@ Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
     Route::get('notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::get('notification/data', [AdminController::class, 'getNotification'])->name('admin.notification.data');
     Route::post('notifications/mark-as-read', [AdminController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
-
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -62,7 +69,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/profile', [ProfileController::class, 'profile'])->name('admin.profile.index');
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-
 });
 
 
