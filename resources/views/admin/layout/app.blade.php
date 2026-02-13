@@ -11,7 +11,8 @@
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
     <title>
-        Dashboard | {{ ($title = trim($__env->yieldContent('title'))) ? $title . ' - ' : '' }}{{ config('app.name', 'Live Chat') }}
+        Dashboard |
+        {{ ($title = trim($__env->yieldContent('title'))) ? $title . ' - ' : '' }}{{ config('app.name', 'Live Chat') }}
     </title>
     <!-- Canonical SEO -->
     <link rel="canonical" href="{{ url()->current() }}" />
@@ -61,199 +62,206 @@
     <!-- Page Styles -->
 
     <link rel="preload" as="style" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
-    <link rel="modulepreload" href="{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" /><link rel="stylesheet" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/template-customizer-CZZ3zmqW.js') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/template-customizer-CvTzP1B2.css') }}" />
     <!-- app CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" class="" />
     <!-- END: app CSS-->
+    <!-- In your <head> section -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <!-- Before closing </body> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-@yield('css')
+    @yield('css')
 </head>
 
 <body>
 
-<div class="layout-wrapper layout-content-navbar">
-   <div class="layout-container">
-      @include('admin.layout.sidebar')
-      <div class="layout-page">
-         @include('admin.layout.header')
-         <div class="content-wrapper">
-            @yield('content')
-            @include('admin.layout.footer')
-         </div>
-      </div>
-   </div>
-</div>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            @include('admin.layout.sidebar')
+            <div class="layout-page">
+                @include('admin.layout.header')
+                <div class="content-wrapper">
+                    @yield('content')
+                    @include('admin.layout.footer')
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-<link rel="modulepreload"
-    href="{{ asset('assets/js/helpers-0nSKkh37.js') }}" />
-<script type="module" src="{{ asset('assets/js/helpers-0nSKkh37.js') }}"></script>
-  <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-<link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" /><script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
-{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /> --}}
-{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /> --}}
-<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
-{{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /> --}}
-<link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" />
-{{-- <script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script> --}}
-<script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script>
-<script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script>
-<script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
-<script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
-<link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/hammer-DLEdXtvS.js') }}" />
-<link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" />
-<script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script>
-<script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script>
-<script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
-{{-- <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script> --}}
-<link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" /><script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
+    <link rel="modulepreload" href="{{ asset('assets/js/helpers-0nSKkh37.js') }}" />
+    <script type="module" src="{{ asset('assets/js/helpers-0nSKkh37.js') }}"></script>
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <link rel="modulepreload" href="{{ asset('assets/js/config-BoP0Nie5.js') }}" />
+    <script type="module" src="{{ asset('assets/js/config-BoP0Nie5.js') }}"></script>
+    {{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-Bou6iJJX.js') }}" /> --}}
+    {{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-NjmgXMI-.js') }}" /> --}}
+    <link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+    {{-- <link rel="modulepreload" href="{{ asset('assets/js/jquery-BQXThELV.js') }}" /> --}}
+    <link rel="modulepreload" href="{{ asset('assets/js/popper-MwzM93Hw.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}" />
+    {{-- <script type="module" src="{{ asset('assets/js/jquery-Bou6iJJX.js') }}"></script> --}}
+    <script type="module" src="{{ asset('assets/js/popper-MwzM93Hw.js') }}"></script>
+    <script type="module" src="{{ asset('assets/js/bootstrap-D6PdghTj.js') }}"></script>
+    <script type="module" src="{{ asset('assets/js/autocomplete-js-BLyOkDc2.js') }}"></script>
+    <link rel="modulepreload" href="{{ asset('assets/js/pickr-71-TLRtn.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+    <script type="module" src="{{ asset('assets/js/pickr-71-TLRtn.js') }}"></script>
+    <link rel="modulepreload" href="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/_commonjsHelpers-D6-XlEtG.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/hammer-DLEdXtvS.js') }}" />
+    <link rel="modulepreload" href="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}" />
+    <script type="module" src="{{ asset('assets/js/perfect-scrollbar-D2XDwrzR.js') }}"></script>
+    <script type="module" src="{{ asset('assets/js/hammer-DLEdXtvS.js') }}"></script>
+    <script type="module" src="{{ asset('assets/js/menu-Cc3Gq5JA.js') }}"></script>
+    {{-- <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script> --}}
+    <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" />
+    <script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
 
-<link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" /><script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" />
+    <script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 
-<script>
-    Pusher.logToConsole = true;
-    document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        Pusher.logToConsole = true;
+        document.addEventListener('DOMContentLoaded', function() {
 
-        // 1️⃣ Hide badge if no unread notifications
-        const badge = document.getElementById('notificationBadge');
-        const badge2 = document.getElementById('notificationBadge2');
-        if (parseInt(badge.innerText) === 0) {
-            badge.classList.add('d-none');
-            badge2.classList.add('d-none');
-        }
+            // 1️⃣ Hide badge if no unread notifications
+            const badge = document.getElementById('notificationBadge');
+            const badge2 = document.getElementById('notificationBadge2');
+            if (parseInt(badge.innerText) === 0) {
+                badge.classList.add('d-none');
+                badge2.classList.add('d-none');
+            }
 
-        // 2️⃣ Mark all as read click
-        document.querySelector('.dropdown-notifications-all').addEventListener('click', function() {
-            fetch("{{ route('notifications.markRead') }}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                    },
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        badge.classList.add('d-none');
-                        badge2.classList.add('d-none');
-                        document.querySelectorAll('#notificationList .badge-dot').forEach(el => el
-                            .remove());
-                    }
-                });
-        });
-
-        // 3️⃣ Pusher listener for new notifications
-        var pusher = new Pusher("6d2b8f974bbba728216c", {
-            cluster: "ap1"
-        });
-        var channel = pusher.subscribe('admin-notifications');
-
-        channel.bind('visitor-joined', function(data) {
-            Swal.fire({
-                icon: 'info',
-                title: 'New Visitor 🎉',
-                html: `<p>${data.website.domain} just visited.</p>`,
-                showConfirmButton: true,
-                confirmButtonText: 'Start Chat',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    return fetch("{{ route('admin.chat.start') }}", {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                visitor_id: data.visitor.id,
-                                website_id: data.website.id
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(resp => {
-                            window.location.href = "{{ route('admin.chat') }}" +
-                                "?chatId=" + resp.chat_id;
-                        })
-                        .catch(err => {
-                            Swal.showValidationMessage('Failed to start chat');
-                            console.error(err);
-                        });
-                }
+            // 2️⃣ Mark all as read click
+            document.querySelector('.dropdown-notifications-all').addEventListener('click', function() {
+                fetch("{{ route('notifications.markRead') }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            badge.classList.add('d-none');
+                            badge2.classList.add('d-none');
+                            document.querySelectorAll('#notificationList .badge-dot').forEach(el => el
+                                .remove());
+                        }
+                    });
             });
 
-            // Append to dropdown notification
-            const html = `
+            // 3️⃣ Pusher listener for new notifications
+            var pusher = new Pusher("6d2b8f974bbba728216c", {
+                cluster: "ap1"
+            });
+            var channel = pusher.subscribe('admin-notifications');
+
+            channel.bind('visitor-joined', function(data) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'New Visitor 🎉',
+                    html: `<p>${data.website.domain} just visited.</p>`,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Start Chat',
+                    allowOutsideClick: false,
+                    preConfirm: () => {
+                        return fetch("{{ route('admin.chat.start') }}", {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    visitor_id: data.visitor.id,
+                                    website_id: data.website.id
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(resp => {
+                                window.location.href = "{{ route('admin.chat') }}" +
+                                    "?chatId=" + resp.chat_id;
+                            })
+                            .catch(err => {
+                                Swal.showValidationMessage('Failed to start chat');
+                                console.error(err);
+                            });
+                    }
+                });
+
+                // Append to dropdown notification
+                const html = `
                 <li class="list-group-item dropdown-notifications-item">
                     <strong>New Visitor</strong><br>
                     <small>${data.website.domain}</small>
                     <span class="badge badge-dot"></span>
                 </li>
             `;
-            document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
-            document.getElementById('notificationBadge').classList.remove('d-none');
+                document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
+                document.getElementById('notificationBadge').classList.remove('d-none');
+            });
         });
-    });
-</script>
+    </script>
 
-@yield('js')
+    @yield('js')
 
-<script type="module">
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize template customizer after DOM is loaded
-        if (window.TemplateCustomizer) {
-            try {
-                // Get the skin currently applied to the document
-                const appliedSkin = document.documentElement.getAttribute('data-skin') || "default";
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize template customizer after DOM is loaded
+            if (window.TemplateCustomizer) {
+                try {
+                    // Get the skin currently applied to the document
+                    const appliedSkin = document.documentElement.getAttribute('data-skin') || "default";
 
-                window.templateCustomizer = new TemplateCustomizer({
-                    defaultTextDir: "ltr",
-                    defaultTheme: "light",
-                    defaultSkin: appliedSkin,
-                    defaultSemiDark: false,
-                    defaultShowDropdownOnHover: "1",
-                    displayCustomizer: "1",
-                    lang: 'en',
-                    'controls': ["color", "theme", "skins", "semiDark", "layoutCollapsed",
-                        "layoutNavbarOptions", "headerType", "contentLayout", "rtl"
-                    ],
-                });
+                    window.templateCustomizer = new TemplateCustomizer({
+                        defaultTextDir: "ltr",
+                        defaultTheme: "light",
+                        defaultSkin: appliedSkin,
+                        defaultSemiDark: false,
+                        defaultShowDropdownOnHover: "1",
+                        displayCustomizer: "1",
+                        lang: 'en',
+                        'controls': ["color", "theme", "skins", "semiDark", "layoutCollapsed",
+                            "layoutNavbarOptions", "headerType", "contentLayout", "rtl"
+                        ],
+                    });
 
-                // Ensure color is applied on page load
-            } catch (error) {
-                console.warn('Template customizer initialization error:', error);
+                    // Ensure color is applied on page load
+                } catch (error) {
+                    console.warn('Template customizer initialization error:', error);
+                }
             }
-        }
-    });
-</script>
-<script>
-    (function(w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({
-            'gtm.start': new Date().getTime(),
-            event: 'gtm.js'
         });
-        var f = d.getElementsByTagName(s)[0],
-            j = d.createElement(s),
-            dl = l != 'dataLayer' ? '&l=' + l : '';
-        j.async = true;
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-        f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', 'GTM-5DDHKGP');
-</script>
+    </script>
+    <script>
+        (function(w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({
+                'gtm.start': new Date().getTime(),
+                event: 'gtm.js'
+            });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-5DDHKGP');
+    </script>
 
 </body>
 

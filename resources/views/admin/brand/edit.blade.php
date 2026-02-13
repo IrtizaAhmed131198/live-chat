@@ -3,6 +3,31 @@
 @section('title', 'Edit Brand')
 
 @section('content')
+    <style>
+        select[multiple] {
+            background-image: none !important;
+        }
+
+        select[multiple] option {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        select[multiple] option:hover {
+            background-color: #e9ecef !important;
+        }
+
+        select[multiple] option:checked {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+
+        select[multiple] option:checked:hover {
+            background-color: #0b5ed7 !important;
+        }
+    </style>
+
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card">
             <div class="card-header">
@@ -23,21 +48,31 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="user_id" class="form-label">Select User</label>
-                        <select class="form-select @error('user_id') is-invalid @enderror" id="user_id" name="user_id"
-                            required>
-                            <option value="">-- Select User --</option>
+                        <label for="user_ids" class="form-label fw-bold">Select Users</label>
+                        <select
+                            class="form-select @error('user_ids') is-invalid @enderror @error('user_ids.*') is-invalid @enderror"
+                            id="user_ids" name="user_ids[]" multiple="multiple" required>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}"
-                                    {{ old('user_id', $brand->user_id) == $user->id ? 'selected' : '' }}>
+                                    {{ in_array($user->id, old('user_ids', $selectedUserIds ?? [])) ? 'selected' : '' }}>
                                     {{ $user->name }} ({{ $user->email }})
                                 </option>
                             @endforeach
                         </select>
-                        @error('user_id')
+                        @error('user_ids')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $('#user_ids').select2({
+                                placeholder: "Select users...",
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        });
+                    </script>
 
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Models\BrandUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class BrandController extends Controller
 {
@@ -41,82 +43,153 @@ class BrandController extends Controller
 
     public function store(Request $request)
     {
+        // Validate - user_ids as array
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => 'required|array', // Multiple users ke liye array
+            'user_ids.*' => 'required|exists:users,id', // Har user ID exist karni chahiye
             'email' => 'nullable|email|max:255',
             'url' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'status' => 'required|in:0,1',
-            'logo' => 'nullable|file',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $validated['url'] = $request->url;
-        $validated['user_id'] = Auth::id();
+        // Format URL
+        $url = $request->url;
+        if (!preg_match('/^https?:\/\//', $url)) {
+            $url = 'https://' . $url;
+        }
+        $validated['url'] = $url;
 
+        // Logo upload handling
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-
-            // Generate unique filename
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-            // Move file to public/upload/logo directory
             $file->move(public_path('upload/logo'), $filename);
-
-            // Save path in database
             $validated['logo'] = 'upload/logo/' . $filename;
-
-            // Debug - check if file moved
-            if (file_exists(public_path('upload/logo/' . $filename))) {
-                \Log::info('Logo uploaded successfully: ' . $filename);
-            } else {
-                \Log::error('Logo upload failed');
-            }
         }
 
-        Brand::create($validated);
+        // Use database transaction
+        DB::beginTransaction();
 
-        return redirect()->route('admin.brand')->with('success', 'Brand created successfully!');
+        try {
+            // Create brand
+            $brand = Brand::create($validated);
+
+            // Insert multiple users into brand_users table
+            foreach ($request->user_ids as $userId) {
+                BrandUser::create([
+                    'brand_id' => (string) $brand->id, // String format mein
+                    'user_id' => (string) $userId,      // String format mein
+                ]);
+
+                Log::info('User assigned to brand', [
+                    'brand_id' => $brand->id,
+                    'user_id' => $userId
+                ]);
+            }
+
+            DB::commit();
+
+            $userCount = count($request->user_ids);
+            return redirect()->route('admin.brand')
+                ->with('success', "Brand created successfully with {$userCount} users!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Delete uploaded logo if brand creation failed
+            if (isset($validated['logo']) && file_exists(public_path($validated['logo']))) {
+                unlink(public_path($validated['logo']));
+            }
+
+            Log::error('Brand creation failed: ' . $e->getMessage());
+
+            return back()
+                ->with('error', 'Error creating brand: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
-    public function edit(Brand $brand)
+    public function edit($id)
     {
-        $users = User::where('role', 2)->get();
-        return view('admin.brand.edit', compact('brand', 'users'));
+        $brand = Brand::findOrFail($id);
+
+        // Get selected user IDs
+        $selectedUserIds = DB::table('brand_users')
+            ->where('brand_id', (string) $id)
+            ->pluck('user_id')
+            ->toArray();
+        $users = User::all();
+        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds'));
     }
 
-    public function update(Request $request, Brand $brand)
+    public function update(Request $request, $id)
     {
+        $brand = Brand::findOrFail($id);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'required|exists:users,id',
             'email' => 'nullable|email|max:255',
             'url' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'status' => 'required|in:0,1',
-            'logo' => 'nullable|file',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = $validated;
+        // Format URL
+        $url = $request->url;
+        if (!preg_match('/^https?:\/\//', $url)) {
+            $url = 'https://' . $url;
+        }
+        $validated['url'] = $url;
 
+        // Handle logo upload
         if ($request->hasFile('logo')) {
-            // Old logo delete karo
+            // Delete old logo
             if ($brand->logo && file_exists(public_path($brand->logo))) {
                 unlink(public_path($brand->logo));
             }
 
-            // New logo upload - MOVE method (consistent with store)
             $file = $request->file('logo');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('upload/logo'), $filename);
-            $data['logo'] = 'upload/logo/' . $filename;
+            $validated['logo'] = 'upload/logo/' . $filename;
         }
 
-        $brand->update($data);
+        DB::beginTransaction();
 
-        return redirect()->route('admin.brand')->with('success', 'Brand updated successfully!');
+        try {
+            // Update brand
+            $brand->update($validated);
+
+            // Delete existing user assignments
+            BrandUser::where('brand_id', (string) $id)->delete();
+
+            // Insert new user assignments
+            foreach ($request->user_ids as $userId) {
+                BrandUser::create([
+                    'brand_id' => (string) $brand->id,
+                    'user_id' => (string) $userId,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.brand')
+                ->with('success', 'Brand updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Brand update failed: ' . $e->getMessage());
+
+            return back()
+                ->with('error', 'Error updating brand: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function destroy(Brand $brand)

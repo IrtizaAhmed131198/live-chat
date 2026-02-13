@@ -3,6 +3,46 @@
 @section('title', 'Create Brand')
 
 @section('content')
+    <style>
+        /* Select box styling */
+        select[multiple] {
+            background-image: none !important;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 8px;
+        }
+
+        select[multiple] option {
+            padding: 12px 15px !important;
+            margin: 2px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select[multiple] option:hover {
+            background-color: #e7f1ff !important;
+        }
+
+        select[multiple] option:checked {
+            background-color: #0d6efd !important;
+            color: white !important;
+            font-weight: 500;
+        }
+
+        select[multiple] option:checked:hover {
+            background-color: #0b5ed7 !important;
+        }
+
+        /* Selected count badge */
+        #selectedCount {
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+        }
+    </style>
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card">
             <div class="card-header">
@@ -21,20 +61,44 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="user_id" class="form-label">Select User</label>
-                        <select class="form-select @error('user_id') is-invalid @enderror" id="user_id" name="user_id"
-                            required>
-                            <option value="">-- Select User --</option>
+                        <label for="user_ids" class="form-label fw-bold">Select Users</label>
+                        <select
+                            class="form-select @error('user_ids') is-invalid @enderror @error('user_ids.*') is-invalid @enderror"
+                            id="user_ids" name="user_ids[]" multiple required style="min-height: 200px;">
+                            <option value="" disabled class="text-muted fst-italic">-- Select Users --</option>
                             @foreach ($users as $user)
-                                <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->email }})
+                                <option value="{{ $user->id }}"
+                                    {{ in_array($user->id, old('user_ids', [])) ? 'selected' : '' }} style="padding: 10px;">
+                                    👤 {{ $user->name }} ({{ $user->email }})
                                 </option>
                             @endforeach
                         </select>
-                        @error('user_id')
+
+                        <!-- Selected count display - ye element missing tha -->
+                        <div class="mt-2">
+                            <span class="badge bg-info text-dark" id="selectedCount">
+                                {{ count(old('user_ids', [])) }} user(s) selected
+                            </span>
+                        </div>
+
+                        @error('user_ids')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
+                        @error('user_ids.*')
+                            <span class="invalid-feedback">Invalid user selection</span>
+                        @enderror
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle"></i>
+                            Hold Ctrl (Windows) or Cmd (Mac) to select multiple users
+                        </small>
                     </div>
+
+                    <script>
+                        document.getElementById('user_ids')?.addEventListener('change', function() {
+                            const selectedCount = this.selectedOptions.length;
+                            document.getElementById('selectedCount').textContent = selectedCount + ' user(s) selected';
+                        });
+                    </script>
 
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
