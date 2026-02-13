@@ -8,6 +8,8 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\VisitorController;
 
 
 Route::get('/', function () {
@@ -45,6 +47,24 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::get('brand/edit/{brand}', [BrandController::class, 'edit'])->name('admin.brand.edit');
     Route::put('brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
     Route::delete('brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
+
+    Route::get('website/data', [WebsiteController::class, 'getdata'])->name('admin.website.getdata');
+    Route::get('website', [WebsiteController::class, 'index'])->name('admin.website');
+    Route::get('website/create', [WebsiteController::class, 'create'])->name('admin.website.create');
+    Route::post('website/store', [WebsiteController::class, 'store'])->name('admin.website.store');
+    Route::get('website/edit/{id}', [WebsiteController::class, 'edit'])->name('admin.website.edit');
+    Route::put('website/update/{id}', [WebsiteController::class, 'update'])->name('admin.website.update');
+    Route::delete('website/destroy/{id}', [WebsiteController::class, 'destroy'])->name('admin.website.destroy');
+
+
+    Route::get('visitor/data', [VisitorController::class, 'getdata'])->name('admin.visitor.getdata');
+    Route::get('visitor', [VisitorController::class, 'index'])->name('admin.visitor');
+    // Route::get('visitor/create', [VisitorController::class, 'create'])->name('admin.visitor.create');
+    // Route::post('visitor/store', [VisitorController::class, 'store'])->name('admin.visitor.store');
+    Route::get('visitor/edit/{id}', [VisitorController::class, 'edit'])->name('admin.visitor.edit');
+    Route::put('visitor/update/{id}', [VisitorController::class, 'update'])->name('admin.visitor.update');
+    Route::delete('visitor/destroy/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
+    Route::delete('visitor/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
 });
 
 Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {

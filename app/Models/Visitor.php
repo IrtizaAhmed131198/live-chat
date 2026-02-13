@@ -12,4 +12,9 @@ class Visitor extends Model
     {
         return $this->hasOne(User::class, 'visitor_id', 'id');
     }
+
+    public function website()
+    {
+        return $this->belongsTo(Website::class, 'website_id', 'id');
+    }
 }

@@ -44,13 +44,13 @@
                     </div>
 
                     <!-- Image Field -->
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label for="role" class="form-label">Role</label>
                         <select class="form-select mb-6" id="acceptPaymentsVia" name="role" required>
                             <option value="2" {{ $user->role == '2' ? 'selected' : '' }}>Client</option>
                             <option value="3" {{ $user->role == '3' ? 'selected' : '' }}>Agent</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     <!-- Phone Field -->
                     <div class="mb-4">

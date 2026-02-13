@@ -37,17 +37,17 @@
                     <!-- Image -->
                     <div class="mb-4">
                         <label class="form-label">Image <span class="text-danger">*</span></label>
-                        <input type="file" class="form-control" name="image" required>
+                        <input type="file" class="form-control" name="image">
                     </div>
 
                     <!-- Role -->
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label class="form-label">Role</label>
                         <select class="form-select" name="role" required>
                             <option value="2" {{ old('role') == 2 ? 'selected' : '' }}>Client</option>
                             <option value="3" {{ old('role') == 3 ? 'selected' : '' }}>Agent</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     <!-- Phone -->
                     <div class="mb-4">

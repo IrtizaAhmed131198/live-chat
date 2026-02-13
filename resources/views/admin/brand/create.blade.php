@@ -111,7 +111,7 @@
 
                     <div class="mb-3">
                         <label for="logo" class="form-label">Brand Logo</label>
-                        <input type="file" class="form-control" id="logo" name="logo">
+                        <input type="file" class="form-control" id="logo" name="logo" required>
                     </div>
 
                     <div class="mb-3">

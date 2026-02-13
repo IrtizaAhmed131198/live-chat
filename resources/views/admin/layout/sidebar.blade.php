@@ -61,7 +61,7 @@
 
     <ul class="menu-inner py-1">
         <li class="menu-item active open">
-            <a href="{{route("admin.dashboard")}}" class="menu-link menu-toggle">
+            <a href="{{ route('admin.dashboard') }}" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base bx bx-home-smile"></i>
                 <div>Dashboards</div>
                 <div class="badge bg-danger rounded-pill ms-auto">5</div>
@@ -90,6 +90,18 @@
             <a href="{{ route('admin.brand') }}" class="menu-link">
                 <i class="icon-base bx bxs-business icon-md me-3"></i>
                 <div>Brand</div>
+            </a>
+        </li>
+        <li class="menu-item ">
+            <a href="{{ route('admin.website') }}" class="menu-link">
+                <i class="icon-base bx bxs-server icon-md me-3"></i>
+                <div>Website</div>
+            </a>
+        </li>
+        <li class="menu-item ">
+            <a href="{{ route('admin.visitor') }}" class="menu-link">
+                <i class="icon-base bx bxs-show icon-md me-3"></i>
+                <div>Visitor</div>
             </a>
         </li>
     </ul>

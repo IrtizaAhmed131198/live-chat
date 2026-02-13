@@ -42,10 +42,10 @@ class UserController extends Controller
             'address' => 'nullable|string',
             'about' => 'nullable|string',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string',
         ]);
 
         $validated['visitor_id'] = 2;
+        $validated['role'] = 2;
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -77,11 +77,11 @@ class UserController extends Controller
             'address' => 'nullable|string',
             'about' => 'nullable|string',
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|string',
         ]);
 
         // Image upload
         $validated['visitor_id'] = 2;
+        $validated['role'] = 2;
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
