@@ -115,13 +115,13 @@ class BrandController extends Controller
     public function edit($id)
     {
         $brand = Brand::findOrFail($id);
+        $users = User::all();
 
-        // Get selected user IDs
+        // Important: selectedUserIds ko view mein bhejna
         $selectedUserIds = DB::table('brand_users')
-            ->where('brand_id', (string) $id)
+            ->where('brand_id', (string) $brand->id)
             ->pluck('user_id')
             ->toArray();
-        $users = User::all();
         return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds'));
     }
 

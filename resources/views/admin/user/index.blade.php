@@ -6,7 +6,7 @@
     <!-- Content wrapper -->
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="card">
+        <div class="card p-5">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h5 class="mb-0">Users Management</h5>
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">

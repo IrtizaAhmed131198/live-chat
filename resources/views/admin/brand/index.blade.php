@@ -6,7 +6,7 @@
     <!-- Content wrapper -->
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="card">
+        <div class="card p-5">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h5 class="mb-0">Brand</h5>
                 <a href="{{ route('admin.brand.create') }}" class="btn btn-primary">
@@ -32,7 +32,7 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>
                                     {{-- @dd($brand->logo) --}}
-                                    <img height="100px" src="{{ asset($brand->logo) }}" alt="">
+                                    <img height="50px" src="{{ asset($brand->logo) }}" alt="">
                                 </td>
                                 <td>
                                     <strong>{{ $brand->name }}</strong>

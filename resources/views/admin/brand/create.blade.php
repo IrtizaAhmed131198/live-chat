@@ -3,46 +3,38 @@
 @section('title', 'Create Brand')
 
 @section('content')
+
     <style>
-        /* Select box styling */
-        select[multiple] {
-            background-image: none !important;
-            border: 1px solid #ced4da;
-            border-radius: 0.375rem;
-            padding: 8px;
+        span.select2-selection.select2-selection--multiple {
+            background: transparent;
+            display: block;
+            width: 100%;
+            padding: .543rem .9375rem;
+            font-size: .9375rem;
+            font-weight: 400;
+            line-height: 1.375;
+            color: var(--bs-heading-color);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: transparent;
+            background-clip: padding-box;
+            border-radius: var(--bs-border-radius);
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+            border-color:
+                color-mix(in srgb, #e6e6f1 22%, #393a5a);
         }
 
-        select[multiple] option {
-            padding: 12px 15px !important;
-            margin: 2px 0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        li.select2-selection__choice {
+            color: black;
+            padding-left: 20px !important;
         }
 
-        select[multiple] option:hover {
-            background-color: #e7f1ff !important;
-        }
-
-        select[multiple] option:checked {
-            background-color: #0d6efd !important;
-            color: white !important;
-            font-weight: 500;
-        }
-
-        select[multiple] option:checked:hover {
-            background-color: #0b5ed7 !important;
-        }
-
-        /* Selected count badge */
-        #selectedCount {
-            font-size: 0.9rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
+        span.select2-dropdown {
+            background: #2b2c40 !important;
         }
     </style>
+
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card">
             <div class="card-header">
@@ -73,13 +65,6 @@
                                 </option>
                             @endforeach
                         </select>
-
-                        <!-- Selected count display - ye element missing tha -->
-                        <div class="mt-2">
-                            <span class="badge bg-info text-dark" id="selectedCount">
-                                {{ count(old('user_ids', [])) }} user(s) selected
-                            </span>
-                        </div>
 
                         @error('user_ids')
                             <span class="invalid-feedback">{{ $message }}</span>
@@ -146,4 +131,13 @@
             </div>
         </div>
     </div>
+@endsection
+@section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script>
+        $("#user_ids").select2({
+            placeholder: "Select a User",
+            allowClear: true
+        });
+    </script>
 @endsection
