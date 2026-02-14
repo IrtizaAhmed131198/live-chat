@@ -1,19 +1,12 @@
 @extends('admin.layout.app')
 
-@section('title', 'Brand')
+@section('title', 'Visitors')
 
 @section('content')
     <!-- Content wrapper -->
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card p-5">
-            {{-- <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">Visitor</h5>
-                <a href="{{ route('admin.visitor.create') }}" class="btn btn-primary">
-                    <i class="bx bx-plus me-2"></i> Add Visitor
-                </a>
-            </div> --}}
-
             <div class="table-responsive text-nowrap">
                 <table id="users-table" class="table table-hover">
                     <thead class="table-light">
@@ -26,25 +19,24 @@
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
-                        @forelse($visitor as $index => $visitor)
+                        @forelse($visitors as $index => $visitorItem)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
                                     <strong>
-                                        @if ($visitor->website)
-                                            {{ $visitor->website->name }}
+                                        @if ($visitorItem->website)
+                                            {{ $visitorItem->website->name }}
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif
                                     </strong>
                                 </td>
                                 <td>
-                                    <strong>{{ optional($visitor->user)->email ?? 'N/A' }}</strong>
+                                    <strong>{{ optional($visitorItem->user)->email ?? 'N/A' }}</strong>
                                 </td>
                                 <td>
-                                    <strong>{{ optional($visitor->user)->phone ?? 'N/A' }}</strong>
+                                    <strong>{{ optional($visitorItem->user)->phone ?? 'N/A' }}</strong>
                                 </td>
-
                                 <td>
                                     <div class="dropdown">
                                         <button type="button"
@@ -53,16 +45,21 @@
                                             <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-end m-0">
-                                            <a class="dropdown-item" href="{{ route('admin.visitor.edit', $visitor->id) }}">
-                                                <i class="bx bx-edit me-2"></i> Edit
-                                            </a>
-                                            <form action="{{ route('admin.visitor.destroy', $visitor->id) }}" method="POST"
+                                            <!-- Edit User Link -->
+                                            @if($visitorItem->user)
+                                                <a class="dropdown-item" href="{{ route('admin.visitor.edit', $visitorItem->user->id) }}">
+                                                    <i class="bx bx-edit me-2"></i> Edit User
+                                                </a>
+                                            @endif
+                                            
+                                            <!-- Delete Visitor Form -->
+                                            <form action="{{ route('admin.visitor.destroy', $visitorItem->id) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item text-danger"
                                                     onclick="return confirm('Are you sure?')">
-                                                    <i class="bx bx-trash me-2"></i> Delete
+                                                    <i class="bx bx-trash me-2"></i> Delete Visitor
                                                 </button>
                                             </form>
                                         </div>
@@ -71,7 +68,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">
+                                <td colspan="5" class="text-center py-4">
                                     <p class="text-muted mb-0">No Visitor found</p>
                                 </td>
                             </tr>
@@ -81,7 +78,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 @section('js')
@@ -99,15 +95,15 @@
                     },
                     {
                         data: 'website_name',
-                        name: 'website.name' // Website table se name
+                        name: 'website.name'
                     },
                     {
                         data: 'email',
-                        name: 'user.email' // User table se email
+                        name: 'user.email'
                     },
                     {
                         data: 'phone',
-                        name: 'user.phone' // User table se phone
+                        name: 'user.phone'
                     },
                     {
                         data: 'actions',

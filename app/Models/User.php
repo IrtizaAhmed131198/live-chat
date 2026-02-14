@@ -57,11 +57,6 @@ class User extends Authenticatable
         return $this->hasMany(Chat::class);
     }
 
-    public function visitor()
-    {
-        return $this->belongsTo(Visitor::class, 'id', 'visitor_id');
-    }
-
     public function get_chat()
     {
         return $this->hasOne(Chat::class, 'visitor_id', 'visitor_id');
@@ -87,5 +82,10 @@ class User extends Authenticatable
     public function brands()
     {
         return $this->hasMany(Brand::class, 'user_id');
+    }
+
+    public function visitor()
+    {
+        return $this->belongsTo(Visitor::class, 'visitor_id', 'id');
     }
 }

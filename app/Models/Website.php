@@ -8,4 +8,9 @@ class Website extends Model
 {
     protected $table = 'websites';
     protected $fillable = ['domain', 'name'];
+
+    public function visitors()
+    {
+        return $this->hasMany(Visitor::class, 'website_id');
+    }
 }

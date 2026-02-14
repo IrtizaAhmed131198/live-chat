@@ -13,6 +13,17 @@ class Visitor extends Model
         return $this->hasOne(User::class, 'visitor_id', 'id');
     }
 
+    /**
+     * Relationship with Users (PLURAL - agar multiple users ho)
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class, 'visitor_id', 'id');
+    }
+
+    /**
+     * Relationship with Website
+     */
     public function website()
     {
         return $this->belongsTo(Website::class, 'website_id', 'id');

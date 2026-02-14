@@ -4,32 +4,33 @@
 
 @section('content')
     <style>
-        span.select2-selection.select2-selection--multiple {
-            background: transparent;
-            display: block;
-            width: 100%;
-            padding: .543rem .9375rem;
-            font-size: .9375rem;
-            font-weight: 400;
-            line-height: 1.375;
-            color: var(--bs-heading-color);
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-color: transparent;
-            background-clip: padding-box;
-            border-radius: var(--bs-border-radius);
-            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-            border-color: color-mix(in srgb, #e6e6f1 22%, #393a5a);
+        .image-upload-container {
+            position: relative;
+            display: inline-block;
         }
 
-        li.select2-selection__choice {
-            color: black;
-            padding-left: 20px !important;
+        .image-upload-container img {
+            transition: opacity 0.3s;
         }
 
-        span.select2-dropdown {
-            background: #2b2c40 !important;
+        .image-upload-container img:hover {
+            opacity: 0.8;
+        }
+
+        .form-control {
+            background-color: #2b2c40 !important;
+            border: 1px solid #4a4b68 !important;
+            color: white !important;
+        }
+
+        .form-control:focus {
+            background-color: #2b2c40 !important;
+            border-color: #7367f0 !important;
+            color: white !important;
+        }
+
+        .form-label.text-white {
+            color: #e6e6f1 !important;
         }
     </style>
 
@@ -43,108 +44,122 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- User Selection (jisse email aur phone aayega) -->
-                    {{-- <div class="mb-3">
-                        <label for="user_id" class="form-label">Select User</label>
-                        <select class="form-control @error('user_id') is-invalid @enderror" id="user_id" name="user_id"
-                            required>
-                            <option value="">-- Select User --</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}" data-email="{{ $user->email }}"
-                                    data-phone="{{ $user->phone }}"
-                                    {{ old('user_id', $visitor->user_id) == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }} ({{ $user->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('user_id')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                        @enderror
-                    </div> --}}
+                    @if ($visitor->user)
+                        <div class="user-info" style="background-color: #393a5a; padding: 20px; border-radius: 8px;">
+                            <!-- Image Upload Field -->
+                            <div class="mb-4 text-center">
+                                <label class="form-label text-white small mb-2">Profile Image</label>
+                                <div class="image-upload-container" style="position: relative; display: inline-block;">
+                                    <!-- Current Image Preview -->
+                                    <div id="image_preview">
+                                        @if ($visitor->user->image)
+                                            <img src="{{ asset($visitor->user->image) }}" class="rounded-circle"
+                                                style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #7367f0; cursor: pointer;"
+                                                id="profileImage" onclick="document.getElementById('image').click();">
+                                        @else
+                                            <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle"
+                                                style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #7367f0; cursor: pointer;"
+                                                id="profileImage" onclick="document.getElementById('image').click();">
+                                        @endif
+                                    </div>
 
-                    <!-- Website Selection (jisse website name aayega) -->
-                    <div class="mb-3">
-                        <label for="website_id" class="form-label">Select Website</label>
-                        <select class="form-control @error('website_id') is-invalid @enderror" id="website_id"
-                            name="website_id" required>
-                            <option value="">-- Select Website --</option>
-                            @foreach ($websites as $website)
-                                <option value="{{ $website->id }}" data-name="{{ $website->name }}"
-                                    {{ old('website_id', $visitor->website_id) == $website->id ? 'selected' : '' }}>
-                                    {{ $website->name }} ({{ $website->domain }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('website_id')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                        @enderror
-                    </div>
+                                    <!-- Hidden File Input -->
+                                    <input type="file" name="image" id="image" accept="image/*"
+                                        style="display: none;" onchange="previewImage(this);">
 
-                    <!-- Display User Details (Read Only) -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">User Email</label>
-                                <input type="text" class="form-control" id="display_email"
-                                    value="{{ $visitor->user->email ?? '' }}">
+                                    <!-- Upload Button -->
+                                    <button type="button" class="btn btn-sm btn-primary mt-2"
+                                        onclick="document.getElementById('image').click();">
+                                        <i class="bx bx-upload me-1"></i> Change Image
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-2">Click on image or button to change (Max: 2MB)</small>
+                                @error('image')
+                                    <span class="text-danger small d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small mb-1">Email <span
+                                                class="text-danger">*</span></label>
+                                        <input name="email" type="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            value="{{ old('email', $visitor->user->email ?? '') }}" required>
+                                        @error('email')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small mb-1">Phone</label>
+                                        <input name="phone" type="text"
+                                            class="form-control @error('phone') is-invalid @enderror"
+                                            value="{{ old('phone', $visitor->user->phone ?? '') }}">
+                                        @error('phone')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small mb-1">Address</label>
+                                        <input name="address" type="text"
+                                            class="form-control @error('address') is-invalid @enderror"
+                                            value="{{ old('address', $visitor->user->address ?? '') }}">
+                                        @error('address')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small mb-1">About</label>
+                                        <textarea name="about" class="form-control @error('about') is-invalid @enderror" rows="3">{{ old('about', $visitor->user->about ?? '') }}</textarea>
+                                        @error('about')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">User Phone</label>
-                                <input type="text" class="form-control" id="display_phone"
-                                    value="{{ $visitor->user->phone ?? '' }}">
-                            </div>
-                        </div>
-                    </div>
+                    @endif
 
-                    <!-- Display Website Details (Read Only) -->
-                    <div class="mb-3">
-                        <label class="form-label">Website Name</label>
-                        <input type="text" class="form-control" id="display_website_name"
-                            value="{{ $visitor->website->name ?? '' }}">
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save me-2"></i> Update User
+                        </button>
+                        <a href="{{ route('admin.visitor') }}" class="btn btn-secondary">
+                            <i class="bx bx-arrow-back me-2"></i> Cancel
+                        </a>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">Update Visitor</button>
-                    <a href="{{ route('admin.visitor') }}" class="btn btn-secondary">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
-
-    
 @endsection
+
 @section('js')
-<script>
-        // Page load pe bhi data set karo
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initial values set karo (yeh already set hain but ensure kar lo)
-            var userSelect = document.getElementById('user_id');
-            var websiteSelect = document.getElementById('website_id');
-
-            if (userSelect.value) {
-                var selectedUser = userSelect.options[userSelect.selectedIndex];
-                document.getElementById('display_email').value = selectedUser.dataset.email || '';
-                document.getElementById('display_phone').value = selectedUser.dataset.phone || '';
+    {{-- <script>
+        $(document).ready(function() {
+            $('#website_id').select2({
+                placeholder: "Select a Website",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script> --}}
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImage').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
             }
-
-            if (websiteSelect.value) {
-                var selectedWebsite = websiteSelect.options[websiteSelect.selectedIndex];
-                document.getElementById('display_website_name').value = selectedWebsite.dataset.name || '';
-            }
-        });
-
-        // Update display fields when user changes
-        document.getElementById('user_id').addEventListener('change', function() {
-            var selected = this.options[this.selectedIndex];
-            document.getElementById('display_email').value = selected.dataset.email || '';
-            document.getElementById('display_phone').value = selected.dataset.phone || '';
-        });
-
-        // Update display fields when website changes
-        document.getElementById('website_id').addEventListener('change', function() {
-            var selected = this.options[this.selectedIndex];
-            document.getElementById('display_website_name').value = selected.dataset.name || '';
-        });
+        }
     </script>
 @endsection

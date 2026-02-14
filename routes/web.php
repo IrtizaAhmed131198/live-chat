@@ -65,6 +65,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::put('visitor/update/{id}', [VisitorController::class, 'update'])->name('admin.visitor.update');
     Route::delete('visitor/destroy/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
     Route::delete('visitor/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
+    Route::get('visitor/edit-user/{id}', [VisitorController::class, 'editUser'])->name('admin.visitor.edit-user');
 });
 
 Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {

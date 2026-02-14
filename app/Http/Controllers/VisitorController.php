@@ -7,46 +7,38 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\Visitor;
 use App\Models\Website;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 
 class VisitorController extends Controller
 {
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $visitor = Visitor::with(['user', 'website'])->get();
-        // dd($visitor);
-        return view('admin.visitor.index', compact('visitor'));
+        // Saare visitors unke user aur website ke saath
+        $visitors = Visitor::with(['user', 'website'])->get();
+        return view('admin.visitor.index', compact('visitors'));
     }
 
+    /**
+     * Get data for DataTables.
+     */
     public function getdata()
     {
-        // Relationships ke saath data lao - YAHAN 'user' hai na ke 'users'
         $visitors = Visitor::with(['user', 'website'])
-            ->select(['id', 'website_id', 'created_at']); // visitor_id hata diya kyunki exist nahi karta
+            ->select(['id', 'website_id', 'created_at']);
 
         return DataTables::of($visitors)
             ->addIndexColumn()
-
-            // Website name from relationship
             ->addColumn('website_name', function ($visitor) {
-                if ($visitor->website) {
-                    return '<strong>' . e($visitor->website->name) . '</strong>';
-                }
-                return '<span class="text-muted">N/A</span>';
+                return $visitor->website->name ?? '<span class="text-muted">N/A</span>';
             })
-
-            // Email from user relationship
             ->addColumn('email', function ($visitor) {
                 return $visitor->user->email ?? '<span class="text-muted">N/A</span>';
             })
-
-            // Phone from user relationship
             ->addColumn('phone', function ($visitor) {
                 return $visitor->user->phone ?? '<span class="text-muted">N/A</span>';
             })
-
-            // Actions column
             ->addColumn('actions', function ($visitor) {
                 return '
                 <div class="dropdown">
@@ -70,60 +62,22 @@ class VisitorController extends Controller
                 </div>
             ';
             })
-
-            // Make sure HTML columns are raw
             ->rawColumns(['website_name', 'email', 'phone', 'actions'])
             ->make(true);
     }
 
-
-    public function destroy($id)
-    {
-        try {
-            $visitor = Visitor::findOrFail($id);
-
-            // Optional: Delete related data if needed
-            // $visitor->delete(); // Agar permanently delete karna hai
-
-            $visitor->delete(); // Soft delete agar use kar rahe hain to
-
-            return redirect()->route('admin.visitor')
-                ->with('success', 'Visitor deleted successfully!');
-        } catch (\Exception $e) {
-            return redirect()->route('admin.visitor')
-                ->with('error', 'Error deleting visitor: ' . $e->getMessage());
-        }
-    }
-
     /**
-     * Alternative: API response ke liye (agar AJAX se delete kar rahe hain)
+     * Show the form for editing the specified resource.
      */
-    public function destroyAjax($id)
-    {
-        try {
-            $visitor = Visitor::findOrFail($id);
-            $visitor->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Visitor deleted successfully!'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error deleting visitor: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
     public function edit($id)
     {
+        // Sirf visitor ka data lao with user
         $visitor = Visitor::with(['user', 'website'])->findOrFail($id);
-        $users = User::all();
+
+        // Saari websites dropdown ke liye
         $websites = Website::all();
 
-        return view('admin.visitor.edit', compact('visitor', 'users', 'websites'));
+        return view('admin.visitor.edit', compact('visitor', 'websites'));
     }
 
     /**
@@ -131,25 +85,70 @@ class VisitorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $visitor = Visitor::findOrFail($id);
+        $visitor = Visitor::with('user')->findOrFail($id);
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'website_id' => 'required|exists:websites,id',
+            'email' => 'required|email|unique:users,email,' . $visitor->user->id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'about' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
         ]);
 
         try {
-            $visitor->update([
-                'user_id' => $validated['user_id'],
-                'website_id' => $validated['website_id'],
-            ]);
+            // User model find karo
+            $user = User::findOrFail($visitor->user->id);
+
+            // Image upload handling
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($user->image && file_exists(public_path($user->image))) {
+                    unlink(public_path($user->image));
+                }
+
+                // Upload new image
+                $file = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                // Create directory if not exists
+                if (!file_exists(public_path('uploads/users'))) {
+                    mkdir(public_path('uploads/users'), 0777, true);
+                }
+
+                $file->move(public_path('uploads/users'), $filename);
+                $user->image = 'uploads/users/' . $filename;
+            }
+
+            // Update user fields
+            $user->email = $validated['email'];
+            $user->phone = $validated['phone'];
+            $user->address = $validated['address'];
+            $user->about = $validated['about'];
+            $user->save();
 
             return redirect()->route('admin.visitor')
-                ->with('success', 'Visitor updated successfully!');
+                ->with('success', 'User updated successfully!');
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Error updating visitor: ' . $e->getMessage())
+                ->with('error', 'Error updating user: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        try {
+            $visitor = Visitor::findOrFail($id);
+            $visitor->delete();
+
+            return redirect()->route('admin.visitor')
+                ->with('success', 'Visitor deleted successfully!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.visitor')
+                ->with('error', 'Error deleting visitor: ' . $e->getMessage());
         }
     }
 }
