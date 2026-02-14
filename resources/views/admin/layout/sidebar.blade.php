@@ -64,6 +64,7 @@
             $currentRoute = Route::currentRouteName();
         @endphp
 
+        <!-- Dashboard -->
         <li class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <a href="{{ route('admin.dashboard') }}" class="menu-link">
                 <i class="menu-icon bx bx-home-smile"></i>
@@ -71,44 +72,50 @@
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.chat' ? 'active' : '' }}">
+        <!-- Chat (including all chat routes) -->
+        <li class="menu-item {{ request()->routeIs('admin.chat*') ? 'active' : '' }}">
             <a href="{{ route('admin.chat') }}" class="menu-link">
-                <i class="menu-icon icon-base bx bx-chat"></i>
+                <i class="menu-icon bx bx-chat"></i>
                 <div>Chat</div>
             </a>
         </li>
 
-        <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        <!-- Agent/Users (including create, edit, show, etc) -->
+        <li class="menu-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
             <a href="{{ route('admin.users') }}" class="menu-link">
-                <i class="icon-base bx bx-user icon-md me-3"></i>
+                <i class="bx bx-user"></i>
                 <div>Agent</div>
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.visitor' ? 'active' : '' }}">
+        <!-- Visitor (including create, edit, show, etc) -->
+        <li class="menu-item {{ request()->routeIs('admin.visitor*') ? 'active' : '' }}">
             <a href="{{ route('admin.visitor') }}" class="menu-link">
-                <i class="icon-base bx bxs-show icon-md me-3"></i>
+                <i class="bx bxs-show"></i>
                 <div>Visitor</div>
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.notification' ? 'active' : '' }}">
+        <!-- Notification (including all notification routes) -->
+        <li class="menu-item {{ request()->routeIs('admin.notification*') ? 'active' : '' }}">
             <a href="{{ route('admin.notification') }}" class="menu-link">
-                <i class="icon-base bx bx-bell icon-md me-3"></i>
+                <i class="bx bx-bell"></i>
                 <div>Notification</div>
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.brand' ? 'active' : '' }}">
+        <!-- Brand (including create, edit, show, etc) -->
+        <li class="menu-item {{ request()->routeIs('admin.brand*') ? 'active' : '' }}">
             <a href="{{ route('admin.brand') }}" class="menu-link">
-                <i class="icon-base bx bxs-business icon-md me-3"></i>
+                <i class="bx bxs-business"></i>
                 <div>Brand</div>
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.website' ? 'active' : '' }}">
+        <!-- Website (including create, edit, show, etc) -->
+        <li class="menu-item {{ request()->routeIs('admin.website*') ? 'active' : '' }}">
             <a href="{{ route('admin.website') }}" class="menu-link">
-                <i class="icon-base bx bxs-server icon-md me-3"></i>
+                <i class="bx bxs-server"></i>
                 <div>Website</div>
             </a>
         </li>
