@@ -37,7 +37,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::get('users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('users/{id}/destroy', [UserController::class, 'destroy'])->name('admin.users.destroy');
-    Route::get('admin/users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
+    Route::get('users/data', [UserController::class, 'getUsers'])->name('admin.users.data');
 
 
     Route::get('brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
