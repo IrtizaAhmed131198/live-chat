@@ -222,7 +222,7 @@
 
     @yield('js')
 
-    <script type="module">
+    {{-- <script type="module">
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize template customizer after DOM is loaded
             if (window.TemplateCustomizer) {
@@ -249,7 +249,7 @@
                 }
             }
         });
-    </script>
+    </script> --}}
     <script>
         (function(w, d, s, l, i) {
             w[l] = w[l] || [];

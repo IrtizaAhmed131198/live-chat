@@ -33,20 +33,18 @@
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                     <li>
                         <button type="button" class="dropdown-item align-items-center active"
-                            data-bs-theme-value="light" aria-pressed="false">
-                            <span><i class="icon-base bx bx-sun icon-md me-3" data-icon="sun"></i>Light</span>
+                            data-bs-theme-value="light">
+                            <span><i class="icon-base bx bx-sun icon-md me-3"></i>Light</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark"
-                            aria-pressed="true">
-                            <span><i class="icon-base bx bx-moon icon-md me-3" data-icon="moon"></i>Dark</span>
+                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark">
+                            <span><i class="icon-base bx bx-moon icon-md me-3"></i>Dark</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="system"
-                            aria-pressed="false">
-                            <span><i class="icon-base bx bx-desktop icon-md me-3" data-icon="desktop"></i>System</span>
+                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="system">
+                            <span><i class="icon-base bx bx-desktop icon-md me-3"></i>System</span>
                         </button>
                     </li>
                 </ul>
@@ -54,11 +52,7 @@
             <!-- / Style Switcher-->
 
             @php
-                $latestNotifications = auth()->user()
-                    ->unreadNotifications()
-                    ->latest()
-                    ->take(5)
-                    ->get();
+                $latestNotifications = auth()->user()->unreadNotifications()->latest()->take(5)->get();
             @endphp
             <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"
@@ -75,7 +69,9 @@
                         <div class="dropdown-header d-flex align-items-center py-3">
                             <h6 class="mb-0 me-auto">Notification</h6>
                             <div class="d-flex align-items-center h6 mb-0">
-                                <span class="badge bg-label-primary me-2" id="notificationBadge2">{{ auth()->user()->unreadNotifications->count() }} New</span>
+                                <span class="badge bg-label-primary me-2"
+                                    id="notificationBadge2">{{ auth()->user()->unreadNotifications->count() }}
+                                    New</span>
                                 <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read">
                                     <i class="icon-base bx bx-envelope-open text-heading"></i>
@@ -175,3 +171,42 @@
         </ul>
     </div>
 </nav>
+<script>
+    (function() {
+        // Get theme from localStorage or default to 'light'
+        const theme = localStorage.getItem('theme') || 'light';
+
+        // Apply theme to HTML tag
+        document.documentElement.setAttribute('data-bs-theme', theme);
+
+        // Update active state in dropdown
+        const themeButtons = document.querySelectorAll('[data-bs-theme-value]');
+
+        themeButtons.forEach(button => {
+            // Mark active button based on current theme
+            if (button.getAttribute('data-bs-theme-value') === theme) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+
+            // Add click event
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const selectedTheme = this.getAttribute('data-bs-theme-value');
+
+                // Apply theme
+                document.documentElement.setAttribute('data-bs-theme', selectedTheme);
+
+                // Save to localStorage
+                localStorage.setItem('theme', selectedTheme);
+
+                // Update active states
+                themeButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    })();
+</script>

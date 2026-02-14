@@ -60,48 +60,56 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <li class="menu-item active open">
-            <a href="{{ route('admin.dashboard') }}" class="menu-link menu-toggle">
+        @php
+            $currentRoute = Route::currentRouteName();
+        @endphp
+
+        <li class="menu-item {{ $currentRoute == 'admin.dashboard' ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}" class="menu-link">
                 <i class="menu-icon icon-base bx bx-home-smile"></i>
                 <div>Dashboards</div>
-                <div class="badge bg-danger rounded-pill ms-auto">5</div>
             </a>
         </li>
 
-        <li class="menu-item ">
+        <li class="menu-item {{ $currentRoute == 'admin.chat' ? 'active' : '' }}">
             <a href="{{ route('admin.chat') }}" class="menu-link">
                 <i class="menu-icon icon-base bx bx-chat"></i>
                 <div>Chat</div>
             </a>
         </li>
-        <li class="menu-item ">
+
+        <li class="menu-item {{ $currentRoute == 'admin.users' ? 'active' : '' }}">
             <a href="{{ route('admin.users') }}" class="menu-link">
                 <i class="icon-base bx bx-user icon-md me-3"></i>
-                <div>User</div>
+                <div>Agent</div>
             </a>
         </li>
-        <li class="menu-item ">
+
+        <li class="menu-item {{ $currentRoute == 'admin.visitor' ? 'active' : '' }}">
+            <a href="{{ route('admin.visitor') }}" class="menu-link">
+                <i class="icon-base bx bxs-show icon-md me-3"></i>
+                <div>Visitor</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ $currentRoute == 'admin.notification' ? 'active' : '' }}">
             <a href="{{ route('admin.notification') }}" class="menu-link">
                 <i class="icon-base bx bx-bell icon-md me-3"></i>
                 <div>Notification</div>
             </a>
         </li>
-        <li class="menu-item ">
+
+        <li class="menu-item {{ $currentRoute == 'admin.brand' ? 'active' : '' }}">
             <a href="{{ route('admin.brand') }}" class="menu-link">
                 <i class="icon-base bx bxs-business icon-md me-3"></i>
                 <div>Brand</div>
             </a>
         </li>
-        <li class="menu-item ">
+
+        <li class="menu-item {{ $currentRoute == 'admin.website' ? 'active' : '' }}">
             <a href="{{ route('admin.website') }}" class="menu-link">
                 <i class="icon-base bx bxs-server icon-md me-3"></i>
                 <div>Website</div>
-            </a>
-        </li>
-        <li class="menu-item ">
-            <a href="{{ route('admin.visitor') }}" class="menu-link">
-                <i class="icon-base bx bxs-show icon-md me-3"></i>
-                <div>Visitor</div>
             </a>
         </li>
     </ul>
