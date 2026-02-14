@@ -64,10 +64,10 @@
             $currentRoute = Route::currentRouteName();
         @endphp
 
-        <li class="menu-item {{ $currentRoute == 'admin.dashboard' ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <a href="{{ route('admin.dashboard') }}" class="menu-link">
-                <i class="menu-icon icon-base bx bx-home-smile"></i>
-                <div>Dashboards</div>
+                <i class="menu-icon bx bx-home-smile"></i>
+                <div>Dashboard</div>
             </a>
         </li>
 
@@ -78,7 +78,7 @@
             </a>
         </li>
 
-        <li class="menu-item {{ $currentRoute == 'admin.users' ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
             <a href="{{ route('admin.users') }}" class="menu-link">
                 <i class="icon-base bx bx-user icon-md me-3"></i>
                 <div>Agent</div>
