@@ -168,8 +168,8 @@
             });
 
             // 3️⃣ Pusher listener for new notifications
-            var pusher = new Pusher("6d2b8f974bbba728216c", {
-                cluster: "ap1"
+            var pusher = new Pusher("{{ env('PUSHER_APP_KEY') }}", {
+                cluster: "{{ env('PUSHER_APP_CLUSTER') }}"
             });
             var channel = pusher.subscribe('admin-notifications');
 
