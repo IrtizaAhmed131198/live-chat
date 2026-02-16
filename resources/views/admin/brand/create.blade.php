@@ -1,4 +1,4 @@
-@extends('admin.layout.app')
+`@extends('admin.layout.app')
 
 @section('title', 'Create Brand')
 
@@ -57,8 +57,7 @@
                             <label for="user_ids" class="form-label fw-bold">Select Users</label>
                             <select
                                 class="form-select @error('user_ids') is-invalid @enderror @error('user_ids.*') is-invalid @enderror"
-                                id="user_ids" name="user_ids[]" multiple required style="min-height: 200px;">
-                                <option value="" disabled class="text-muted fst-italic">-- Select Users --</option>
+                                id="user_ids" name="user_ids[]" multiple required >
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}"
                                         {{ in_array($user->id, old('user_ids', [])) ? 'selected' : '' }} style="padding: 10px;">
@@ -73,10 +72,6 @@
                             @error('user_ids.*')
                                 <span class="invalid-feedback">Invalid user selection</span>
                             @enderror
-                            <small class="form-text text-muted mt-2 d-block">
-                                <i class="fas fa-info-circle"></i>
-                                Hold Ctrl (Windows) or Cmd (Mac) to select multiple users
-                            </small>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -146,8 +141,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script>
         $("#user_ids").select2({
-            placeholder: "Select a User",
-            allowClear: true
+            // placeholder: "Select a User",
+            allowClear: true,
         });
 
         document.getElementById('user_ids')?.addEventListener('change', function() {
