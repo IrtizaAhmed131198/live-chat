@@ -12,68 +12,12 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>Website</th>
+                            <th>Brand</th>
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="table-border-bottom-0">
-                        @forelse($visitors as $index => $visitorItem)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>
-                                    <strong>
-                                        @if ($visitorItem->website)
-                                            {{ $visitorItem->website->name }}
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </strong>
-                                </td>
-                                <td>
-                                    <strong>{{ optional($visitorItem->user)->email ?? 'N/A' }}</strong>
-                                </td>
-                                <td>
-                                    <strong>{{ optional($visitorItem->user)->phone ?? 'N/A' }}</strong>
-                                </td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button type="button"
-                                            class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end m-0">
-                                            <!-- Edit User Link -->
-                                            @if($visitorItem->user)
-                                                <a class="dropdown-item" href="{{ route('admin.visitor.edit', $visitorItem->user->id) }}">
-                                                    <i class="bx bx-edit me-2"></i> Edit User
-                                                </a>
-                                            @endif
-                                            
-                                            <!-- Delete Visitor Form -->
-                                            <form action="{{ route('admin.visitor.destroy', $visitorItem->id) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger"
-                                                    onclick="return confirm('Are you sure?')">
-                                                    <i class="bx bx-trash me-2"></i> Delete Visitor
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    <p class="text-muted mb-0">No Visitor found</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -94,8 +38,8 @@
                         searchable: false
                     },
                     {
-                        data: 'website_name',
-                        name: 'website.name'
+                        data: 'brand_name',
+                        name: 'brand.name'
                     },
                     {
                         data: 'email',

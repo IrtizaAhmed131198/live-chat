@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Visitor extends Model
 {
-    protected $fillable = ['website_id', 'session_id', 'last_url'];
+    protected $fillable = ['brand_id', 'session_id', 'last_url'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Delete associated users when visitor is deleted
+        static::deleting(function ($visitor) {
+            $visitor->users()->delete();
+        });
+    }
 
     public function user()
     {
@@ -24,8 +34,8 @@ class Visitor extends Model
     /**
      * Relationship with Website
      */
-    public function website()
+    public function brand()
     {
-        return $this->belongsTo(Website::class, 'website_id', 'id');
+        return $this->belongsTo(Brand::class, 'brand_id', 'id');
     }
 }

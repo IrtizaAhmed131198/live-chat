@@ -50,16 +50,29 @@ class MessageController extends Controller
     {
         $request->validate([
             'visitor_id' => 'required',
-            'website_id' => 'required'
+            'brand_id' => 'required'
         ]);
 
+        $chat = Chat::where('visitor_id', $request->visitor_id)
+                    ->where('brand_id', $request->brand_id)
+                    ->where('status', 'open')
+                    ->first();
+        if(!$chat){
+            return response()->json([
+                'error' => true,
+                'message' => 'Chat not found'
+            ]);
+        }
+        $chat->agent_id = auth()->user()->id;
+        $chat->save();
+
         // Create chat
-        $chat = Chat::create([
-            'visitor_id' => $request->visitor_id,
-            'website_id' => $request->website_id,
-            'agent_id' => auth()->user()->id,
-            'status' => 'open'
-        ]);
+        // $chat = Chat::create([
+        //     'visitor_id' => $request->visitor_id,
+        //     'brand_id' => $request->brand_id,
+        //     'agent_id' => auth()->user()->id,
+        //     'status' => 'open'
+        // ]);
 
         return response()->json([
             'chat_id' => $chat->id

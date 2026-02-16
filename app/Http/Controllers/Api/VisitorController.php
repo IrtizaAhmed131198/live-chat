@@ -9,9 +9,11 @@ use App\Models\Chat;
 use App\Models\Message;
 use App\Models\Website;
 use App\Models\User;
+use App\Models\Brand;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\NewVisitorNotification;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class VisitorController extends Controller
 {
@@ -106,7 +108,7 @@ class VisitorController extends Controller
         if (!$chat || $chat->status === 'closed') {
             $chat = Chat::create([
                 'visitor_id' => $visitor->id,
-                'website_id' => $visitor->website_id,
+                'brand_id' => $visitor->brand_id,
                 'agent_id' => $chat->agent_id ?? 1,
                 'status' => 'open',
                 'last_visitor_activity_at' => now()
@@ -196,13 +198,21 @@ class VisitorController extends Controller
             ['domain' => $request->domain],
             ['name' => $request->domain]
         );
+        $brand = Brand::with('users')->where('domain', $request->domain)->first();
+        if(!$brand){
+            return response()->json([
+                'error' => true,
+                'message' => 'Brand Not Found'
+            ]);
+        }
+        $userIds = $brand->users->pluck('id')->toArray();
 
         $sessionId = $request->session_id;
 
         // 2️⃣ Visitor
         $visitor = Visitor::firstOrCreate(
             ['session_id' => $request->session_id],
-            ['website_id' => $website->id]
+            ['brand_id' => $brand->id] //website is like brand_id
         );
 
         $visitorUser = User::firstOrCreate(
@@ -215,13 +225,22 @@ class VisitorController extends Controller
             ]
         );
 
+        $chat = Chat::create([
+            'visitor_id' => $visitor->id,
+            'brand_id' => $visitor->brand_id,
+            'status' => 'open',
+            'last_visitor_activity_at' => now()
+        ]);
+
         // ✅ ONLY FIRST TIME VISITOR
         if ($visitor->wasRecentlyCreated) {
 
             // Send DB notification
             $admins = User::where('role', 1)->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new NewVisitorNotification($website, $visitor));
+            $brandUsers = $brand->users;
+            $allNotifiableUsers = $admins->merge($brandUsers)->unique('id');
+            foreach ($allNotifiableUsers as $user) {
+                $user->notify(new NewVisitorNotification($brand, $visitor));
             }
 
             // Send Pusher notification
@@ -229,20 +248,29 @@ class VisitorController extends Controller
                 'admin-notifications',
                 'visitor-joined',
                 [
-                    'website' => [
-                        'id' => $website->id,
-                        'domain' => $website->domain,
+                    'brand' => [
+                        'id' => $brand->id,
+                        'domain' => $brand->domain,
                     ],
                     'visitor' => [
                         'id' => $visitor->id,
                         'session_id' => $visitor->session_id,
                     ],
+                    'chat' => [
+                        'id' => $chat->id,
+                        'status' => $chat->status
+                    ],
+                    'user_ids' => $userIds
                 ]
             );
         }
 
         return response()->json([
-            'visitor' => $visitor->id
+            'success' => true,
+            'visitor_id' => $visitor->id,
+            'chat_id' => $chat->id,
+            'brand_id' => $brand->id,
+            'message' => 'Visitor initialized successfully'
         ]);
     }
 

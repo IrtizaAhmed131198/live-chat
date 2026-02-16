@@ -67,11 +67,7 @@
     <!-- app CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" class="" />
     <!-- END: app CSS-->
-    <!-- In your <head> section -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
     <!-- Before closing </body> tag -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     {{-- <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"> --}}
     <!-- Select2 CSS -->
@@ -131,12 +127,16 @@
 
     <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" />
     <script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 
     <script>
         Pusher.logToConsole = true;
         document.addEventListener('DOMContentLoaded', function() {
+
+            const currentUserId = {{ auth()->id() }};
+            const currentUserRole = {{ auth()->user()->role }};
 
             // 1️⃣ Hide badge if no unread notifications
             const badge = document.getElementById('notificationBadge');
@@ -173,44 +173,54 @@
             var channel = pusher.subscribe('admin-notifications');
 
             channel.bind('visitor-joined', function(data) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'New Visitor 🎉',
-                    html: `<p>${data.website.domain} just visited.</p>`,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Start Chat',
-                    allowOutsideClick: false,
-                    preConfirm: () => {
-                        return fetch("{{ route('admin.chat.start') }}", {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    visitor_id: data.visitor.id,
-                                    website_id: data.website.id
+
+                const isAuthorizedUser = data.user_ids && data.user_ids.includes(currentUserId);
+
+                if (!isAuthorizedUser) {
+                    console.log('User not authorized for this notification');
+                    return;
+                }
+
+                if (currentUserRole !== 1) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'New Visitor 🎉',
+                        html: `<p>${data.brand.domain} just visited.</p>`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Start Chat',
+                        allowOutsideClick: false,
+                        preConfirm: () => {
+                            return fetch("{{ route('admin.chat.start') }}", {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        visitor_id: data.visitor.id,
+                                        brand_id: data.brand.id
+                                    })
                                 })
-                            })
-                            .then(res => res.json())
-                            .then(resp => {
-                                window.location.href = "{{ route('admin.chat') }}" +
-                                    "?chatId=" + resp.chat_id;
-                            })
-                            .catch(err => {
-                                Swal.showValidationMessage('Failed to start chat');
-                                console.error(err);
-                            });
-                    }
-                });
+                                .then(res => res.json())
+                                .then(resp => {
+                                    window.location.href = "{{ route('admin.chat') }}" +
+                                        "?chatId=" + resp.chat_id;
+                                })
+                                .catch(err => {
+                                    Swal.showValidationMessage('Failed to start chat');
+                                    console.error(err);
+                                });
+                        }
+                    });
+                }
 
                 // Append to dropdown notification
                 const html = `
                 <li class="list-group-item dropdown-notifications-item">
                     <strong>New Visitor</strong><br>
-                    <small>${data.website.domain}</small>
+                    <small>${data.brand.domain}</small>
                     <span class="badge badge-dot"></span>
                 </li>
             `;

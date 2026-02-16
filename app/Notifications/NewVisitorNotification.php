@@ -11,12 +11,12 @@ class NewVisitorNotification extends Notification
 {
     use Queueable;
 
-    public $website;
+    public $brand;
     public $visitor;
 
-    public function __construct($website, $visitor)
+    public function __construct($brand, $visitor)
     {
-        $this->website = $website;
+        $this->brand = $brand;
         $this->visitor = $visitor;
     }
 
@@ -29,8 +29,8 @@ class NewVisitorNotification extends Notification
     {
         return [
             'title' => 'New Visitor',
-            'message' => 'New visitor on ' . $this->website->domain,
-            'website_id' => $this->website->id,
+            'message' => 'New visitor on ' . $this->brand->domain,
+            'brand_id' => $this->brand->id,
             'visitor_id' => $this->visitor->id,
             'session_id' => $this->visitor->session_id,
         ];

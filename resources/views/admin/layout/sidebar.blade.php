@@ -81,12 +81,14 @@
         </li>
 
         <!-- Agent/Users (including create, edit, show, etc) -->
-        <li class="menu-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-            <a href="{{ route('admin.users') }}" class="menu-link">
-                <i class="bx bx-user"></i>
-                <div>Agent</div>
-            </a>
-        </li>
+        @if(auth()->user()->role == 1)
+            <li class="menu-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                <a href="{{ route('admin.users') }}" class="menu-link">
+                    <i class="bx bx-user"></i>
+                    <div>Agent</div>
+                </a>
+            </li>
+        @endif
 
         <!-- Visitor (including create, edit, show, etc) -->
         <li class="menu-item {{ request()->routeIs('admin.visitor*') ? 'active' : '' }}">
@@ -105,20 +107,14 @@
         </li>
 
         <!-- Brand (including create, edit, show, etc) -->
-        <li class="menu-item {{ request()->routeIs('admin.brand*') ? 'active' : '' }}">
-            <a href="{{ route('admin.brand') }}" class="menu-link">
-                <i class="bx bxs-business"></i>
-                <div>Brand</div>
-            </a>
-        </li>
-
-        <!-- Website (including create, edit, show, etc) -->
-        <li class="menu-item {{ request()->routeIs('admin.website*') ? 'active' : '' }}">
-            <a href="{{ route('admin.website') }}" class="menu-link">
-                <i class="bx bxs-server"></i>
-                <div>Website</div>
-            </a>
-        </li>
+        @if(auth()->user()->role == 1)
+            <li class="menu-item {{ request()->routeIs('admin.brand*') ? 'active' : '' }}">
+                <a href="{{ route('admin.brand') }}" class="menu-link">
+                    <i class="bx bxs-business"></i>
+                    <div>Brand</div>
+                </a>
+            </li>
+        @endif
     </ul>
 
 </aside>

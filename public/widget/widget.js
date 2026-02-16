@@ -22,6 +22,7 @@
 
     const WEBSITE_DOMAIN = window.location.hostname;
     let currentUrl = window.location.href;
+    const BASE_URL = "http://localhost/live-chat/public";
 
     let SESSION_ID = sessionStorage.getItem('chat_session_id');
     if (!SESSION_ID) {
@@ -31,7 +32,7 @@
 
     const PUSHER_KEY = '6d2b8f974bbba728216c';
     const PUSHER_CLUSTER = 'ap1';
-    const API_URL = 'http://localhost/live-chat/public/api/visitor-message';
+    const API_URL = `${BASE_URL}/api/visitor-message`;
 
     const emojiScript = document.createElement('script');
     emojiScript.type = 'module';
@@ -63,6 +64,9 @@
 
         let originalTitle = document.title;
         let blinkInterval = null;
+
+        // 🚫 FLAG to prevent API calls if brand not found
+        let isBrandValid = false;
 
         function startTitleBlink(text) {
             if (blinkInterval) return;
@@ -188,10 +192,16 @@
         document.body.appendChild(box);
 
         btn.onclick = () => {
+            // 🚫 Prevent opening if brand is invalid
+            if (!isBrandValid) {
+                console.warn('Chat disabled: Brand not found');
+                return;
+            }
+
             const isOpen = box.style.display === 'flex';
             box.style.display = isOpen ? 'none' : 'flex';
 
-            fetch('http://localhost/live-chat/public/api/visitor-chat-activity', {
+            fetch(`${BASE_URL}/api/visitor-chat-activity`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -204,7 +214,7 @@
 
 
             if (!isOpen) {
-                fetch('http://localhost/live-chat/public/api/visitor-read', {
+                fetch(`${BASE_URL}/api/visitor-read`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -349,10 +359,13 @@
         /* ================= SEND ================= */
 
         input.addEventListener('keydown', e => {
+            // 🚫 Prevent typing if brand invalid
+            if (!isBrandValid) return;
+
             let typingTimer = null;
             clearTimeout(typingTimer);
 
-            fetch('http://localhost/live-chat/public/api/visitor-typing', {
+            fetch(`${BASE_URL}/api/visitor-typing`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -375,6 +388,12 @@
         const sendBtn = document.getElementById('send-btn');
 
         function sendMessage() {
+            // 🚫 Prevent sending if brand invalid
+            if (!isBrandValid) {
+                console.warn('Cannot send message: Brand not found');
+                return;
+            }
+
             if (!input.value.trim()) return;
 
             fetch(API_URL, {
@@ -393,16 +412,6 @@
         sendBtn.addEventListener('click', sendMessage);
 
         /* ================= INIT VISITOR ================= */
-
-        fetch('http://localhost/live-chat/public/api/visitor-init', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                domain: getWebsiteDomain(),
-                session_id: SESSION_ID,
-                url: currentUrl
-            })
-        });
 
         function getWebsiteDomain() {
             const { hostname, pathname } = window.location;
@@ -423,6 +432,46 @@
             return segments.length ? segments[0] : 'localhost';
         }
 
+        // 🚀 INIT VISITOR - MUST SUCCEED BEFORE OTHER APIS
+        fetch(`${BASE_URL}/api/visitor-init`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain: getWebsiteDomain(),
+                session_id: SESSION_ID,
+                url: currentUrl
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // ✅ Brand found - enable chat
+            if (data.success || data.status === 'success') {
+                isBrandValid = true;
+                window.CHAT_ID = data.chat_id;
+                console.log('Brand validated, chat enabled');
+
+                // ✅ Only fetch chat if brand is valid
+                fetchChat(false);
+            } else {
+                // ❌ Brand not found
+                console.error('Brand not found:', data.message || data.error);
+                isBrandValid = false;
+
+                // Hide chat widget
+                btn.style.display = 'none';
+                box.style.display = 'none';
+            }
+        })
+        .catch(err => {
+            // ❌ API error
+            console.error('Visitor init failed:', err);
+            isBrandValid = false;
+
+            // Hide chat widget
+            btn.style.display = 'none';
+            box.style.display = 'none';
+        });
+
         /* ================= LOAD CHAT + SUBSCRIBE ================= */
 
         let channel = null;
@@ -430,6 +479,12 @@
 
         /* ====================== FETCH CHAT ====================== */
         function fetchChat(loadMore = false) {
+            // 🚫 Don't fetch if brand is invalid
+            if (!isBrandValid) {
+                console.warn('Chat disabled: Brand not found');
+                return Promise.resolve();
+            }
+
             if (loadMore && loadingOlder) return Promise.resolve(); // prevent duplicate calls
             if (loadMore && !earliestMessageId) return Promise.resolve(); // no more messages
 
@@ -441,7 +496,7 @@
             };
             if (loadMore) payload.before_id = earliestMessageId;
 
-            return fetch('http://localhost/live-chat/public/api/visitor-chat', {
+            return fetch(`${BASE_URL}/api/visitor-chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -465,10 +520,11 @@
                     // subscribe to pusher
                     channel = pusher.subscribe(`chat.${data.chat_id}`);
                     channel.bind('new-message', data => {
+                        console.log(data);
                         if (data.sender === null) return;
                         addMsg(data.message, data.role, data.formatted_created_at, true, false, data.id);
                         if (box.style.display === 'flex') {
-                            fetch('http://localhost/live-chat/public/api/visitor-read', {
+                            fetch(`${BASE_URL}/api/visitor-read`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -518,17 +574,17 @@
             }
         });
 
-        // initial fetch
-        fetchChat(false);
-
         function notifyPageChange() {
+            // 🚫 Don't send if brand invalid
+            if (!isBrandValid) return;
+
             const currentUrl = window.location.href;
 
             // check if we've already notified for this URL
             if (window.lastNotifiedUrl === currentUrl) return;
             window.lastNotifiedUrl = currentUrl;
 
-            fetch('http://localhost/live-chat/public/api/visitor-activity', {
+            fetch(`${BASE_URL}/api/visitor-activity`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -549,8 +605,11 @@
 
 
         function sendHeartbeat() {
+            // 🚫 Don't send if brand invalid
+            if (!isBrandValid) return;
+
             console.log('Sending heartbeat');
-            fetch('http://localhost/live-chat/public/api/visitor-heartbeat', {
+            fetch(`${BASE_URL}/api/visitor-heartbeat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

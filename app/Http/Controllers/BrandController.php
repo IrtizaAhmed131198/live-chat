@@ -48,10 +48,12 @@ class BrandController extends Controller
             'name' => 'required|string|max:255',
             'user_ids' => 'required|array', // Multiple users ke liye array
             'user_ids.*' => 'required|exists:users,id', // Har user ID exist karni chahiye
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255',
             'url' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'website' => 'required|string|max:255',
+            'domain' => 'required|string|max:255',
             'status' => 'required|in:0,1',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -81,21 +83,15 @@ class BrandController extends Controller
             // Insert multiple users into brand_users table
             foreach ($request->user_ids as $userId) {
                 BrandUser::create([
-                    'brand_id' => (string) $brand->id, // String format mein
-                    'user_id' => (string) $userId,      // String format mein
-                ]);
-
-                Log::info('User assigned to brand', [
-                    'brand_id' => $brand->id,
-                    'user_id' => $userId
+                    'brand_id' => (string) $brand->id,
+                    'user_id' => (string) $userId,
                 ]);
             }
 
             DB::commit();
 
             $userCount = count($request->user_ids);
-            return redirect()->route('admin.brand')
-                ->with('success', "Brand created successfully with {$userCount} users!");
+            return redirect()->route('admin.brand')->with('success', "Brand created successfully with {$userCount} users!");
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -103,8 +99,6 @@ class BrandController extends Controller
             if (isset($validated['logo']) && file_exists(public_path($validated['logo']))) {
                 unlink(public_path($validated['logo']));
             }
-
-            Log::error('Brand creation failed: ' . $e->getMessage());
 
             return back()
                 ->with('error', 'Error creating brand: ' . $e->getMessage())
@@ -133,10 +127,12 @@ class BrandController extends Controller
             'name' => 'required|string|max:255',
             'user_ids' => 'required|array',
             'user_ids.*' => 'required|exists:users,id',
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255',
             'url' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'website' => 'required|string|max:255',
+            'domain' => 'required|string|max:255',
             'status' => 'required|in:0,1',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -184,7 +180,6 @@ class BrandController extends Controller
                 ->with('success', 'Brand updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Brand update failed: ' . $e->getMessage());
 
             return back()
                 ->with('error', 'Error updating brand: ' . $e->getMessage())

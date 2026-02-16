@@ -88,4 +88,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Visitor::class, 'visitor_id', 'id');
     }
+
+    public function auth_brands()
+    {
+        return $this->belongsToMany(Brand::class, 'brand_users', 'user_id', 'brand_id');
+    }
 }

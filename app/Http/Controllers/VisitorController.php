@@ -15,9 +15,7 @@ class VisitorController extends Controller
      */
     public function index()
     {
-        // Saare visitors unke user aur website ke saath
-        $visitors = Visitor::with(['user', 'website'])->get();
-        return view('admin.visitor.index', compact('visitors'));
+        return view('admin.visitor.index');
     }
 
     /**
@@ -25,13 +23,13 @@ class VisitorController extends Controller
      */
     public function getdata()
     {
-        $visitors = Visitor::with(['user', 'website'])
-            ->select(['id', 'website_id', 'created_at']);
+        $visitors = Visitor::with(['user', 'brand'])
+            ->select(['id', 'brand_id', 'created_at']);
 
         return DataTables::of($visitors)
             ->addIndexColumn()
-            ->addColumn('website_name', function ($visitor) {
-                return $visitor->website->name ?? '<span class="text-muted">N/A</span>';
+            ->addColumn('brand_name', function ($visitor) {
+                return $visitor->brand->name ?? '<span class="text-muted">N/A</span>';
             })
             ->addColumn('email', function ($visitor) {
                 return $visitor->user->email ?? '<span class="text-muted">N/A</span>';
@@ -62,7 +60,7 @@ class VisitorController extends Controller
                 </div>
             ';
             })
-            ->rawColumns(['website_name', 'email', 'phone', 'actions'])
+            ->rawColumns(['brand_name', 'email', 'phone', 'actions'])
             ->make(true);
     }
 
@@ -72,12 +70,9 @@ class VisitorController extends Controller
     public function edit($id)
     {
         // Sirf visitor ka data lao with user
-        $visitor = Visitor::with(['user', 'website'])->findOrFail($id);
+        $visitor = Visitor::with(['user'])->findOrFail($id);
 
-        // Saari websites dropdown ke liye
-        $websites = Website::all();
-
-        return view('admin.visitor.edit', compact('visitor', 'websites'));
+        return view('admin.visitor.edit', compact('visitor'));
     }
 
     /**

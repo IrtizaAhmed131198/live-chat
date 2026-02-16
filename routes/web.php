@@ -29,8 +29,6 @@ Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->
 
 Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
 
-    Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
     Route::get('users', [UserController::class, 'index'])->name('admin.users');
     Route::get('users/create', [UserController::class, 'create'])->name('admin.users.create');
     Route::post('users/store', [UserController::class, 'store'])->name('admin.users.store');
@@ -48,27 +46,18 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::put('brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
     Route::delete('brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
 
-    Route::get('website/data', [WebsiteController::class, 'getdata'])->name('admin.website.getdata');
-    Route::get('website', [WebsiteController::class, 'index'])->name('admin.website');
-    Route::get('website/create', [WebsiteController::class, 'create'])->name('admin.website.create');
-    Route::post('website/store', [WebsiteController::class, 'store'])->name('admin.website.store');
-    Route::get('website/edit/{id}', [WebsiteController::class, 'edit'])->name('admin.website.edit');
-    Route::put('website/update/{id}', [WebsiteController::class, 'update'])->name('admin.website.update');
-    Route::delete('website/destroy/{id}', [WebsiteController::class, 'destroy'])->name('admin.website.destroy');
-
-
-    Route::get('visitor/data', [VisitorController::class, 'getdata'])->name('admin.visitor.getdata');
-    Route::get('visitor', [VisitorController::class, 'index'])->name('admin.visitor');
-    // Route::get('visitor/create', [VisitorController::class, 'create'])->name('admin.visitor.create');
-    // Route::post('visitor/store', [VisitorController::class, 'store'])->name('admin.visitor.store');
-    Route::get('visitor/edit/{id}', [VisitorController::class, 'edit'])->name('admin.visitor.edit');
-    Route::put('visitor/update/{id}', [VisitorController::class, 'update'])->name('admin.visitor.update');
-    Route::delete('visitor/destroy/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
-    Route::delete('visitor/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
-    Route::get('visitor/edit-user/{id}', [VisitorController::class, 'editUser'])->name('admin.visitor.edit-user');
+    // Route::get('website/data', [WebsiteController::class, 'getdata'])->name('admin.website.getdata');
+    // Route::get('website', [WebsiteController::class, 'index'])->name('admin.website');
+    // Route::get('website/create', [WebsiteController::class, 'create'])->name('admin.website.create');
+    // Route::post('website/store', [WebsiteController::class, 'store'])->name('admin.website.store');
+    // Route::get('website/edit/{id}', [WebsiteController::class, 'edit'])->name('admin.website.edit');
+    // Route::put('website/update/{id}', [WebsiteController::class, 'update'])->name('admin.website.update');
+    // Route::delete('website/destroy/{id}', [WebsiteController::class, 'destroy'])->name('admin.website.destroy');
 });
 
 Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
+
+    Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     Route::get('chat', [AdminController::class, 'chat'])->name('admin.chat');
     Route::get('chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
@@ -84,6 +73,16 @@ Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
     Route::get('notification', [AdminController::class, 'notification'])->name('admin.notification');
     Route::get('notification/data', [AdminController::class, 'getNotification'])->name('admin.notification.data');
     Route::post('notifications/mark-as-read', [AdminController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+
+    Route::get('visitor/data', [VisitorController::class, 'getdata'])->name('admin.visitor.getdata');
+    Route::get('visitor', [VisitorController::class, 'index'])->name('admin.visitor');
+    // Route::get('visitor/create', [VisitorController::class, 'create'])->name('admin.visitor.create');
+    // Route::post('visitor/store', [VisitorController::class, 'store'])->name('admin.visitor.store');
+    Route::get('visitor/edit/{id}', [VisitorController::class, 'edit'])->name('admin.visitor.edit');
+    Route::put('visitor/update/{id}', [VisitorController::class, 'update'])->name('admin.visitor.update');
+    Route::delete('visitor/destroy/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
+    Route::delete('visitor/{id}', [VisitorController::class, 'destroy'])->name('admin.visitor.destroy');
+    Route::get('visitor/edit-user/{id}', [VisitorController::class, 'editUser'])->name('admin.visitor.edit-user');
 });
 
 Route::middleware(['auth'])->group(function () {

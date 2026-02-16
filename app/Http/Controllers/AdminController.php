@@ -18,9 +18,20 @@ class AdminController extends Controller
 
     public function chat($chatId = null)
     {
-        $user = User::with('get_chat')->where('role', 3)->get();
-        $chats = Chat::with('visitor')->where('status', 'open')
-            ->latest() // latest chat on top
+        $userBrandIds = auth()->user()->auth_brands->pluck('id')->toArray();
+        $user = User::with(['get_chat' => function($query) use ($userBrandIds) {
+                $query->whereHas('visitor', function($q) use ($userBrandIds) {
+                    $q->whereIn('brand_id', $userBrandIds);
+                });
+            }])
+            ->where('role', 3)
+            ->get();
+        $chats = Chat::with('visitor')
+            ->where('status', 'open')
+            ->whereHas('visitor', function($query) use ($userBrandIds) {
+                $query->whereIn('brand_id', $userBrandIds);
+            })
+            ->latest()
             ->get();
 
         $messages = collect();
