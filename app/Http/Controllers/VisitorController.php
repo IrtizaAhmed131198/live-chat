@@ -7,6 +7,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\Visitor;
 use App\Models\Website;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
 class VisitorController extends Controller
 {
@@ -82,13 +83,36 @@ class VisitorController extends Controller
     {
         $visitor = Visitor::with('user')->findOrFail($id);
 
-        $validated = $request->validate([
-            'email' => 'required|email|unique:users,email,' . $visitor->user->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'about' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
+        $validator = Validator::make($request->all(), [
+            'email' => [
+                'required',
+                'email',
+                'unique:users,email,' . $visitor->user->id
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20'
+            ],
+            'address' => [
+                'nullable',
+                'string'
+            ],
+            'about' => [
+                'nullable',
+                'string'
+            ],
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,png,jpg,gif',
+                'max:2048'
+            ],
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         try {
             // User model find karo
@@ -115,10 +139,10 @@ class VisitorController extends Controller
             }
 
             // Update user fields
-            $user->email = $validated['email'];
-            $user->phone = $validated['phone'];
-            $user->address = $validated['address'];
-            $user->about = $validated['about'];
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->address = $request->address;
+            $user->about = $request->about;
             $user->save();
 
             return redirect()->route('admin.visitor')

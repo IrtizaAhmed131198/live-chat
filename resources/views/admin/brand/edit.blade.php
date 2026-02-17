@@ -37,130 +37,156 @@
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
             <div class="col">
-            <div class="card mb-6">
-                <div class="nav-align-top">
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#brand-info" role="tab" aria-selected="true"><span class="icon-base bx bx-user d-sm-none"></span><span class="d-none d-sm-block">Brand Info</span></button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#chat-settings" role="tab" aria-selected="false" tabindex="-1"><span class="icon-base bx bx-user-pin d-sm-none"></span><span class="d-none d-sm-block">Chat Settings</span></button>
-                    </li>
-                </ul>
-                </div>
+                <div class="card mb-6">
+                    <div class="nav-align-top">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#brand-info"
+                                    role="tab" aria-selected="true"><span
+                                        class="icon-base bx bx-user d-sm-none"></span><span class="d-none d-sm-block">Brand
+                                        Info</span></button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#chat-settings" role="tab"
+                                    aria-selected="false" tabindex="-1"><span
+                                        class="icon-base bx bx-user-pin d-sm-none"></span><span
+                                        class="d-none d-sm-block">Chat Settings</span></button>
+                            </li>
+                        </ul>
+                    </div>
 
-                <div class="tab-content">
-                    <div class="tab-pane fade active show" id="brand-info" role="tabpanel">
-                        <form action="{{ route('admin.brand.update', ['brand' => $brand->id]) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label">Brand Name</label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                        name="name" value="{{ old('name', $brand->name) }}" required>
-                                    @error('name')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade active show" id="brand-info" role="tabpanel">
+                            <form action="{{ route('admin.brand.update', ['brand' => $brand->id]) }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                @method('PUT')
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Brand Name</label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                            id="name" name="name" value="{{ old('name', $brand->name) }}" required>
+                                        @error('name')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="user_ids" class="form-label fw-bold">Select Users</label>
-                                    <select
-                                        class="form-select @error('user_ids') is-invalid @enderror @error('user_ids.*') is-invalid @enderror"
-                                        id="user_ids" name="user_ids[]" multiple="multiple" required>
-                                        @foreach ($users as $user)
-                                            <option value="{{ $user->id }}"
-                                                {{ in_array($user->id, old('user_ids', $selectedUserIds ?? [])) ? 'selected' : '' }}>
-                                                {{ $user->name }} ({{ $user->email }})
+                                    <div class="col-md-6 mb-3">
+                                        <label for="user_ids" class="form-label fw-bold">Select Users</label>
+                                        <select
+                                            class="form-select @error('user_ids') is-invalid @enderror @error('user_ids.*') is-invalid @enderror"
+                                            id="user_ids" name="user_ids[]" multiple="multiple" required>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->id }}"
+                                                    {{ in_array($user->id, old('user_ids', $selectedUserIds ?? [])) ? 'selected' : '' }}>
+                                                    {{ $user->name }} ({{ $user->email }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('user_ids')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email"
+                                            value="{{ old('email', $brand->email) }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="url" class="form-label">Brand URL</label>
+                                        <input type="text" class="form-control" id="url" name="url"
+                                            value="{{ old('url', $brand->url) }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="domain" class="form-label">Brand Domain</label>
+                                        <input type="text" class="form-control" id="domain" name="domain"
+                                            value="{{ old('domain', $brand->domain) }}">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="status" class="form-label">Status</label>
+                                        <select class="form-select" id="status" name="status" required>
+                                            <option value="1"
+                                                {{ old('status', $brand->status ?? '') == 1 ? 'selected' : '' }}>Active
                                             </option>
-                                        @endforeach
-                                    </select>
-                                    @error('user_ids')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
+                                            <option value="0"
+                                                {{ old('status', $brand->status ?? '') == 0 ? 'selected' : '' }}>
+                                                Inactive</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email"
-                                        value="{{ old('email', $brand->email) }}">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">Create Brand</button>
+                                        <a href="{{ route('admin.brand') }}" class="btn btn-secondary">Cancel</a>
+                                    </div>
                                 </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="chat-settings" role="tabpanel">
+                            <form method="POST" action="{{ route('admin.brand.chat.settings') }}">
+                                @csrf
+                                <div class="row">
+                                    <input type="hidden" name="brand_id" value="{{ $brand->id ?? '' }}">
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="url" class="form-label">Brand URL</label>
-                                    <input type="text" class="form-control" id="url" name="url"
-                                        value="{{ old('url', $brand->url) }}">
-                                </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Enable Chat</label>
+                                        <select class="form-select" name="chat_enabled">
+                                            <option value="1"
+                                                {{ isset($chatSettings) && $chatSettings->chat_enabled == 1 ? 'selected' : '' }}>
+                                                Enabled</option>
+                                            <option value="0"
+                                                {{ isset($chatSettings) && $chatSettings->chat_enabled == 0 ? 'selected' : '' }}>
+                                                Disabled</option>
+                                        </select>
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="domain" class="form-label">Brand Domain</label>
-                                    <input type="text" class="form-control" id="domain" name="domain"
-                                        value="{{ old('domain', $brand->domain) }}">
-                                </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Primary Color</label>
+                                        <input type="color" name="primary_color" class="form-control"
+                                            value="{{ $chatSettings->primary_color ?? '#000000' }}">
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-select" id="status" name="status" required>
-                                        <option value="1" {{ old('status', $brand->status ?? '') == 1 ? 'selected' : '' }}>Active
-                                        </option>
-                                        <option value="0" {{ old('status', $brand->status ?? '') == 0 ? 'selected' : '' }}>
-                                            Inactive</option>
-                                    </select>
-                                </div>
-                            </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Popup Delay (Seconds)</label>
+                                        <input type="number" name="popup_delay" class="form-control"
+                                            value="{{ $chatSettings->popup_delay ?? '5' }}">
+                                    </div>
 
-                            <div class="row">
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary">Create Brand</button>
-                                    <a href="{{ route('admin.brand') }}" class="btn btn-secondary">Cancel</a>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="tab-pane fade" id="chat-settings" role="tabpanel">
-                        <form>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label>Enable Chat</label>
-                                    <select class="form-select" name="chat_enabled">
-                                        <option value="1">Enabled</option>
-                                        <option value="0">Disabled</option>
-                                    </select>
-                                </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label>Sound Notification</label>
+                                        <select class="form-select" name="sound_enabled">
+                                            <option value="1"
+                                                {{ isset($chatSettings) && $chatSettings->sound_enabled == 1 ? 'selected' : '' }}>
+                                                Enabled</option>
+                                            <option value="0"
+                                                {{ isset($chatSettings) && $chatSettings->sound_enabled == 0 ? 'selected' : '' }}>
+                                                Disabled</option>
+                                        </select>
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label>Primary Color</label>
-                                    <input type="color" name="primary_color" class="form-control">
-                                </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label>Welcome Message</label>
+                                        <textarea name="welcome_message" class="form-control">{{ $chatSettings->welcome_message ?? '' }}</textarea>
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label>Popup Delay (Seconds)</label>
-                                    <input type="number" name="popup_delay" class="form-control" value="5">
-                                </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label>Offline Message</label>
+                                        <textarea name="offline_message" class="form-control">{{ $chatSettings->offline_message ?? '' }}</textarea>
+                                    </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label>Sound Notification</label>
-                                    <select class="form-select" name="sound_enabled">
-                                        <option value="1">Enabled</option>
-                                        <option value="0">Disabled</option>
-                                    </select>
+                                    <div class="col-md-12 mb-3">
+                                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                                    </div>
                                 </div>
-
-                                <div class="col-md-12 mb-3">
-                                    <label>Welcome Message</label>
-                                    <textarea name="welcome_message" class="form-control"></textarea>
-                                </div>
-
-                                <div class="col-md-12 mb-3">
-                                    <label>Offline Message</label>
-                                    <textarea name="offline_message" class="form-control"></textarea>
-                                </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>

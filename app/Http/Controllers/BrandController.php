@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\BrandUser;
+use App\Models\ChatSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -45,7 +46,6 @@ class BrandController extends Controller
 
     public function store(Request $request)
     {
-        // Validate - user_ids as array
         $validator = Validator::make($request->all(), [
             'url' => [
                 'required',
@@ -88,6 +88,42 @@ class BrandController extends Controller
         }
     }
 
+    public function chatSettingsStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'brand_id' => 'required|integer|exists:brand,id',
+            'chat_enabled' => 'required|in:0,1',
+            'primary_color' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^#[a-fA-F0-9]{6}$/'
+            ],
+            'popup_delay' => 'required|integer|min:0|max:3600',
+            'sound_enabled' => 'required|in:0,1',
+            'welcome_message' => 'nullable|string|max:500',
+            'offline_message' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        ChatSetting::updateOrCreate(
+            ['brand_id' => $request->brand_id],
+            [
+                'chat_enabled' => $request->chat_enabled,
+                'primary_color' => $request->primary_color,
+                'popup_delay' => $request->popup_delay,
+                'sound_enabled' => $request->sound_enabled,
+                'welcome_message' => $request->welcome_message,
+                'offline_message' => $request->offline_message,
+            ]
+        );
+
+        return redirect()->route('admin.brand')->with('success', 'Chat settings saved successfully!');
+    }
+
     public function edit($id)
     {
         $brand = Brand::findOrFail($id);
@@ -98,7 +134,9 @@ class BrandController extends Controller
             ->where('brand_id', (string) $brand->id)
             ->pluck('user_id')
             ->toArray();
-        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds'));
+        $chatSettings = ChatSetting::where('brand_id', $brand->id)->first();
+
+        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds' , 'chatSettings'));
     }
 
     public function update(Request $request, $id)
@@ -158,7 +196,9 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
+        ChatSetting::where('brand_id', $brand->id)->delete();
         $brand->delete();
+
         return redirect()->route('admin.brand')->with('success', 'Brand deleted successfully!');
     }
 }

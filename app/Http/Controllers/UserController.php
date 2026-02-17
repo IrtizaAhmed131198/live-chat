@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
 
 
 class UserController extends Controller
@@ -34,16 +35,47 @@ class UserController extends Controller
     }
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'image' => 'nullable|file',
-            'phone' => 'required|string|max:20',
-            'address' => 'nullable|string',
-            'about' => 'nullable|string',
-            'password' => 'required|string|min:8|confirmed',
+        $validator = Validator::make($request->all(), [
+            'name' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'unique:users'
+            ],
+            'image' => [
+                'nullable',
+                'file'
+            ],
+            'phone' => [
+                'required',
+                'string',
+                'max:20'
+            ],
+            'address' => [
+                'nullable',
+                'string'
+            ],
+            'about' => [
+                'nullable',
+                'string'
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed'
+            ],
         ]);
 
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $request->all();
         $validated['visitor_id'] = 2;
         $validated['role'] = 2;
 
@@ -57,7 +89,7 @@ class UserController extends Controller
         $validated['password'] = bcrypt($validated['password']);
 
         User::create($validated);
-        // dd($validated);
+
         return redirect()->route('admin.users')->with('success', 'User created successfully!');
     }
     public function edit($id)
@@ -69,15 +101,47 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'image' => 'nullable|file',
-            'phone' => 'required|string|max:20',
-            'address' => 'nullable|string',
-            'about' => 'nullable|string',
-            'password' => 'nullable|string|min:8|confirmed',
+        $validator = Validator::make($request->all(), [
+            'name' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'unique:users,email,' . $id
+            ],
+            'image' => [
+                'nullable',
+                'file'
+            ],
+            'phone' => [
+                'required',
+                'string',
+                'max:20'
+            ],
+            'address' => [
+                'nullable',
+                'string'
+            ],
+            'about' => [
+                'nullable',
+                'string'
+            ],
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed'
+            ],
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validated = $request->all();
 
         // Image upload
         $validated['visitor_id'] = 2;
