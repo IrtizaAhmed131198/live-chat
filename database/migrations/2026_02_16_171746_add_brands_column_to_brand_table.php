@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('brand', function (Blueprint $table) {
-            $table->string('website')->nullalble()->after('address');
-            $table->string('domain')->nullalble()->after('website');
+            $table->string('website')->nullable()->after('address');
+            $table->string('domain')->nullable()->after('website');
         });
     }
 

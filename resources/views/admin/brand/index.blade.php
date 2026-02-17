@@ -19,63 +19,11 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
-                            <th>Logo</th>
-                            <th>Brand Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
+                            <th>Domain</th>
+                            <th>URL</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="table-border-bottom-0">
-                        @forelse($brand as $index => $brand)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>
-                                    {{-- @dd($brand->logo) --}}
-                                    <img height="50px" src="{{ asset($brand->logo) }}" alt="">
-                                </td>
-                                <td>
-                                    <strong>{{ $brand->name }}</strong>
-                                </td>
-                                <td>
-                                    <strong>{{ $brand->email }}</strong>
-                                </td>
-                                <td>
-                                    <strong>{{ $brand->phone }}</strong>
-                                </td>
-
-                                <td>
-                                    <div class="dropdown">
-                                        <button type="button"
-                                            class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end m-0">
-                                            <a class="dropdown-item" href="{{ route('admin.brand.edit', $brand->id) }}">
-                                                <i class="bx bx-edit me-2"></i> Edit
-                                            </a>
-                                            <form action="{{ route('admin.brand.destroy', $brand->id) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger"
-                                                    onclick="return confirm('Are you sure?')">
-                                                    <i class="bx bx-trash me-2"></i> Delete
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <p class="text-muted mb-0">No Brand found</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -95,23 +43,12 @@
                         name: 'id'
                     },
                     {
-                        data: 'logo', // Added comma here
-                        name: 'logo',
-                        render: function(data) {
-                            return '<img height="100px" src="{{ asset('') }}' + data + '" alt="">';
-                        }
+                        data: 'domain',
+                        name: 'domain'
                     },
                     {
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'email',
-                        name: 'email'
-                    },
-                    {
-                        data: 'phone',
-                        name: 'phone'
+                        data: 'url',
+                        name: 'url'
                     },
                     {
                         data: 'actions',

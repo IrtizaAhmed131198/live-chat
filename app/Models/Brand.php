@@ -18,4 +18,14 @@ class Brand extends Model
     {
         return $this->belongsToMany(User::class, 'brand_users', 'brand_id', 'user_id');
     }
+
+    public function chatSetting()
+    {
+        return $this->hasOne(ChatSetting::class, 'brand_id', 'id');
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class, 'brand_id', 'id');
+    }
 }

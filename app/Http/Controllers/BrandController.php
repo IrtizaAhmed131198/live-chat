@@ -10,6 +10,8 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 class BrandController extends Controller
 {
@@ -24,14 +26,14 @@ class BrandController extends Controller
 
     public function getdata() // Changed from getUsers() to getdata()
     {
-        $brand =  Brand::with('user')->select(['id', 'logo', 'name', 'email', 'phone']);
+        $brand =  Brand::with('user')->select(['id', 'domain', 'url']);
 
         return DataTables::of($brand)
             ->addIndexColumn()
             ->addColumn('actions', function ($brand) {
                 return view('admin.brand.partials.actions', compact('brand'))->render();
             })
-            ->rawColumns(['actions', 'logo'])
+            ->rawColumns(['actions'])
             ->make(true);
     }
 
@@ -44,34 +46,28 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         // Validate - user_ids as array
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'user_ids' => 'required|array', // Multiple users ke liye array
-            'user_ids.*' => 'required|exists:users,id', // Har user ID exist karni chahiye
-            'email' => 'required|email|max:255',
-            'url' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'website' => 'required|string|max:255',
-            'domain' => 'required|string|max:255',
+        $validator = Validator::make($request->all(), [
+            'url' => [
+                'required',
+                'string',
+                'max:255',
+                'url'
+            ],
+            'domain' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^(?!https?:\/\/)(?!www\.)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/',
+                'unique:brand,domain'
+            ],
             'status' => 'required|in:0,1',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Format URL
-        $url = $request->url;
-        if (!preg_match('/^https?:\/\//', $url)) {
-            $url = 'https://' . $url;
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
-        $validated['url'] = $url;
 
-        // Logo upload handling
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('upload/logo'), $filename);
-            $validated['logo'] = 'upload/logo/' . $filename;
-        }
+        $validated = $validator->validated();
 
         // Use database transaction
         DB::beginTransaction();
@@ -80,26 +76,12 @@ class BrandController extends Controller
             // Create brand
             $brand = Brand::create($validated);
 
-            // Insert multiple users into brand_users table
-            foreach ($request->user_ids as $userId) {
-                BrandUser::create([
-                    'brand_id' => (string) $brand->id,
-                    'user_id' => (string) $userId,
-                ]);
-            }
-
             DB::commit();
 
-            $userCount = count($request->user_ids);
-            return redirect()->route('admin.brand')->with('success', "Brand created successfully with {$userCount} users!");
+            // $userCount = count($request->user_ids);
+            return redirect()->route('admin.brand')->with('success', "Brand created successfully!");
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Delete uploaded logo if brand creation failed
-            if (isset($validated['logo']) && file_exists(public_path($validated['logo']))) {
-                unlink(public_path($validated['logo']));
-            }
-
             return back()
                 ->with('error', 'Error creating brand: ' . $e->getMessage())
                 ->withInput();
@@ -128,34 +110,21 @@ class BrandController extends Controller
             'user_ids' => 'required|array',
             'user_ids.*' => 'required|exists:users,id',
             'email' => 'required|email|max:255',
-            'url' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'website' => 'required|string|max:255',
-            'domain' => 'required|string|max:255',
+            'url' => [
+                'required',
+                'string',
+                'max:255',
+                'url'
+            ],
+            'domain' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^(?!https?:\/\/)(?!www\.)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/',
+                Rule::unique('brand', 'domain')->ignore($brand->id)
+            ],
             'status' => 'required|in:0,1',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        // Format URL
-        $url = $request->url;
-        if (!preg_match('/^https?:\/\//', $url)) {
-            $url = 'https://' . $url;
-        }
-        $validated['url'] = $url;
-
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            // Delete old logo
-            if ($brand->logo && file_exists(public_path($brand->logo))) {
-                unlink(public_path($brand->logo));
-            }
-
-            $file = $request->file('logo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('upload/logo'), $filename);
-            $validated['logo'] = 'upload/logo/' . $filename;
-        }
 
         DB::beginTransaction();
 

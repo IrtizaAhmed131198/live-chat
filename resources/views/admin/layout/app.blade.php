@@ -125,6 +125,8 @@
     {{-- <link rel="modulepreload" href="{{ asset('assets/js/main-CGh5h70G.js') }}" /><script type="module" src="{{ asset('assets/js/main-CGh5h70G.js') }}"></script> --}}
     <link rel="modulepreload" href="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}" />
     <script type="module" src="{{ asset('assets/js/app-chat-B0MYhsTQ.js') }}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <link rel="modulepreload" href="{{ asset('assets/js/app-T1DpEqax.js') }}" />
     <script type="module" src="{{ asset('assets/js/app-T1DpEqax.js') }}"></script>
@@ -219,12 +221,12 @@
 
                 // Append to dropdown notification
                 const html = `
-                <li class="list-group-item dropdown-notifications-item">
-                    <strong>New Visitor</strong><br>
-                    <small>${data.brand.domain}</small>
-                    <span class="badge badge-dot"></span>
-                </li>
-            `;
+                    <li class="list-group-item dropdown-notifications-item">
+                        <strong>New Visitor</strong><br>
+                        <small>${data.brand.domain}</small>
+                        <span class="badge badge-dot"></span>
+                    </li>
+                `;
                 document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
                 document.getElementById('notificationBadge').classList.remove('d-none');
             });
@@ -275,6 +277,26 @@
             j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
             f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-5DDHKGP');
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            @if(Session::has('success'))
+                toastr.success('{{ session("success") }}', 'Success!', {
+                    "timeOut": "3000",
+                    "positionClass": "toast-top-center"
+                });
+            @endif
+
+            @if(session()->has('error'))
+                @foreach((array) session('error') as $error)
+                    toastr.error('{{ $error }}', 'Error!', {
+                        "timeOut": "3000",
+                        "positionClass": "toast-top-center"
+                    });
+                @endforeach
+            @endif
+        });
     </script>
 
 </body>
