@@ -84,7 +84,7 @@
         @if(auth()->user()->role == 1)
             <li class="menu-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                 <a href="{{ route('admin.users') }}" class="menu-link">
-                    <i class="bx bx-user"></i>
+                    <i class="menu-icon bx bx-user"></i>
                     <div>Agent</div>
                 </a>
             </li>
@@ -93,7 +93,7 @@
         <!-- Visitor (including create, edit, show, etc) -->
         <li class="menu-item {{ request()->routeIs('admin.visitor*') ? 'active' : '' }}">
             <a href="{{ route('admin.visitor') }}" class="menu-link">
-                <i class="bx bxs-show"></i>
+                <i class="menu-icon bx bxs-show"></i>
                 <div>Visitor</div>
             </a>
         </li>
@@ -101,7 +101,7 @@
         <!-- Notification (including all notification routes) -->
         <li class="menu-item {{ request()->routeIs('admin.notification*') ? 'active' : '' }}">
             <a href="{{ route('admin.notification') }}" class="menu-link">
-                <i class="bx bx-bell"></i>
+                <i class="menu-icon bx bx-bell"></i>
                 <div>Notification</div>
             </a>
         </li>
@@ -110,7 +110,7 @@
         @if(auth()->user()->role == 1)
             <li class="menu-item {{ request()->routeIs('admin.brand*') ? 'active' : '' }}">
                 <a href="{{ route('admin.brand') }}" class="menu-link">
-                    <i class="bx bxs-business"></i>
+                    <i class="menu-icon bx bxs-business"></i>
                     <div>Brand</div>
                 </a>
             </li>
