@@ -10,6 +10,27 @@
     border-radius: 15px;
     padding: 40px;
     color: #fff;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    background: #2a2a40;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
 }
 
 .script-box {
@@ -57,6 +78,11 @@
 
 <div class="container mt-5">
     <div class="install-card shadow-lg">
+
+        <!-- 🔙 Back Button -->
+        <a href="{{ route('admin.brand') }}" class="back-btn">
+            ← Back
+        </a>
 
         <h2 class="mb-3 fw-bold">Install Widget</h2>
 

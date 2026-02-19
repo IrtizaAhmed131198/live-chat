@@ -34,26 +34,54 @@
         }
     </style>
     <style>
-        .script-box {
+        .install-wrapper {
             background: #1e1e2f;
             border-radius: 12px;
-            padding: 25px;
-            color: #bfc7ff;
-            font-size: 14px;
-            cursor: pointer;
+            padding: 30px;
+            color: #fff;
             position: relative;
+        }
+
+        .tab-back-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: #2a2a40;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
             transition: 0.3s;
         }
 
+        .tab-back-btn:hover {
+            background: #6366f1;
+            border-color: #6366f1;
+            color: #fff;
+        }
+
+        .script-box {
+            background: #2a2a40;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 14px;
+            color: #bfc7ff;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
         .script-box:hover {
-            background: #27293d;
+            background: #32325a;
             box-shadow: 0 0 15px rgba(105, 108, 255, 0.4);
         }
 
         .copy-toast {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: 10px;
+            right: 15px;
             background: #4ade80;
             color: #000;
             padding: 4px 10px;
@@ -238,22 +266,21 @@
 <script src="https://democustom-html.com/custom-backend/live-chat/public/widget.js?brand='.$brand->id.'"></script>
 <!-- End of Live Chat -->';
                             @endphp
-
-                            <div class="p-4">
+                            <div class="install-wrapper mt-4">
+                                <a href="{{ route('admin.brand') }}" class="tab-back-btn">
+                                    ← Back
+                                </a>
                                 <h5 class="fw-bold mb-3">Install Live Chat Widget</h5>
                                 <p class="text-muted">
                                     Copy this code and paste it before the
                                     <code>&lt;/body&gt;</code> tag of your website.
                                 </p>
-                                <div class="script-box mt-3" onclick="copyScript()">
-                                    <span class="copy-toast" id="toast">Copied!</span>
+                                <div class="script-box mt-3" onclick="copyInstallScript()">
+                                    <span class="copy-toast" id="toastInstall">Copied!</span>
                                     <pre id="installScript" class="mb-0">{{ $script }}</pre>
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -270,11 +297,11 @@
         });
     </script>
     <script>
-        function copyScript() {
+        function copyInstallScript() {
             let text = document.getElementById("installScript").innerText;
 
             navigator.clipboard.writeText(text).then(function() {
-                let toast = document.getElementById("toast");
+                let toast = document.getElementById("toastInstall");
                 toast.style.display = "inline-block";
 
                 setTimeout(() => {
@@ -283,5 +310,6 @@
             });
         }
     </script>
+
 
 @endsection
