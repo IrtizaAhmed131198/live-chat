@@ -103,6 +103,7 @@ class BrandController extends Controller
             'sound_enabled' => 'required|in:0,1',
             'welcome_message' => 'nullable|string|max:500',
             'offline_message' => 'nullable|string|max:500',
+            'chat_position' => 'required|string|in:left,right,top,bottom',
         ]);
 
         if ($validator->fails()) {
@@ -118,6 +119,7 @@ class BrandController extends Controller
                 'sound_enabled' => $request->sound_enabled,
                 'welcome_message' => $request->welcome_message,
                 'offline_message' => $request->offline_message,
+                'chat_position' => $request->chat_position,
             ]
         );
 

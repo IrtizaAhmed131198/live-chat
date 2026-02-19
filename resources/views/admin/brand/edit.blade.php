@@ -148,16 +148,16 @@
                                     <div class="col-md-6 mb-3">
                                         <label>Primary Color</label>
                                         <input type="color" name="primary_color" class="form-control"
-                                            value="{{ $chatSettings->primary_color ?? '#000000' }}">
+                                            value="{{ $chatSettings->primary_color ?? '#696cff' }}">
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <label>Popup Delay (Seconds)</label>
                                         <input type="number" name="popup_delay" class="form-control"
                                             value="{{ $chatSettings->popup_delay ?? '5' }}">
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-4 mb-3">
                                         <label>Sound Notification</label>
                                         <select class="form-select" name="sound_enabled">
                                             <option value="1"
@@ -166,6 +166,18 @@
                                             <option value="0"
                                                 {{ isset($chatSettings) && $chatSettings->sound_enabled == 0 ? 'selected' : '' }}>
                                                 Disabled</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>Chat Position</label>
+                                        <select class="form-select" name="chat_position">
+                                            <option value="left"
+                                                {{ isset($chatSettings) && $chatSettings->chat_position == 'left' ? 'selected' : '' }}>
+                                                Left</option>
+                                            <option value="right"
+                                                {{ isset($chatSettings) && $chatSettings->chat_position == 'right' ? 'selected' : '' }}>
+                                                Right</option>
                                         </select>
                                     </div>
 

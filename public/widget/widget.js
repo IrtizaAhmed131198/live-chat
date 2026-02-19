@@ -64,6 +64,7 @@
     function initChat() {
         let originalTitle = document.title;
         let blinkInterval = null;
+        let CHAT_SETTINGS = {};
 
         // 🚫 FLAG to prevent API calls if brand not found
         let isBrandValid = false;
@@ -236,6 +237,9 @@
         document.body.appendChild(btn);
         document.body.appendChild(box);
 
+        btn.style.display = "none";
+        box.style.display = "none";
+
         btn.onclick = () => {
             // 🚫 Prevent opening if brand is invalid
             if (!isBrandValid) {
@@ -384,7 +388,10 @@
             div.dataset.msgId = msgId ?? "";
 
             // Message background
-            let bgColor = from == 3 ? "#696cff" : "#f1f1f1"; // visitor = purple, agent = grey
+            let bgColor =
+                from == 3
+                    ? CHAT_SETTINGS.primary_color || "#696cff"
+                    : "#f1f1f1"; // visitor = purple, agent = grey
             let textColor = from == 3 ? "#fff" : "#000";
 
             // format timestamp
@@ -541,7 +548,10 @@
                 if (data.success || data.status === "success") {
                     isBrandValid = true;
                     window.CHAT_ID = data.chat_id;
-                    console.log("Brand validated, chat enabled");
+                    // console.log("Brand validated, chat enabled");
+
+                    CHAT_SETTINGS = data.settings || {};
+                    applyChatSettings();
 
                     // ✅ Only fetch chat if brand is valid
                     fetchChat(false);
@@ -600,6 +610,12 @@
                 .then((res) => res.json())
                 .then((data) => {
                     if (!loadMore) {
+
+                        if ((!data.messages || data.messages.length === 0) && CHAT_SETTINGS.welcome_message) {
+                            setTimeout(() => {
+                                addMsg(CHAT_SETTINGS.welcome_message, 1, null, false);
+                            }, 400);
+                        }
                         // INITIAL LOAD → latest to oldest
                         data.messages.forEach((msg) => {
                             if (msg.sender === null) return;
@@ -739,5 +755,53 @@
         ["click", "keydown", "mousemove", "scroll"].forEach((evt) => {
             window.addEventListener(evt, throttle(sendHeartbeat, 60000));
         });
+
+
+        function applyChatSettings() {
+            if (!CHAT_SETTINGS) return;
+
+            const color = CHAT_SETTINGS.primary_color || "#696cff";
+
+            const btn = document.getElementById("live-chat-btn");
+            const box = document.getElementById("live-chat-box");
+            const header = document.querySelector("#live-chat-box > div");
+            const sendBtn = document.getElementById("send-btn");
+
+            if (btn) btn.style.background = color;
+            if (header) header.style.background = color;
+            if (sendBtn) sendBtn.style.color = color;
+
+            /* ✅ CHAT POSITION FIX */
+            const position = CHAT_SETTINGS.chat_position || "right";
+
+            if (position === "left") {
+                btn.style.left = "20px";
+                btn.style.right = "auto";
+
+                box.style.left = "20px";
+                box.style.right = "auto";
+            } else {
+                btn.style.right = "20px";
+                btn.style.left = "auto";
+
+                box.style.right = "20px";
+                box.style.left = "auto";
+            }
+
+            /* 🔊 Sound enable/disable */
+            if (CHAT_SETTINGS.sound_enabled == 0) {
+                notifySound.volume = 0;
+            }
+
+            /* 🚫 Chat disable */
+            if (CHAT_SETTINGS.chat_enabled == 0) {
+                btn.style.display = "none";
+                box.style.display = "none";
+
+                return;
+            }
+
+            btn.style.display = "flex";
+        }
     }
 })();

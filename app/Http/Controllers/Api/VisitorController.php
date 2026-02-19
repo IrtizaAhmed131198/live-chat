@@ -198,7 +198,7 @@ class VisitorController extends Controller
             ['domain' => $request->domain],
             ['name' => $request->domain]
         );
-        $brand = Brand::with('users')->where('domain', $request->domain)->first();
+        $brand = Brand::with('users', 'chatSetting')->where('domain', $request->domain)->first();
         if(!$brand){
             return response()->json([
                 'error' => true,
@@ -225,12 +225,18 @@ class VisitorController extends Controller
             ]
         );
 
-        $chat = Chat::create([
-            'visitor_id' => $visitor->id,
-            'brand_id' => $visitor->brand_id,
-            'status' => 'open',
-            'last_visitor_activity_at' => now()
-        ]);
+        $chat = Chat::firstOrCreate(
+            [
+                'visitor_id' => $visitor->id,
+                'brand_id'   => $visitor->brand_id,
+                'status'     => 'open',
+            ],
+            [
+                'last_visitor_activity_at' => now()  // sirf create hote waqt set hoga
+            ]
+        );
+
+        $settings = $brand->chatSetting;
 
         // ✅ ONLY FIRST TIME VISITOR
         if ($visitor->wasRecentlyCreated) {
@@ -270,7 +276,16 @@ class VisitorController extends Controller
             'visitor_id' => $visitor->id,
             'chat_id' => $chat->id,
             'brand_id' => $brand->id,
-            'message' => 'Visitor initialized successfully'
+            'message' => 'Visitor initialized successfully',
+            'settings' => [
+                'chat_enabled' => $settings->chat_enabled ?? true,
+                'primary_color' => $settings->primary_color ?? '#696cff',
+                'welcome_message' => $settings->welcome_message ?? 'Hello! How can we help you today?',
+                'offline_message' => $settings->offline_message ?? 'We are currently offline.',
+                'popup_delay' => $settings->popup_delay ?? 5,
+                'sound_enabled' => $settings->sound_enabled ?? true,
+                'chat_position' => $settings->chat_position ?? 'right',
+            ]
         ]);
     }
 
