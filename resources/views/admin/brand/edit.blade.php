@@ -33,6 +33,35 @@
             background: #2b2c40 !important;
         }
     </style>
+    <style>
+        .script-box {
+            background: #1e1e2f;
+            border-radius: 12px;
+            padding: 25px;
+            color: #bfc7ff;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .script-box:hover {
+            background: #27293d;
+            box-shadow: 0 0 15px rgba(105, 108, 255, 0.4);
+        }
+
+        .copy-toast {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #4ade80;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
 
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
@@ -51,6 +80,12 @@
                                     aria-selected="false" tabindex="-1"><span
                                         class="icon-base bx bx-user-pin d-sm-none"></span><span
                                         class="d-none d-sm-block">Chat Settings</span></button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#install-script"
+                                    role="tab">
+                                    <span class="d-none d-sm-block">Install Script</span>
+                                </button>
                             </li>
                         </ul>
                     </div>
@@ -197,6 +232,28 @@
                                 </div>
                             </form>
                         </div>
+                        <div class="tab-pane fade" id="install-script" role="tabpanel">
+                            @php
+                                $script = '<!--Start of Live Chat -->
+<script src="https://democustom-html.com/custom-backend/live-chat/public/widget.js?brand='.$brand->id.'"></script>
+<!-- End of Live Chat -->';
+                            @endphp
+
+                            <div class="p-4">
+                                <h5 class="fw-bold mb-3">Install Live Chat Widget</h5>
+                                <p class="text-muted">
+                                    Copy this code and paste it before the
+                                    <code>&lt;/body&gt;</code> tag of your website.
+                                </p>
+                                <div class="script-box mt-3" onclick="copyScript()">
+                                    <span class="copy-toast" id="toast">Copied!</span>
+                                    <pre id="installScript" class="mb-0">{{ $script }}</pre>
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -212,4 +269,19 @@
             allowClear: true
         });
     </script>
+    <script>
+        function copyScript() {
+            let text = document.getElementById("installScript").innerText;
+
+            navigator.clipboard.writeText(text).then(function() {
+                let toast = document.getElementById("toast");
+                toast.style.display = "inline-block";
+
+                setTimeout(() => {
+                    toast.style.display = "none";
+                }, 1500);
+            });
+        }
+    </script>
+
 @endsection

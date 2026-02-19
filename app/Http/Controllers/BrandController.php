@@ -47,12 +47,7 @@ class BrandController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'url' => [
-                'required',
-                'string',
-                'max:255',
-                'url'
-            ],
+            'url' => ['required', 'string', 'max:255', 'url'],
             'domain' => [
                 'required',
                 'string',
@@ -67,26 +62,31 @@ class BrandController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $validated = $validator->validated();
-
-        // Use database transaction
         DB::beginTransaction();
 
         try {
-            // Create brand
-            $brand = Brand::create($validated);
+            $brand = Brand::create($validator->validated());
 
             DB::commit();
 
-            // $userCount = count($request->user_ids);
-            return redirect()->route('admin.brand')->with('success', "Brand created successfully!");
+            return redirect()->route('admin.brand.install', $brand->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()
-                ->with('error', 'Error creating brand: ' . $e->getMessage())
-                ->withInput();
+            return back()->with('error', $e->getMessage())->withInput();
         }
     }
+
+    public function install($id)
+    {
+        $brand = Brand::findOrFail($id);
+
+        $script = '<!--Start of Live Chat -->
+<script src="https://democustom-html.com/custom-backend/live-chat/public/widget.js"></script>
+<!-- End of Live Chat -->';
+
+        return view('admin.brand.install', compact('brand', 'script'));
+    }
+
 
     public function chatSettingsStore(Request $request)
     {
@@ -138,7 +138,7 @@ class BrandController extends Controller
             ->toArray();
         $chatSettings = ChatSetting::where('brand_id', $brand->id)->first();
 
-        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds' , 'chatSettings'));
+        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds', 'chatSettings'));
     }
 
     public function update(Request $request, $id)

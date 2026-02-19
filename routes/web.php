@@ -46,6 +46,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     Route::put('brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
     Route::delete('brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
     Route::post('brand/chat-settings/store', [BrandController::class, 'chatSettingsStore'])->name('admin.brand.chat.settings');
+    Route::get('admin/brand/{brand}/install', [BrandController::class, 'install'])->name('admin.brand.install');
 
     // Route::get('website/data', [WebsiteController::class, 'getdata'])->name('admin.website.getdata');
     // Route::get('website', [WebsiteController::class, 'index'])->name('admin.website');
