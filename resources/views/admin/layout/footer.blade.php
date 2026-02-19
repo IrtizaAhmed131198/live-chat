@@ -6,39 +6,27 @@
         <script>
         document.write(new Date().getFullYear())
         </script>
-        , made with ❤️ by <a href="https://themeselection.com"
+        , made with ❤️ by <a href="https://xtendsystems.com/"
           target="_blank"
-          class="footer-link">ThemeSelection</a>
+          class="footer-link">Xtend Systems</a>
       </div>
-      <div class="d-none d-lg-inline-block">
-        <a href="https://themeselection.com/item/category/admin-templates/"
-          class="footer-link me-4" target="_blank">Admin Templates</a>
-        <a href="https://themeselection.com/license/" class="footer-link me-4"
-          target="_blank">License</a>
-        <a href="https://themeselection.com/item/category/bootstrap-admin-templates/"
-          target="_blank" class="footer-link me-4">Bootstrap Dashboard</a>
-        <a href="https://demos.themeselection.com/sneat-bootstrap-html-admin-template/documentation/laravel-introduction.html"
-          target="_blank" class="footer-link me-4">Documentation</a>
-        <a href="https://themeselection.com/support/" target="_blank"
-          class="footer-link d-none d-sm-inline-block">Support</a>
-      </div>
+      {{-- <div class="d-none d-lg-inline-block">
+      </div> --}}
     </div>
   </div>
 </footer>
-<!--/ Footer-->                                        <!-- / Footer -->
-                    <div class="content-backdrop fade"></div>
-                </div>
-                <!--/ Content wrapper -->
-            </div>
-            <!-- / Layout page -->
-        </div>
+<div class="content-backdrop fade"></div>
+</div>
+<!--/ Content wrapper -->
+</div>
+<!-- / Layout page -->
+</div>
 
-                <!-- Overlay -->
-        <div class="layout-overlay layout-menu-toggle"></div>
-                <!-- Drag Target Area To SlideIn Menu On Small Screens -->
-        <div class="drag-target"></div>
-    </div>
-    <!-- / Layout wrapper -->
-      <!--/ Layout Content -->
+<!-- Overlay -->
+<div class="layout-overlay layout-menu-toggle"></div>
+<!-- Drag Target Area To SlideIn Menu On Small Screens -->
+<div class="drag-target"></div>
+</div>
+<!-- / Layout wrapper -->
+<!--/ Layout Content -->
 
-  
