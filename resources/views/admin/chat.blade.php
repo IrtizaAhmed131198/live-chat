@@ -374,8 +374,8 @@ document.addEventListener('click', function unlockAudio() {
         .catch(err => console.error('Unlock failed', err));
 });
 
-const pusherChat = new Pusher('6d2b8f974bbba728216c', {
-    cluster: 'ap1',
+const pusherChat = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
+    cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
     forceTLS: true
 });
 

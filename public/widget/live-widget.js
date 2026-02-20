@@ -22,7 +22,7 @@
 
     const WEBSITE_DOMAIN = window.location.hostname;
     let currentUrl = window.location.href;
-    const BASE_URL = "http://localhost/live-chat/public";
+    const BASE_URL = "https://democustom-html.com/custom-backend/live-chat/public";
 
     let SESSION_ID = sessionStorage.getItem("chat_session_id");
     if (!SESSION_ID) {
@@ -30,8 +30,8 @@
         sessionStorage.setItem("chat_session_id", SESSION_ID);
     }
 
-    const PUSHER_KEY = "6d2b8f974bbba728216c";
-    const PUSHER_CLUSTER = "ap1";
+    const PUSHER_KEY = "b28141d4a8de8eb2e3ed";
+    const PUSHER_CLUSTER = "ap2";
     const API_URL = `${BASE_URL}/api/visitor-message`;
 
     const emojiScript = document.createElement("script");
