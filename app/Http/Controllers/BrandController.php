@@ -80,7 +80,7 @@ class BrandController extends Controller
     {
         $brand = Brand::findOrFail($id);
 
-        $url = env('SCRIPT_URL', 'https://democustom-html.com/custom-backend/live-chat/public/widget/widget.js');
+        $url = config('app.script_url');
         $script = '<!--Start of Live Chat -->
 <script src="'.$url.'"></script>
 <!-- End of Live Chat -->';
