@@ -84,7 +84,10 @@ class MessageController extends Controller
         emit_pusher_notification(
             'chat.' . $request->chat_id,
             'typing',
-            ['role' => 2]
+            [
+                'role' => 2,
+                'chat_id' => $request->chat_id
+            ]
         );
 
         return response()->json(['status' => true]);

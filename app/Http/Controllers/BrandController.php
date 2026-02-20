@@ -80,8 +80,9 @@ class BrandController extends Controller
     {
         $brand = Brand::findOrFail($id);
 
+        $url = env('SCRIPT_URL', 'https://democustom-html.com/custom-backend/live-chat/public/widget/widget.js');
         $script = '<!--Start of Live Chat -->
-<script src="https://democustom-html.com/custom-backend/live-chat/public/widget.js"></script>
+<script src="'.$url.'"></script>
 <!-- End of Live Chat -->';
 
         return view('admin.brand.install', compact('brand', 'script'));

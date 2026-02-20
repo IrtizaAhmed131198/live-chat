@@ -714,6 +714,39 @@ document.querySelectorAll('.chat-user').forEach(item => {
 });
 
 let isSending = false;
+let typingTimer = null;
+let isTyping = false;
+
+document.addEventListener('input', function (e) {
+
+    if (!e.target.classList.contains('message-input')) return;
+
+    const form = e.target.closest('.form-send-message');
+
+    // avoid spam
+    if (!isTyping) {
+        isTyping = true;
+
+        fetch("{{ route('admin.chat.typing') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').content
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                chat_id: form.dataset.chatId
+            })
+        });
+    }
+
+    // reset timer
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(() => {
+        isTyping = false; // allow next typing request
+    }, 1500);
+});
 
 document.addEventListener('click', function (e) {
 
