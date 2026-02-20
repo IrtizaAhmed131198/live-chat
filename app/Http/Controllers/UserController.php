@@ -14,12 +14,14 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = User::all();
-        return view('admin.user.index', compact('users'));
+        return view('admin.user.index');
     }
     public function getUsers()
     {
-        $users = User::select(['id', 'name', 'email', 'phone', 'address']);
+        $users = User::where('visitor_id', 2)
+            ->select(['id', 'name', 'email', 'phone', 'address'])
+            ->latest()
+            ->get();
 
         return DataTables::of($users)
             ->addIndexColumn()
@@ -29,6 +31,7 @@ class UserController extends Controller
             ->rawColumns(['actions'])
             ->make(true);
     }
+
     public function create()
     {
         return view('admin.user.create');

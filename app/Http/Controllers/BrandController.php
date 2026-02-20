@@ -129,17 +129,25 @@ class BrandController extends Controller
     public function edit($id)
     {
         $brand = Brand::findOrFail($id);
-        $users = User::all();
 
-        // Important: selectedUserIds ko view mein bhejna
+        // 🔥 Sirf visitor_id = 2 wale users
+        $users = User::where('visitor_id', 2)->get();
+
         $selectedUserIds = DB::table('brand_users')
-            ->where('brand_id', (string) $brand->id)
+            ->where('brand_id', $brand->id)
             ->pluck('user_id')
             ->toArray();
+
         $chatSettings = ChatSetting::where('brand_id', $brand->id)->first();
 
-        return view('admin.brand.edit', compact('brand', 'users', 'selectedUserIds', 'chatSettings'));
+        return view('admin.brand.edit', compact(
+            'brand',
+            'users',
+            'selectedUserIds',
+            'chatSettings'
+        ));
     }
+
 
     public function update(Request $request, $id)
     {

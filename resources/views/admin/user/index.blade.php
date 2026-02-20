@@ -26,7 +26,7 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="table-border-bottom-0">
+                    {{-- <tbody class="table-border-bottom-0">
                         @forelse($users as $index => $user)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
@@ -67,7 +67,7 @@
                                 </td>
                             </tr>
                         @endforelse
-                    </tbody>
+                    </tbody> --}}
                 </table>
             </div>
         </div>
