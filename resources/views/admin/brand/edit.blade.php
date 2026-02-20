@@ -263,6 +263,7 @@
                         <div class="tab-pane fade" id="install-script" role="tabpanel">
                             @php
                                 $url = env('SCRIPT_URL', 'https://democustom-html.com/custom-backend/live-chat/public/widget/widget.js');
+                                dump(env('SCRIPT_URL'));
                                 $script = '<!--Start of Live Chat -->
 <script src="'.$url.'?brand='.$brand->id.'"></script>
 <!-- End of Live Chat -->';
