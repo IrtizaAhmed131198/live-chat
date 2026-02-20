@@ -22,7 +22,7 @@
 
     const WEBSITE_DOMAIN = window.location.hostname;
     let currentUrl = window.location.href;
-    const BASE_URL = "http://localhost/live-chat/public";
+    const BASE_URL = "https://democustom-html.com/custom-backend/live-chat/public";
 
     let SESSION_ID = sessionStorage.getItem("chat_session_id");
     if (!SESSION_ID) {
