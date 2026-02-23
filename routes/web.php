@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
 
 
     Route::get('brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
+    Route::post('/admin/brand/status/update', [BrandController::class, 'changeStatus'])->name('admin.brand.status.update');
     Route::get('brand', [BrandController::class, 'index'])->name('admin.brand');
     Route::get('brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
     Route::post('brand/store', [BrandController::class, 'store'])->name('admin.brand.store');

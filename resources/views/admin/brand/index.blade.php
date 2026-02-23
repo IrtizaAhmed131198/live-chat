@@ -21,6 +21,7 @@
                             <th>#</th>
                             <th>Domain</th>
                             <th>URL</th>
+                            <th>Active</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -33,31 +34,61 @@
 
 @section('js')
     <script>
-        $(function() {
-            $('#users-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('admin.brand.getdata') }}",
-                columns: [{
-                        data: 'id',
-                        name: 'id'
-                    },
-                    {
-                        data: 'domain',
-                        name: 'domain'
-                    },
-                    {
-                        data: 'url',
-                        name: 'url'
-                    },
-                    {
-                        data: 'actions',
-                        name: 'actions',
-                        orderable: false,
-                        searchable: false
-                    },
-                ]
+        $('#users-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('admin.brand.getdata') }}",
+            columns: [{
+                    data: 'DT_RowIndex',
+                    name: 'DT_RowIndex',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'domain',
+                    name: 'domain'
+                },
+                {
+                    data: 'url',
+                    name: 'url'
+                },
+                {
+                    data: 'status',
+                    name: 'status',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'actions',
+                    name: 'actions',
+                    orderable: false,
+                    searchable: false
+                },
+            ]
+        });
+    </script>
+    <script>
+        $(document).on('change', '.toggle-status', function() {
+
+            let id = $(this).data('id');
+            let status = $(this).prop('checked') ? 1 : 0;
+
+            $.ajax({
+                url: "{{ route('admin.brand.status.update') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id: id,
+                    status: status
+                },
+                success: function(response) {
+                    console.log(response.message);
+                },
+                error: function(xhr) {
+                    console.log("Error:", xhr.responseText);
+                }
             });
+
         });
     </script>
 @endsection

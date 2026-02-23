@@ -26,17 +26,46 @@ class BrandController extends Controller
         return view('admin.brand.index', compact('brand'));
     }
 
-    public function getdata() // Changed from getUsers() to getdata()
+    public function getdata()
     {
-        $brand =  Brand::with('user')->select(['id', 'domain', 'url']);
+        $brand = Brand::select(['id', 'domain', 'url', 'status']);
 
         return DataTables::of($brand)
             ->addIndexColumn()
+
+            ->addColumn('status', function ($brand) {
+
+                $checked = $brand->status == 1 ? 'checked' : '';
+
+                return '
+        <div class="form-check form-switch">
+            <input type="checkbox"
+                class="form-check-input toggle-status"
+                data-id="' . $brand->id . '"
+                ' . $checked . '>
+        </div>
+    ';
+            })
+
             ->addColumn('actions', function ($brand) {
                 return view('admin.brand.partials.actions', compact('brand'))->render();
             })
-            ->rawColumns(['actions'])
+
+            ->rawColumns(['status', 'actions'])
             ->make(true);
+    }
+
+    public function changeStatus(Request $request)
+    {
+        $brand = Brand::findOrFail($request->id);
+
+        $brand->status = $request->status;
+        $brand->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully'
+        ]);
     }
 
     public function create()
@@ -86,7 +115,7 @@ class BrandController extends Controller
 
         $url = config('app.script_url');
         $script = '<!--Start of Live Chat -->
-<script src="'.$url.'?brand='.$brand->id.'&token='.$brand->verify_token.'"></script>
+<script src="' . $url . '?brand=' . $brand->id . '&token=' . $brand->verify_token . '"></script>
 <!-- End of Live Chat -->';
 
         return view('admin.brand.install', compact('brand', 'script'));
