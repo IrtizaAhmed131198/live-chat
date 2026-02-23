@@ -29,17 +29,19 @@ class MessageController extends Controller
         ]);
 
         emit_pusher_notification(
-            'chat.' . $chat->id, // channel
-            'new-message',                // event
+            'chat.' . $chat->id,
+            'new-message',
             [
                 'chat_id' => $chat->id,
-                'user_id' => auth()->id(),
                 'message' => $request->message,
-                'sender'  => auth()->id(),
                 'role'  => auth()->user()->role ?? 2,
                 'formatted_created_at'  => $msg->formatted_created_at,
                 'created_at'  => $msg->created_at,
-                'id'  => $msg->id,
+                'user' => [
+                    'id' => auth()->id(),
+                    'image' => auth()->user()->image ?? null,
+                    'name' => auth()->user()->name ?? '',
+                ]
             ]
         );
 

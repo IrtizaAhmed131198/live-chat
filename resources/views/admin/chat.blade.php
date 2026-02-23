@@ -374,8 +374,10 @@ document.addEventListener('click', function unlockAudio() {
         .catch(err => console.error('Unlock failed', err));
 });
 
-const pusherChat = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
-    cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+Pusher.logToConsole = true;
+
+const pusherChat = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+    cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
     forceTLS: true
 });
 
@@ -511,15 +513,26 @@ function updateLastMessage(chatId, message) {
 
 function markMessagesRead(chatId) {
     clearTimeout(readTimeout);
+
     readTimeout = setTimeout(() => {
+
         fetch("{{ route('admin.chat.markRead') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({ chat_id: chatId})
+            body: JSON.stringify({ chat_id: chatId })
+        })
+        .then(() => {
+            // ✅ hide badge after DB update confirm
+            const badge = getUnreadBadge(chatId);
+            if (badge) {
+                badge.innerText = 0;
+                badge.style.display = 'none';
+            }
         });
+
     }, 300);
 }
 
@@ -838,6 +851,12 @@ function openChat(chatId, chatStatus = 'open') {
             // Active highlight
             document.querySelectorAll('.chat-user').forEach(el => el.classList.remove('active'));
             document.querySelector(`.chat-user[data-chat-id="${chatId}"]`)?.classList.add('active');
+
+            const badge = getUnreadBadge(chatId);
+            if (badge) {
+                badge.innerText = 0;
+                badge.style.display = 'none';
+            }
 
             window.chatId = chatId;
 
