@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class BrandController extends Controller
 {
@@ -65,7 +66,10 @@ class BrandController extends Controller
         DB::beginTransaction();
 
         try {
-            $brand = Brand::create($validator->validated());
+
+            $verifyToken = Str::random(32);
+
+            $brand = Brand::create(array_merge($validator->validated(), ['verify_token' => $verifyToken]));
 
             DB::commit();
 
@@ -82,7 +86,7 @@ class BrandController extends Controller
 
         $url = config('app.script_url');
         $script = '<!--Start of Live Chat -->
-<script src="'.$url.'"></script>
+<script src="'.$url.'?brand='.$brand->id.'&token='.$brand->verify_token.'"></script>
 <!-- End of Live Chat -->';
 
         return view('admin.brand.install', compact('brand', 'script'));

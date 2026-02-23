@@ -14,7 +14,7 @@ function emit_pusher_notification($channel, $event, $data)
         );
 
         $pusher->trigger($channel, $event, $data);
-        \Log::info('Pusher Works.');
+        // \Log::info('Pusher Works.');
 
         return true;
     } catch (\Exception $e) {

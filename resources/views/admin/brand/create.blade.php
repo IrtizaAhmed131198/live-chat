@@ -124,7 +124,7 @@
                             <input type="file" class="form-control" id="logo" name="logo" required>
                         </div> --}}
 
-                        <input type="hidden" name="status" value="1">
+                        <input type="hidden" name="status" value="0">
 
                         {{-- <div class="col-md-6 mb-3">
                             <label for="status" class="form-label">Status</label>
@@ -149,27 +149,37 @@
     </div>
 @endsection
 @section('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script> --}}
     <script>
-        $("#user_ids").select2({
-            // placeholder: "Select a User",
-            allowClear: true,
-        });
+        // $("#user_ids").select2({
+        //     // placeholder: "Select a User",
+        //     allowClear: true,
+        // });
 
-        document.getElementById('user_ids')?.addEventListener('change', function() {
-            const selectedCount = this.selectedOptions.length;
-            document.getElementById('selectedCount').textContent = selectedCount + ' user(s) selected';
-        });
+        // document.getElementById('user_ids')?.addEventListener('change', function() {
+        //     const selectedCount = this.selectedOptions.length;
+        //     document.getElementById('selectedCount').textContent = selectedCount + ' user(s) selected';
+        // });
 
         document.getElementById('url').addEventListener('paste', function(e) {
-            // Get pasted text
             let pastedText = (e.clipboardData || window.clipboardData).getData('text');
 
             setTimeout(function() {
                 try {
-                    // Extract domain from URL
                     let url = new URL(pastedText.trim());
-                    let domain = url.hostname.replace(/^www\./, ''); // remove www.
+                    let hostname = url.hostname;
+
+                    let domain;
+
+                    if (hostname === 'localhost') {
+                        // Extract the first path segment and append .com
+                        // e.g. /photo-studio/public/login → photo-studio.com
+                        let pathSegments = url.pathname.split('/').filter(seg => seg !== '');
+                        domain = pathSegments.length > 0 ? `${pathSegments[0]}.com` : 'localhost';
+                    } else {
+                        domain = hostname.replace(/^www\./, '');
+                    }
+
                     document.getElementById('domain').value = domain;
                 } catch (err) {
                     // Not a valid URL, do nothing

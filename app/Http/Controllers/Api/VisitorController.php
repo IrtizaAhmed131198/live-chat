@@ -14,6 +14,8 @@ use Illuminate\Notifications\Notifiable;
 use App\Notifications\NewVisitorNotification;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\BrandApprovalRequest;
+use Illuminate\Support\Facades\Notification;
 
 class VisitorController extends Controller
 {
@@ -205,6 +207,32 @@ class VisitorController extends Controller
                 'message' => 'Brand Not Found'
             ]);
         }
+
+        if ($brand->status == 0) {
+            // Notify admin first time only
+            if (!$brand->is_verified) {
+                $brand->is_verified = true;
+                $brand->save();
+
+                $admin = User::where('role', 1)->first();
+
+                // send notification to admin
+                $admin->notify(new BrandApprovalRequest($brand));
+            }
+
+            return response()->json([
+                'status' => 'pending',
+                'message' => 'Waiting for admin approval',
+            ]);
+        }
+
+        if ($brand->status == 2) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Brand rejected',
+            ]);
+        }
+
         $userIds = $brand->users->pluck('id')->toArray();
 
         $sessionId = $request->session_id;
@@ -409,5 +437,24 @@ class VisitorController extends Controller
         }
 
         return response()->json(['status'=>true]);
+    }
+
+    public function verifyBrand(Request $request)
+    {
+        $brand = Brand::where('id', $request->brand_id)
+            ->where('verify_token', $request->token)
+            ->first();
+
+        if (!$brand) {
+            return response()->json(['status' => false]);
+        }
+
+        $brand->update([
+            'is_verified' => true,
+            'verified_at' => now(),
+            'verify_token' => null
+        ]);
+
+        return response()->json(['status' => true]);
     }
 }

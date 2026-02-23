@@ -529,7 +529,7 @@
                 .split("/")
                 .filter((seg) => seg && seg !== "public");
 
-            return segments.length ? segments[0] : "localhost";
+            return segments.length ? segments[0]+".com" : "localhost";
         }
 
         // 🚀 INIT VISITOR - MUST SUCCEED BEFORE OTHER APIS
@@ -555,6 +555,31 @@
 
                     // ✅ Only fetch chat if brand is valid
                     fetchChat(false);
+                } else if(data.status === "pending") {
+                    isBrandValid = false;
+                    console.warn("Chat waiting for admin approval");
+
+                        const infoBtn = document.createElement("div");
+                        infoBtn.id = "live-chat-btn";
+                        infoBtn.style = `
+                            position: fixed;
+                            bottom: 20px;
+                            right: 20px;
+                            width: 60px;
+                            height: 60px;
+                            border-radius: 50%;
+                            background: #ff9800;
+                            color: #fff;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            font-size: 12px;
+                            z-index: 9999;
+                            cursor: default;
+                        `;
+                        infoBtn.innerText = "Pending";
+                        document.body.appendChild(infoBtn);
+
                 } else {
                     // ❌ Brand not found
                     console.error(

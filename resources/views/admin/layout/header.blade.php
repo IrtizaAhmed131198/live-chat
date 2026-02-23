@@ -83,10 +83,17 @@
                         <ul id="notificationList" class="list-group list-group-flush">
                             <!-- Notifications will be injected here -->
                             @forelse($latestNotifications as $notification)
-                                <li class="list-group-item dropdown-notifications-item">
-                                    <strong>{{ $notification->data['title'] }}</strong><br>
-                                    <small>{{ $notification->data['message'] }}</small>
-                                </li>
+                                @if($notification->type === 'App\Notifications\BrandApprovalRequest')
+                                    <li class="list-group-item dropdown-notifications-item brand-approval-notification" data-notification-url="{{ $notification->data['url'] ?? '#' }}" data-notification-id="{{ $notification->id }}">
+                                        <strong>{{ $notification->data['title'] ?? 'Brand Approval' }}</strong><br>
+                                        <small>{{ $notification->data['message'] ?? '' }}</small>
+                                    </li>
+                                @else
+                                    <li class="list-group-item dropdown-notifications-item">
+                                        <strong>{{ $notification->data['title'] }}</strong><br>
+                                        <small>{{ $notification->data['message'] }}</small>
+                                    </li>
+                                @endif
                             @empty
                                 <li class="list-group-item text-center">
                                     No new notifications

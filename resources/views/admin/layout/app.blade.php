@@ -230,6 +230,14 @@
                 document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
                 document.getElementById('notificationBadge').classList.remove('d-none');
             });
+
+            var brand_approval_notifications = document.querySelectorAll('.brand-approval-notification');
+            brand_approval_notifications.forEach(notification => {
+                notification.addEventListener('click', function() {
+                    const notificationUrl = this.getAttribute('data-notification-url');
+                    window.location.href = notificationUrl;
+                });
+            });
         });
     </script>
 
