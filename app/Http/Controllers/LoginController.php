@@ -43,7 +43,9 @@ class LoginController extends Controller
             'agent-offline',
             [
                 'agent_id' => auth()->id(),
-                'brand_ids' => auth()->user()->auth_brands->pluck('id')
+                'brand_ids' => auth()->check() && auth()->user()->auth_brands
+                        ? auth()->user()->auth_brands->pluck('id')
+                        : []
             ]
         );
 
