@@ -166,6 +166,11 @@
                                         data-phone="{{ $chat->visitor->phone ?? '-' }}"
                                         data-role="{{ $chat->visitor->isRole() ?? 'User' }}"
                                         data-ipaddress="{{ $chat->main_visitor->ip_address ?? '-' }}"
+                                        data-country="{{ $chat->main_visitor->country ?? '-' }}"
+                                        data-city="{{ $chat->main_visitor->city ?? '-' }}"
+                                        data-device="{{ $chat->main_visitor->device ?? '-' }}"
+                                        data-browser="{{ $chat->main_visitor->browser ?? '-' }}"
+                                        data-os="{{ $chat->main_visitor->os ?? '-' }}"
                                         data-avatar="{{ $chat->visitor->image ? asset($chat->visitor->image) : asset('assets/images/default.png') }}">
 
                                         <div class="flex-shrink-0 avatar avatar-online profile-av-1">
@@ -259,6 +264,26 @@
                                 <li class="d-flex align-items-center">
                                     <i class="icon-base bx bx-map"></i>
                                     <span class="align-middle ms-2" id="sidebar-ip-address">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-flag"></i>
+                                    <span class="align-middle ms-2" id="sidebar-country">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-building"></i>
+                                    <span class="align-middle ms-2" id="sidebar-city">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-desktop"></i>
+                                    <span class="align-middle ms-2" id="sidebar-device">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-browser"></i>
+                                    <span class="align-middle ms-2" id="sidebar-browser">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-laptop"></i>
+                                    <span class="align-middle ms-2" id="sidebar-os">-</span>
                                 </li>
                             </ul>
                         </div>
@@ -884,6 +909,11 @@ function updateSidebar(data) {
     document.getElementById('sidebar-email').innerText = data.email;
     document.getElementById('sidebar-phone').innerText = data.phone;
     document.getElementById('sidebar-ip-address').innerText = data.ipaddress;
+    document.getElementById('sidebar-country').innerText = data.country;
+    document.getElementById('sidebar-city').innerText = data.city;
+    document.getElementById('sidebar-device').innerText = data.device;
+    document.getElementById('sidebar-browser').innerText = data.browser;
+    document.getElementById('sidebar-os').innerText = data.os;
 }
 
 function escapeHtml(str) {

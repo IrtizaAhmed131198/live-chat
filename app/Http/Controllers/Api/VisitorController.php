@@ -212,7 +212,6 @@ class VisitorController extends Controller
 
         // 🔹 Location using IP API
         $location = Http::get("http://ip-api.com/json/{$ip}")->json();
-        \Log::info('Visitor Location: ', $location);
 
         $country = $location['country'] ?? null;
         $city = $location['city'] ?? null;
