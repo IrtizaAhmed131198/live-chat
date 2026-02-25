@@ -10,12 +10,15 @@ use App\Models\Message;
 use App\Models\Website;
 use App\Models\User;
 use App\Models\Brand;
-use Illuminate\Notifications\Notifiable;
+use App\Models\OfflineMessage;
+use App\Mail\OfflineMessageMail;
 use App\Notifications\NewVisitorNotification;
+use App\Notifications\BrandApprovalRequest;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use App\Notifications\BrandApprovalRequest;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 
 class VisitorController extends Controller
 {
@@ -266,6 +269,10 @@ class VisitorController extends Controller
 
         $settings = $brand->chatSetting;
 
+        $agentOnline = User::whereIn('id', $userIds)
+            ->where('is_online', 1)
+            ->exists();
+
         // ✅ ONLY FIRST TIME VISITOR
         if ($visitor->wasRecentlyCreated) {
 
@@ -304,6 +311,8 @@ class VisitorController extends Controller
             'visitor_id' => $visitor->id,
             'chat_id' => $chat->id,
             'brand_id' => $brand->id,
+            'agent_online' => $agentOnline,
+            'user_ids' => $userIds,
             'message' => 'Visitor initialized successfully',
             'settings' => [
                 'chat_enabled' => $settings->chat_enabled ?? true,
@@ -456,5 +465,36 @@ class VisitorController extends Controller
         ]);
 
         return response()->json(['status' => true]);
+    }
+
+    public function offlineMessage(Request $request)
+    {
+        $request->validate([
+            'message' => 'required'
+        ]);
+
+        $brand = Brand::find($request->brand_id);
+
+        $offline = OfflineMessage::create([
+            'brand_id' => $request->brand_id,
+            'name' => $request->name,
+            'email' => $request->email,
+            'message' => $request->message
+        ]);
+
+        // ⭐ send email to admin + agents
+        $admins = User::where('role',1)->get();
+        $agents = $brand?->users ?? collect();
+
+        $users = $admins->merge($agents)->unique('id');
+
+        foreach($users as $user){
+            Mail::to('irtizadeveloper115@gmail.com')->send(new OfflineMessageMail($offline));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Offline message stored'
+        ]);
     }
 }

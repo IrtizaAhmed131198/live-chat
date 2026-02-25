@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="d-flex align-items-center">
-                <div class="dropdown">
+                {{-- <div class="dropdown">
                     <button
                         class="btn btn-icon btn-text-secondary text-secondary rounded-pill dropdown-toggle hide-arrow"
                         data-bs-toggle="dropdown" aria-expanded="true" id="chat-header-actions"><i
@@ -26,7 +26,7 @@
                         <a class="dropdown-item" href="javascript:void(0);">Clear Chat</a>
                         <a class="dropdown-item" href="javascript:void(0);">Report</a>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

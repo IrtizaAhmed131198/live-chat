@@ -13,6 +13,14 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
+        emit_pusher_notification(
+            'agent-status',
+            'agent-online',
+            [
+                'agent_id' => auth()->id(),
+                'brand_ids' => auth()->user()->auth_brands->pluck('id')
+            ]
+        );
         return view('admin.dashboard');
     }
 
@@ -26,13 +34,21 @@ class AdminController extends Controller
             }])
             ->where('role', 3)
             ->get();
-        $chats = Chat::with('visitor')
-            ->where('status', 'open')
-            ->whereHas('visitor', function($query) use ($userBrandIds) {
-                $query->whereIn('brand_id', $userBrandIds);
-            })
-            ->latest()
-            ->get();
+
+        if(auth()->user()->role == 1) {
+            $chats = Chat::with(['visitor', 'messages'])
+                ->where('status', 'open')
+                ->latest()
+                ->get();
+        }else{
+            $chats = Chat::with('visitor')
+                ->where('status', 'open')
+                ->whereHas('visitor', function($query) use ($userBrandIds) {
+                    $query->whereIn('brand_id', $userBrandIds);
+                })
+                ->latest()
+                ->get();
+        }
 
         $messages = collect();
         $chatId = null;

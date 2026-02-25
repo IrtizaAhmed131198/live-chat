@@ -38,6 +38,15 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        emit_pusher_notification(
+            'agent-status',
+            'agent-offline',
+            [
+                'agent_id' => auth()->id(),
+                'brand_ids' => auth()->user()->auth_brands->pluck('id')
+            ]
+        );
+
         return redirect()->route('login');
     }
 }

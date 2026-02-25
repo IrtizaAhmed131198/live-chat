@@ -124,8 +124,8 @@
                     id="app-chat-contacts">
                     <div class="sidebar-header px-6 border-bottom d-flex align-items-center">
                         <div class="d-flex align-items-center me-6 me-lg-0">
-                            <div class="flex-shrink-0 avatar avatar-online me-4" data-bs-toggle="sidebar"
-                                data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-left">
+                            <div class="flex-shrink-0 avatar avatar-online me-4 profile-av-2" data-bs-toggle="sidebar"
+                                data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-right">
                                 <img class="user-avatar rounded-circle cursor-pointer"
                                     src="{{ auth()->user()->image ? asset(auth()->user()->image) : asset('assets/images/default.png')  }}"
                                     alt="Avatar">
@@ -148,7 +148,7 @@
                             </li>
                             @forelse ($chats as $chat)
                                 @php
-                                    $count = $chat->messages()->where('is_read', false)->count();
+                                    $count = $chat->messages()->where('is_read', false)->where('sender', '!=', auth()->id())->count();
                                     $lastMessage = $chat->messages()
                                         ->whereNotNull('sender')
                                         ->latest()
@@ -158,12 +158,17 @@
                                 <li class="chat-contact-list-item mb-1 {{ request('chatId') == $chat->id ? 'active' : '' }}">
 
                                     <a class="d-flex align-items-center chat-user"
-                                    href="{{ route('admin.chat.show', $chat->id) }}"
-                                    data-chat-id="{{ $chat->id }}"
-                                    data-user-id="{{ $chat->visitor->id }}"
-                                    data-chat-status="{{ $chat->status }}">
+                                        href="{{ route('admin.chat.show', $chat->id) }}"
+                                        data-chat-id="{{ $chat->id }}"
+                                        data-user-id="{{ $chat->visitor->id }}"
+                                        data-chat-status="{{ $chat->status }}"
+                                        data-name="{{ $chat->visitor->name }}"
+                                        data-email="{{ $chat->visitor->email }}"
+                                        data-phone="{{ $chat->visitor->phone ?? '-' }}"
+                                        data-role="{{ $chat->visitor->isRole() ?? 'User' }}"
+                                        data-avatar="{{ $chat->visitor->image ? asset($chat->visitor->image) : asset('assets/images/default.png') }}">
 
-                                        <div class="flex-shrink-0 avatar avatar-online">
+                                        <div class="flex-shrink-0 avatar avatar-online profile-av-1">
                                             <img src="{{ $chat->visitor->image ? asset($chat->visitor->image) : asset('assets/images/default.png')  }}"
                                                 alt="Avatar"
                                                 class="rounded-circle">
@@ -227,78 +232,31 @@
                 </div>
                 <!-- /Chat History -->
                 <!-- Sidebar Right -->
-                <div class="col app-chat-sidebar-right app-sidebar overflow-hidden" id="app-chat-sidebar-right">
-                    <div
-                        class="sidebar-header d-flex flex-column justify-content-center align-items-center flex-wrap px-6 pt-12">
+                <div class="col app-chat-sidebar-right app-sidebar overflow-hidden" id="app-chat-sidebar-right" data-bs-toggle="sidebar">
+                    <div class="sidebar-header d-flex flex-column justify-content-center align-items-center flex-wrap px-6 pt-12">
                         <div class="avatar avatar-xl avatar-online chat-sidebar-avatar">
-                            <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/avatars/4.png"
-                                alt="Avatar" class="rounded-circle">
+                            <img src="" alt="Avatar" class="rounded-circle" id="sidebar-avatar">
                         </div>
-                        <h5 class="mt-4 mb-0">Felecia Rower</h5>
-                        <span>NextJS Developer</span>
-                        <i class="icon-base bx bx-x icon-lg cursor-pointer close-sidebar d-block" data-bs-toggle="sidebar"
-                            data-overlay="" data-target="#app-chat-sidebar-right"></i>
+                        <h5 class="mt-4 mb-0" id="sidebar-name"></h5>
+                        <span id="sidebar-role"></span>
+                        <i class="icon-base bx bx-x icon-lg cursor-pointer close-sidebar d-block"
+                            data-bs-toggle="sidebar" data-overlay="" data-target="#app-chat-sidebar-right"></i>
                     </div>
                     <div class="sidebar-body p-6 pt-0 ps">
-                        <div class="my-6">
-                            <p class="text-uppercase mb-1 text-body-secondary">About</p>
-                            <p class="mb-0">It is a long established fact that a reader will be distracted by the readable
-                                content .
-                            </p>
-                        </div>
                         <div class="my-6">
                             <p class="text-uppercase mb-1 text-body-secondary">Personal Information</p>
                             <ul class="list-unstyled d-grid gap-4 mb-0 ms-2 py-2 text-heading">
                                 <li class="d-flex align-items-center">
                                     <i class="icon-base bx bx-envelope"></i>
-                                    <span class="align-middle ms-2">josephGreen@email.com</span>
+                                    <span class="align-middle ms-2" id="sidebar-email">-</span>
                                 </li>
                                 <li class="d-flex align-items-center">
                                     <i class="icon-base bx bx-phone-call"></i>
-                                    <span class="align-middle ms-2">+1(123) 456 - 7890</span>
-                                </li>
-                                <li class="d-flex align-items-center">
-                                    <i class="icon-base bx bx-time-five"></i>
-                                    <span class="align-middle ms-2">Mon - Fri 10AM - 8PM</span>
+                                    <span class="align-middle ms-2" id="sidebar-phone">-</span>
                                 </li>
                             </ul>
                         </div>
-                        <div class="my-6">
-                            <p class="text-uppercase text-body-secondary mb-1">Options</p>
-                            <ul class="list-unstyled d-grid gap-4 ms-2 py-2 text-heading">
-                                <li class="cursor-pointer d-flex align-items-center">
-                                    <i class="icon-base bx bx-bookmark"></i>
-                                    <span class="align-middle ms-2">Add Tag</span>
-                                </li>
-                                <li class="cursor-pointer d-flex align-items-center">
-                                    <i class="icon-base bx bx-star"></i>
-                                    <span class="align-middle ms-2">Important Contact</span>
-                                </li>
-                                <li class="cursor-pointer d-flex align-items-center">
-                                    <i class="icon-base bx bx-image-alt"></i>
-                                    <span class="align-middle ms-2">Shared Media</span>
-                                </li>
-                                <li class="cursor-pointer d-flex align-items-center">
-                                    <i class="icon-base bx bx-trash"></i>
-                                    <span class="align-middle ms-2">Delete Contact</span>
-                                </li>
-                                <li class="cursor-pointer d-flex align-items-center">
-                                    <i class="icon-base bx bx-block"></i>
-                                    <span class="align-middle ms-2">Block Contact</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="d-flex mt-6">
-                            <button class="btn btn-danger w-100" data-bs-toggle="sidebar" data-overlay=""
-                                data-target="#app-chat-sidebar-right">Delete Contact<i
-                                    class="icon-base bx bx-trash icon-sm ms-2"></i></button>
-                        </div>
-                        <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-                            <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-                        </div>
-                        <div class="ps__rail-y" style="top: 0px; right: 0px;">
-                            <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div>
-                        </div>
+                        {{-- Options same raho --}}
                     </div>
                 </div>
                 <!-- /Sidebar Right -->
@@ -722,6 +680,7 @@ document.getElementById('load-more-btn')
 document.querySelectorAll('.chat-user').forEach(item => {
     item.addEventListener('click', function (e) {
         e.preventDefault();
+        updateSidebar(this.dataset);
         openChat(this.dataset.chatId, this.dataset.chatStatus);
     });
 });
@@ -835,6 +794,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Avatar click → sidebar open
+document.querySelector('[data-target="#app-chat-sidebar-right"]').addEventListener('click', function () {
+    document.getElementById('app-chat-sidebar-right').classList.toggle('show');
+});
+
+// Close button
+document.querySelector('.close-sidebar').addEventListener('click', function () {
+    document.getElementById('app-chat-sidebar-right').classList.remove('show');
+});
+
 function openChat(chatId, chatStatus = 'open') {
 
     let getChat = "{{ route('admin.chat.show', ':id') }}".replace(':id', chatId);
@@ -884,9 +853,18 @@ function openChat(chatId, chatStatus = 'open') {
             } else {
                 enableChatForm();
             }
+
+            initSidebar();
         });
 }
 
+function updateSidebar(data) {
+    document.getElementById('sidebar-avatar').src   = data.avatar;
+    document.getElementById('sidebar-name').innerText  = data.name;
+    document.getElementById('sidebar-role').innerText  = data.role;
+    document.getElementById('sidebar-email').innerText = data.email;
+    document.getElementById('sidebar-phone').innerText = data.phone;
+}
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -959,6 +937,49 @@ document.addEventListener('click', function (e) {
     });
 });
 
+function initSidebar() {
+    // Avatar click pe sidebar open karo
+    document.querySelectorAll('[data-bs-toggle="sidebar"]').forEach(function(el) {
+        el.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            if (!targetId) return;
 
+            const sidebar = document.querySelector(targetId);
+            if (!sidebar) return;
+
+            sidebar.classList.toggle('show');
+
+            // Overlay handle karo
+            const hasOverlay = this.hasAttribute('data-overlay');
+            if (hasOverlay) {
+                let overlay = document.querySelector('.sidebar-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'sidebar-overlay';
+                    document.body.appendChild(overlay);
+                }
+                overlay.classList.toggle('show');
+
+                // Overlay click pe sidebar band karo
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                });
+            }
+        });
+    });
+
+    // Close button bhi handle karo
+    document.querySelectorAll('.close-sidebar').forEach(function(el) {
+        el.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const sidebar = document.querySelector(targetId);
+            if (sidebar) sidebar.classList.remove('show');
+
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) overlay.classList.remove('show');
+        });
+    });
+}
 </script>
 @endsection

@@ -26,7 +26,9 @@ class User extends Authenticatable
         'about',
         'address',
         'image',
-        'visitor_id'
+        'visitor_id',
+        'is_online',
+        'last_seen',
     ];
 
     /**

@@ -92,6 +92,33 @@
             forceTLS: true,
         });
 
+        /* ================= agent online/offline status ================= */
+        let agentsOnline = false;
+
+        const agentChannel = pusher.subscribe("agent-status");
+
+        agentChannel.bind("agent-online", function(data){
+            console.log("Agent online event received:", data, window.BRAND_ID);
+            if(!window.BRAND_ID) return;
+            console.log("Checking brand IDs:", data.brand_ids, window.BRAND_ID);
+
+            if(data.brand_ids && data.brand_ids.includes(window.BRAND_ID)){
+                agentsOnline = true;
+                showChatUI();
+                fetchChat(false); // ✅ now fetch chat
+            }
+        });
+
+        agentChannel.bind("agent-offline", function(data){
+            console.log("Agent offline event received:", data, window.BRAND_ID);
+            if(!window.BRAND_ID) return;
+
+            if(data.brand_ids && data.brand_ids.includes(window.BRAND_ID)){
+                agentsOnline = false;
+                showOfflineForm();
+            }
+        });
+
         /* ================= STYLES ================= */
 
         const style = document.createElement("style");
@@ -125,6 +152,19 @@
             z-index: 999999;
             transform: translate(1315px, -90px) !important;
             position: fixed !important;
+        }
+        .spinner {
+            width:14px;
+            height:14px;
+            border:2px solid #fff;
+            border-top:2px solid transparent;
+            border-radius:50%;
+            display:inline-block;
+            animation:spin .6s linear infinite;
+            margin-right:4px;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
         }
         @media(max-width:1440px) {
         .emoji-picker__wrapper {
@@ -200,13 +240,32 @@
 
             <div id="live-chat-messages"></div>
 
+            <!-- OFFLINE FORM -->
+            <div id="offline-form" style="display:none;padding:10px;">
+                <h4 style="margin:5px 0;">Leave a message</h4>
+
+                <input id="offline-name" placeholder="Your name"
+                    style="width:100%;padding:6px;margin-bottom:6px;border:1px solid #ddd;border-radius:4px;" />
+
+                <input id="offline-email" placeholder="Your email"
+                    style="width:100%;padding:6px;margin-bottom:6px;border:1px solid #ddd;border-radius:4px;" />
+
+                <textarea id="offline-message" placeholder="Message"
+                    style="width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;"></textarea>
+
+                <button id="offline-send"
+                    style="margin-top:6px;width:100%;padding:8px;background:#696cff;color:#fff;border:none;border-radius:4px;">
+                    <span id="offline-btn-text">Send</span>
+                </button>
+            </div>
+
             <!-- 👇 TYPING INDICATOR -->
             <div id="typing-indicator"
                 style="font-size:12px;color:#888;padding:5px;display:none">
                 Agent is typing...
             </div>
 
-            <div style="display:flex;align-items:center;border-top:1px solid #eee;">
+            <div id="chat-input-container" style="display:flex;align-items:center;border-top:1px solid #eee;">
                 <button id="emoji-btn"
                     style="
                         background:none;
@@ -250,31 +309,37 @@
             const isOpen = box.style.display === "flex";
             box.style.display = isOpen ? "none" : "flex";
 
-            fetch(`${BASE_URL}/api/visitor-chat-activity`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    session_id: SESSION_ID,
-                    message: isOpen
-                        ? "Visitor closed the chat"
-                        : "Visitor opened the chat",
-                }),
-            });
+            if (window.AGENT_ONLINE !== false && window.ASSING_USER_IDS.length > 0) {
 
-            if (!isOpen) {
-                fetch(`${BASE_URL}/api/visitor-read`, {
+                fetch(`${BASE_URL}/api/visitor-chat-activity`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         session_id: SESSION_ID,
-                        chat_id: window.CHAT_ID,
+                        message: isOpen
+                            ? "Visitor closed the chat"
+                            : "Visitor opened the chat",
                     }),
                 });
-                // reset notifications
-                unreadCount = 0;
-                badge().style.display = "none";
-                stopTitleBlink();
-                scrollToBottom();
+
+                if (!isOpen) {
+                    fetch(`${BASE_URL}/api/visitor-read`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            session_id: SESSION_ID,
+                            chat_id: window.CHAT_ID,
+                        }),
+                    });
+                    // reset notifications
+                    unreadCount = 0;
+                    badge().style.display = "none";
+                    stopTitleBlink();
+                    scrollToBottom();
+                }
+
+            } else {
+                console.warn("Agent offline, skipping API calls");
             }
         };
 
@@ -548,13 +613,19 @@
                 if (data.success || data.status === "success") {
                     isBrandValid = true;
                     window.CHAT_ID = data.chat_id;
-                    // console.log("Brand validated, chat enabled");
+                    window.AGENT_ONLINE = data.agent_online;
+                    window.BRAND_ID = data.brand_id;
+                    // console.log(window.AGENT_ONLINE, window.BRAND_ID, window.CHAT_ID);
 
                     CHAT_SETTINGS = data.settings || {};
+                    window.ASSING_USER_IDS = data.user_ids || [];
                     applyChatSettings();
 
-                    // ✅ Only fetch chat if brand is valid
-                    fetchChat(false);
+                    if(window.AGENT_ONLINE || CHAT_SETTINGS.chat_enabled == 0 || window.ASSING_USER_IDS.length > 0){
+                        fetchChat(false);
+                    }else{
+                        showOfflineForm(); // ⭐ show form
+                    }
                 } else if(data.status === "pending") {
                     isBrandValid = false;
                     console.warn("Chat waiting for admin approval");
@@ -767,7 +838,10 @@
             // 🚫 Don't send if brand invalid
             if (!isBrandValid) return;
 
-            console.log("Sending heartbeat");
+            if(!window.AGENT_ONLINE) return;
+
+            if(!window.ASSING_USER_IDS.length > 0) return;
+
             fetch(`${BASE_URL}/api/visitor-heartbeat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -828,5 +902,68 @@
 
             btn.style.display = "flex";
         }
+
+        function showOfflineForm(){
+            document.getElementById("live-chat-messages").style.display = "none";
+            document.getElementById("typing-indicator").style.display = "none";
+            document.getElementById("chat-input-container").style.display = "none";
+            document.getElementById("offline-form").style.display = "block";
+        }
+
+        function showChatUI(){
+            document.getElementById("live-chat-messages").style.display = "block";
+            document.getElementById("offline-form").style.display = "none";
+            document.getElementById("chat-input-container").style.display = "flex";
+        }
+
+        document.addEventListener("click", function(e) {
+            if(e.target.id === "offline-send") {
+
+                const btn = document.getElementById("offline-send");
+                const btnText = document.getElementById("offline-btn-text");
+                const name = document.getElementById("offline-name").value;
+                const email = document.getElementById("offline-email").value;
+                const msg = document.getElementById("offline-message").value;
+                const formBox = document.getElementById("offline-form");
+
+                if (!msg) return alert("Message required");
+
+                // ✅ Disable button + show spinner
+                btn.disabled = true;
+                btnText.innerHTML = `<span class="spinner"></span> Sending...`;
+
+                fetch(`${BASE_URL}/api/offline-message`, {
+                    method:"POST",
+                    headers:{"Content-Type":"application/json"},
+                    body: JSON.stringify({
+                        session_id: SESSION_ID,
+                        name,
+                        email,
+                        message: msg,
+                        chat_id: window.CHAT_ID,
+                        brand_id: window.BRAND_ID,
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // ✅ Success UI inside widget
+                    formBox.innerHTML = `
+                        <div style="text-align:center;padding:20px;">
+                            <div style="font-size:40px;">✅</div>
+                            <h4 style="margin:10px 0;">Message Sent</h4>
+                            <p style="font-size:13px;color:#666;">
+                                Thanks! We will get back to you soon.
+                            </p>
+                        </div>
+                    `;
+                })
+                .catch(() => {
+                    // ❌ Error → reset button
+                    btn.disabled = false;
+                    btnText.innerHTML = "Send";
+                    console.log("Something went wrong");
+                });
+            }
+        });
     }
 })();

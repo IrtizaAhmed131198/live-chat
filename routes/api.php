@@ -14,6 +14,7 @@ Route::post('/visitor-chat-activity', [VisitorController::class, 'chatActivity']
 Route::post('/visitor-activity', [VisitorController::class, 'visitorActivity']);
 Route::post('/visitor-heartbeat', [VisitorController::class, 'visitorHeartbeat']);
 Route::post('/verify-brand', [VisitorController::class, 'verifyBrand']);
+Route::post('/offline-message', [VisitorController::class, 'offlineMessage']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

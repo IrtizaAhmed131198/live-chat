@@ -27,7 +27,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:1', 'lastseen'])->prefix('admin')->group(function () {
 
     Route::get('users', [UserController::class, 'index'])->name('admin.users');
     Route::get('users/create', [UserController::class, 'create'])->name('admin.users.create');
@@ -39,7 +39,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
 
 
     Route::get('brand/data', [BrandController::class, 'getdata'])->name('admin.brand.getdata');
-    Route::post('/admin/brand/status/update', [BrandController::class, 'changeStatus'])->name('admin.brand.status.update');
+    Route::post('brand/status/update', [BrandController::class, 'changeStatus'])->name('admin.brand.status.update');
     Route::get('brand', [BrandController::class, 'index'])->name('admin.brand');
     Route::get('brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
     Route::post('brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
@@ -58,7 +58,7 @@ Route::middleware(['auth', 'role:1'])->prefix('admin')->group(function () {
     // Route::delete('website/destroy/{id}', [WebsiteController::class, 'destroy'])->name('admin.website.destroy');
 });
 
-Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:1,2', 'lastseen'])->prefix('admin')->group(function () {
 
     Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
@@ -88,7 +88,7 @@ Route::middleware(['auth', 'role:1,2'])->prefix('admin')->group(function () {
     Route::get('visitor/edit-user/{id}', [VisitorController::class, 'editUser'])->name('admin.visitor.edit-user');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'lastseen'])->group(function () {
 
     Route::get('/admin/profile', [ProfileController::class, 'profile'])->name('admin.profile.index');
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');

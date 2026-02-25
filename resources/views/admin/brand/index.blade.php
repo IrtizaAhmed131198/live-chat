@@ -82,10 +82,16 @@
                     status: status
                 },
                 success: function(response) {
-                    console.log(response.message);
+                    toastr.success('Status updated successfully!', 'Success!', {
+                        "timeOut": "3000",
+                        "positionClass": "toast-top-center"
+                    });
                 },
                 error: function(xhr) {
-                    console.log("Error:", xhr.responseText);
+                    toastr.error('Failed to update status!', 'Error!', {
+                        "timeOut": "3000",
+                        "positionClass": "toast-top-center"
+                    });
                 }
             });
 

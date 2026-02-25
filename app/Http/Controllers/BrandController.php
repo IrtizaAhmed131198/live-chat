@@ -165,7 +165,7 @@ class BrandController extends Controller
         $brand = Brand::findOrFail($id);
 
         // 🔥 Sirf visitor_id = 2 wale users
-        $users = User::where('visitor_id', 2)->get();
+        $users = User::where('role', 2)->get();
 
         $selectedUserIds = DB::table('brand_users')
             ->where('brand_id', $brand->id)
