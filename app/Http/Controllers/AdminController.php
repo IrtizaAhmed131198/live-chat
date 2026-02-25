@@ -36,12 +36,12 @@ class AdminController extends Controller
             ->get();
 
         if(auth()->user()->role == 1) {
-            $chats = Chat::with(['visitor', 'messages'])
+            $chats = Chat::with(['visitor', 'messages', 'main_visitor'])
                 ->where('status', 'open')
                 ->latest()
                 ->get();
         }else{
-            $chats = Chat::with('visitor')
+            $chats = Chat::with(['visitor', 'main_visitor'])
                 ->where('status', 'open')
                 ->whereHas('visitor', function($query) use ($userBrandIds) {
                     $query->whereIn('brand_id', $userBrandIds);

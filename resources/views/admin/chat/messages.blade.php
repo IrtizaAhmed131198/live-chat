@@ -58,19 +58,21 @@
         </div>
     </div>
     <!-- Chat message form -->
-    <div class="chat-history-footer shadow-xs">
-        <form class="form-send-message d-flex justify-content-between align-items-center " data-chat-id="{{ $chatId }}">
-            <input class="form-control message-input border-0 me-4 shadow-none"
-                placeholder="Type your message here...">
-            <div class="message-actions d-flex align-items-center">
-                <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer emoji-btn">
-                    <i class="fa-regular fa-face-grin"></i>
-                </span>
-                <button type="button" class="btn btn-primary d-flex send-msg-btn">
-                    <span class="align-middle d-md-inline-block d-none">Send</span>
-                    <i class="icon-base bx bx-paper-plane icon-sm ms-md-2 ms-0"></i>
-                </button>
-            </div>
-        </form>
-    </div>
+    @if(auth()->user()->role == 2)
+        <div class="chat-history-footer shadow-xs">
+            <form class="form-send-message d-flex justify-content-between align-items-center " data-chat-id="{{ $chatId }}">
+                <input class="form-control message-input border-0 me-4 shadow-none"
+                    placeholder="Type your message here...">
+                <div class="message-actions d-flex align-items-center">
+                    <span class="btn btn-text-secondary btn-icon rounded-pill cursor-pointer emoji-btn">
+                        <i class="fa-regular fa-face-grin"></i>
+                    </span>
+                    <button type="button" class="btn btn-primary d-flex send-msg-btn">
+                        <span class="align-middle d-md-inline-block d-none">Send</span>
+                        <i class="icon-base bx bx-paper-plane icon-sm ms-md-2 ms-0"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
 </div>

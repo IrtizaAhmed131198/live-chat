@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Visitor extends Model
 {
-    protected $fillable = ['brand_id', 'session_id', 'last_url'];
+    protected $fillable = ['brand_id', 'session_id', 'last_url', 'ip_address', 'country', 'city', 'device', 'browser', 'os'];
 
     protected static function boot()
     {

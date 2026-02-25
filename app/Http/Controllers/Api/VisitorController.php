@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Mail;
+use Jenssegers\Agent\Agent;
+use Illuminate\Support\Facades\Http;
 
 class VisitorController extends Controller
 {
@@ -198,6 +200,23 @@ class VisitorController extends Controller
             'session_id' => 'required'
         ]);
 
+        $ip = $request->ip();
+
+        // 🔹 Device detection
+        $agent = new Agent();
+        $agent->setUserAgent($request->userAgent());
+
+        $device = $agent->isMobile() ? 'Mobile' : ($agent->isTablet() ? 'Tablet' : 'Desktop');
+        $browser = $agent->browser();
+        $os = $agent->platform();
+
+        // 🔹 Location using IP API
+        $location = Http::get("http://ip-api.com/json/{$ip}")->json();
+        \Log::info('Visitor Location: ', $location);
+
+        $country = $location['country'] ?? null;
+        $city = $location['city'] ?? null;
+
         // 1️⃣ Website
         $website = Website::firstOrCreate(
             ['domain' => $request->domain],
@@ -245,6 +264,15 @@ class VisitorController extends Controller
             ['session_id' => $request->session_id],
             ['brand_id' => $brand->id] //website is like brand_id
         );
+
+        $visitor->update([
+            'ip_address' => $ip,
+            'country' => $country,
+            'city' => $city,
+            'device' => $device,
+            'browser' => $browser,
+            'os' => $os,
+        ]);
 
         $visitorUser = User::firstOrCreate(
             ['visitor_id' => $visitor->id], // optional: link user to visitor

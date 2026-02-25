@@ -3,7 +3,6 @@
 @section('css')
 <style>
     .chat-history-body {
-        max-height: 400px !important;
         overflow-y: auto !important;
         scroll-behavior: smooth !important;
     }
@@ -166,6 +165,7 @@
                                         data-email="{{ $chat->visitor->email }}"
                                         data-phone="{{ $chat->visitor->phone ?? '-' }}"
                                         data-role="{{ $chat->visitor->isRole() ?? 'User' }}"
+                                        data-ipaddress="{{ $chat->main_visitor->ip_address ?? '-' }}"
                                         data-avatar="{{ $chat->visitor->image ? asset($chat->visitor->image) : asset('assets/images/default.png') }}">
 
                                         <div class="flex-shrink-0 avatar avatar-online profile-av-1">
@@ -181,10 +181,12 @@
                                                     {{ $chat->visitor->name }}
                                                 </h6>
 
-                                                <span class="badge bg-danger ms-2 unread-badge"
-                                                    style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
-                                                    {{ $count }}
-                                                </span>
+                                                @if(auth()->user()->role == 2)
+                                                    <span class="badge bg-danger ms-2 unread-badge"
+                                                        style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
+                                                        {{ $count }}
+                                                    </span>
+                                                @endif
 
                                                 <small class="chat-contact-list-item-time">
                                                     {{ optional($chat->updated_at)->diffForHumans() }}
@@ -253,6 +255,10 @@
                                 <li class="d-flex align-items-center">
                                     <i class="icon-base bx bx-phone-call"></i>
                                     <span class="align-middle ms-2" id="sidebar-phone">-</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="icon-base bx bx-map"></i>
+                                    <span class="align-middle ms-2" id="sidebar-ip-address">-</span>
                                 </li>
                             </ul>
                         </div>
@@ -813,6 +819,7 @@ function openChat(chatId, chatStatus = 'open') {
         .then(html => {
 
             const chatHistoryContainer = document.getElementById('app-chat-history');
+            const container = document.querySelector('.chat-history-body');
             chatHistoryContainer.innerHTML = html;
             chatHistoryContainer.classList.remove('d-none');
             document.getElementById('app-chat-conversation')?.classList.add('d-none');
@@ -837,6 +844,18 @@ function openChat(chatId, chatStatus = 'open') {
             // 🔹 Clear messages
             const ul = document.querySelector('.chat-history-body .chat-history');
             ul.innerHTML = '';
+
+            // 🔹 Scroll listener
+            const chatBody = document.querySelector('.chat-history-body');
+            // remove old listener (clone trick)
+            const newChatBody = chatBody.cloneNode(true);
+            chatBody.parentNode.replaceChild(newChatBody, chatBody);
+
+            newChatBody.addEventListener('scroll', () => {
+                if (newChatBody.scrollTop === 0 && !loading && !allLoaded) {
+                    loadMessages(window.chatId, true);
+                }
+            });
 
             // 🔹 Load messages
             loadMessages(chatId);
@@ -864,6 +883,7 @@ function updateSidebar(data) {
     document.getElementById('sidebar-role').innerText  = data.role;
     document.getElementById('sidebar-email').innerText = data.email;
     document.getElementById('sidebar-phone').innerText = data.phone;
+    document.getElementById('sidebar-ip-address').innerText = data.ipaddress;
 }
 
 function escapeHtml(str) {

@@ -38,4 +38,9 @@ class Chat extends Model
     {
         return $this->belongsTo(Brand::class, 'id', 'brand_id');
     }
+
+    public function main_visitor()
+    {
+        return $this->hasOne(Visitor::class, 'id', 'visitor_id');
+    }
 }
