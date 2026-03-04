@@ -966,4 +966,73 @@
             }
         });
     }
+
+    function trackEvent(payload){
+        return false; // disable heatmap tracking
+        if(!window.BRAND_ID) return;
+
+        fetch(`${BASE_URL}/api/heatmap-track`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+                brand_id: window.BRAND_ID,
+                session_id: SESSION_ID,
+                url: window.location.href,
+                type: payload.type,
+                x: payload.x || null,
+                y: payload.y || null,
+                scroll_percent: payload.scroll_percent || null
+            })
+        }).catch(()=>{});
+    }
+
+    document.addEventListener("click", function(e){
+
+        trackEvent({
+            type: "click",
+            x: e.pageX,
+            y: e.pageY
+        });
+
+    });
+
+    window.addEventListener("scroll", throttle(function(){
+
+        const scrollTop = window.scrollY;
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        const percent = Math.round((scrollTop / docHeight) * 100);
+
+        trackEvent({
+            type: "scroll",
+            scroll_percent: percent
+        });
+
+    }, 2000));
+
+    let clickHistory = [];
+
+    document.addEventListener("click", function(e){
+
+        const now = Date.now();
+
+        clickHistory.push({
+            x: e.pageX,
+            y: e.pageY,
+            time: now
+        });
+
+        // keep last 1 second
+        clickHistory = clickHistory.filter(c => now - c.time < 1000);
+
+        if(clickHistory.length >= 3){
+
+            trackEvent({
+                type: "rage",
+                x: e.pageX,
+                y: e.pageY
+            });
+
+            clickHistory = []; // reset
+        }
+    });
 })();

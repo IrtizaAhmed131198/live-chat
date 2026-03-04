@@ -86,6 +86,11 @@ class User extends Authenticatable
         return $this->hasMany(Brand::class, 'user_id');
     }
 
+    public function brandss()
+    {
+        return $this->belongsToMany(Brand::class, 'brand_users', 'user_id', 'brand_id');
+    }
+
     public function visitor()
     {
         return $this->belongsTo(Visitor::class, 'visitor_id', 'id');
@@ -94,5 +99,10 @@ class User extends Authenticatable
     public function auth_brands()
     {
         return $this->belongsToMany(Brand::class, 'brand_users', 'user_id', 'brand_id');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender');
     }
 }

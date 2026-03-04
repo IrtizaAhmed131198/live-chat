@@ -6,22 +6,75 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Message;
 use App\Models\Chat;
+use App\Models\Brand;
+use App\Models\HeatmapEvent;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
+use Carbon\Carbon;
+use App\Services\DashboardService;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(DashboardService $dashboardService)
     {
-        emit_pusher_notification(
-            'agent-status',
-            'agent-online',
-            [
-                'agent_id' => auth()->id(),
-                'brand_ids' => auth()->user()->auth_brands->pluck('id')
-            ]
-        );
-        return view('admin.dashboard');
+        $events = HeatmapEvent::where('brand_id', 8)
+            ->where('url', 'http://localhost/photo-studio/public/login')
+            ->where('type', 'click')
+            ->get();
+
+        $user = auth()->user();
+        $brandIds = $user->isRole('admin')
+            ? Brand::pluck('id')->toArray()
+            : $user->auth_brands->pluck('id')->toArray();
+
+        $stats = $dashboardService->getWeeklyStats();
+        $chartData = $dashboardService->getWeeklyChartData();
+        $bestAgent    = $dashboardService->getBestAgent($brandIds);
+        $quickStats   = $dashboardService->getQuickStats($brandIds);
+        $responseTime = $dashboardService->getAvgResponseTime($brandIds);
+        $brandId      = 8;
+
+        emit_pusher_notification('agent-status', 'agent-online', [
+            'agent_id'  => auth()->id(),
+            'brand_ids' => auth()->user()->auth_brands->pluck('id')
+        ]);
+
+        return view('admin.dashboard', [
+            'events'         => $events,
+
+            // Visitors
+            'visitorsData'   => $chartData,
+            'visitorPercent' => $stats['percent'],
+            'percentChange'  => $stats['change'],
+
+            // Activity
+            'activityData'   => $chartData,
+            'activityPercent'=> $stats['percent'],
+            'activityChange' => $stats['change'],
+            //Agent
+            'bestAgent' => $bestAgent,
+            'quickStats' => $quickStats,
+            'responseTime' => $responseTime,
+            'brandId'         => $brandId,
+        ]);
+    }
+
+    public function visitorAnalytics(DashboardService $dashboardService)
+    {
+        $user     = auth()->user();
+        $brandIds = $user->isRole('admin')
+            ? Brand::pluck('id')->toArray()
+            : $user->auth_brands->pluck('id')->toArray();
+
+        return response()->json($dashboardService->getVisitorAnalytics($brandIds));
+    }
+
+    private function getHeatmapEvents()
+    {
+        return HeatmapEvent::where('brand_id', 8)
+            ->where('url', 'http://localhost/photo-studio/public/login')
+            ->where('type', 'click')
+            ->get();
     }
 
     public function chat($chatId = null)

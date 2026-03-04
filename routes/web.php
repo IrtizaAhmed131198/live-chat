@@ -61,6 +61,7 @@ Route::middleware(['auth', 'role:1', 'lastseen'])->prefix('admin')->group(functi
 Route::middleware(['auth', 'role:1,2', 'lastseen'])->prefix('admin')->group(function () {
 
     Route::get('dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('visitor-analytics', [AdminController::class, 'visitorAnalytics'])->name('admin.visitor-analytics');
 
     Route::get('chat', [AdminController::class, 'chat'])->name('admin.chat');
     Route::get('chat/{chatId}', [AdminController::class, 'show'])->name('admin.chat.show');
