@@ -24,7 +24,8 @@ class RegisterController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
-            'role' => '2', // Default role as 'User'
+            'role' => '2',
+            'visitor_id' => null,
         ]);
 
         Auth::login($user);
