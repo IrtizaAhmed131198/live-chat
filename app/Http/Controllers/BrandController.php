@@ -38,13 +38,13 @@ class BrandController extends Controller
                 $checked = $brand->status == 1 ? 'checked' : '';
 
                 return '
-        <div class="form-check form-switch">
-            <input type="checkbox"
-                class="form-check-input toggle-status"
-                data-id="' . $brand->id . '"
-                ' . $checked . '>
-        </div>
-    ';
+                    <div class="form-check form-switch">
+                        <input type="checkbox"
+                            class="form-check-input toggle-status"
+                            data-id="' . $brand->id . '"
+                            ' . $checked . '>
+                    </div>
+                ';
             })
 
             ->addColumn('actions', function ($brand) {
@@ -205,6 +205,7 @@ class BrandController extends Controller
                 'regex:/^(?!https?:\/\/)(?!www\.)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/',
                 Rule::unique('brand', 'domain')->ignore($brand->id)
             ],
+            'allowed_ips' => 'nullable|string',
             'status' => 'required|in:0,1',
         ]);
 

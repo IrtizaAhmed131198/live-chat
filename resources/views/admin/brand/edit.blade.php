@@ -180,11 +180,21 @@
                                                 Inactive</option>
                                         </select>
                                     </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="allowed_ips" class="form-label">Allowed IPs</label>
+                                        <textarea class="form-control" name="allowed_ips"
+                                            placeholder="Example: 192.168.1.1,192.168.1.5">{{ old('allowed_ips', $brand->allowed_ips) }}</textarea>
+
+                                        <small class="text-muted">
+                                            Multiple IPs comma separated likho
+                                        </small>
+                                    </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-primary">Create Brand</button>
+                                        <button type="submit" class="btn btn-primary">Update Brand</button>
                                         <a href="{{ route('admin.brand') }}" class="btn btn-secondary">Cancel</a>
                                     </div>
                                 </div>

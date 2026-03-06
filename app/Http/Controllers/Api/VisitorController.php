@@ -229,6 +229,21 @@ class VisitorController extends Controller
             ]);
         }
 
+        $ip = $request->ip();
+
+        // 🔒 IP Restriction
+        if ($brand->allowed_ips) {
+
+            $allowedIps = array_map('trim', explode(',', $brand->allowed_ips));
+
+            if (!in_array($ip, $allowedIps)) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Access denied from this IP'
+                ], 403);
+            }
+        }
+
         if ($brand->status == 0) {
             // Notify admin first time only
             if (!$brand->is_verified) {
