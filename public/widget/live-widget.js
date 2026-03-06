@@ -609,6 +609,11 @@
         })
             .then((res) => res.json())
             .then((data) => {
+
+                if(data.error){
+                    console.warn("Chat blocked:", data.message);
+                    return;
+                }
                 // ✅ Brand found - enable chat
                 if (data.success || data.status === "success") {
                     isBrandValid = true;
