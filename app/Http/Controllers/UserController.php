@@ -18,7 +18,7 @@ class UserController extends Controller
     }
     public function getUsers()
     {
-        $users = User::where('visitor_id', 2)
+        $users = User::where('role', 2)
             ->select(['id', 'name', 'email', 'phone', 'address'])
             ->latest()
             ->get();
