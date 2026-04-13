@@ -173,12 +173,14 @@ class BrandController extends Controller
             ->toArray();
 
         $chatSettings = ChatSetting::where('brand_id', $brand->id)->first();
+        $widget = env('WIDGET');
 
         return view('admin.brand.edit', compact(
             'brand',
             'users',
             'selectedUserIds',
-            'chatSettings'
+            'chatSettings',
+            'widget'
         ));
     }
 

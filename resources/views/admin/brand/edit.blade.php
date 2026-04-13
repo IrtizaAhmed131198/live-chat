@@ -272,7 +272,8 @@
                         </div>
                         <div class="tab-pane fade" id="install-script" role="tabpanel">
                             @php
-                                $url = config('app.script_url');
+                                $url = url('').'/widget/'.$widget;
+                                dump($url);
                                 $script = '<!--Start of Live Chat -->
 <script src="'.$url.'?brand='.$brand->id.'"></script>
 <!-- End of Live Chat -->';
