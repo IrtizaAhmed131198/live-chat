@@ -494,8 +494,28 @@
                 earliestMessageId = msgId;
             }
 
-            // 🔔 Notifications
+            // 🔔 Notifications + auto-open
             if (isNew && from != 3 && box.style.display !== "flex") {
+                // Auto-open the chat box
+                box.style.display = "flex";
+                console.log(box.style.display);
+                scrollToBottom();
+
+                // Notify agent we opened the chat
+                fetch(`${BASE_URL}/api/visitor-read`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        session_id: SESSION_ID,
+                        chat_id: window.CHAT_ID,
+                    }),
+                });
+
+                unreadCount = 0;
+                badge().style.display = "none";
+                stopTitleBlink();
+            } else if (isNew && from != 3) {
+                // Box already open — just badge/sound as normal
                 unreadCount++;
                 badge().innerText = unreadCount;
                 badge().style.display = "block";
