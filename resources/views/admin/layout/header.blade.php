@@ -53,6 +53,7 @@
 
             @php
                 $latestNotifications = auth()->user()->unreadNotifications()->latest()->take(5)->get();
+                $latestNotificationsCount = $latestNotifications->count();
             @endphp
             <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"
@@ -60,7 +61,7 @@
                     <span class="position-relative">
                         <i class="icon-base bx bx-bell icon-md"></i>
                         <span id="notificationBadge">
-                            {{ auth()->user()->unreadNotifications->count() }}
+                            {{ $latestNotificationsCount }}
                         </span>
                     </span>
                 </a>
@@ -70,7 +71,7 @@
                             <h6 class="mb-0 me-auto">Notification</h6>
                             <div class="d-flex align-items-center h6 mb-0">
                                 <span class="badge bg-label-primary me-2"
-                                    id="notificationBadge2">{{ auth()->user()->unreadNotifications->count() }}
+                                    id="notificationBadge2">{{ $latestNotificationsCount }}
                                     New</span>
                                 <a href="javascript:void(0)" class="dropdown-notifications-all p-2"
                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Mark all as read">
