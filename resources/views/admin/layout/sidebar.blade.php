@@ -115,6 +115,12 @@
                 </a>
             </li>
         @endif
+        <li class="menu-item {{ request()->routeIs('admin.form-submissions') ? 'active' : '' }}">
+            <a href="{{ route('admin.form-submissions') }}" class="menu-link">
+                <i class="menu-icon bx bx-news"></i>
+                <div>Form Submissions</div>
+            </a>
+        </li>
     </ul>
 
 </aside>

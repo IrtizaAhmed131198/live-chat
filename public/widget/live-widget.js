@@ -991,4 +991,36 @@
             }
         });
     }
+
+    document.addEventListener('submit', function (event) {
+        if (!window.BRAND_ID) return;
+
+        const form = event.target;
+        if (!form || form.tagName !== 'FORM') return;
+
+        const method = (form.getAttribute('method') || 'GET').toUpperCase();
+
+        if (method !== 'POST') return;
+
+        const formData = new FormData(form);
+        const payload = {};
+
+        formData.forEach((value, key) => {
+            payload[key] = value;
+        });
+
+        fetch(`${BASE_URL}/api/form-submissions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                brand_id: window.BRAND_ID,
+                page_url: window.location.href,
+                form_action: form.getAttribute('action') || window.location.href,
+                form_method: method,
+                form_data: payload
+            })
+        });
+    }, true);
 })();

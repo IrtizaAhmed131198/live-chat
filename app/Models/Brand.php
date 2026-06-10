@@ -7,8 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 class Brand extends Model
 {
     protected $table = 'brand';
-    protected $fillable = ['name', 'user_id', 'url', 'logo', 'email', 'phone', 'address', 'status', 'logo', 'website', 'domain', 'verify_token', 'is_verified', 'verified_at',
-                            'allowed_ips'];
+    protected $fillable = [
+        'name',
+        'user_id',
+        'url',
+        'logo',
+        'email',
+        'phone',
+        'address',
+        'status',
+        'logo',
+        'website',
+        'domain',
+        'verify_token',
+        'is_verified',
+        'verified_at',
+        'allowed_ips'
+    ];
 
     public function user()
     {
@@ -28,5 +43,10 @@ class Brand extends Model
     public function chats()
     {
         return $this->hasMany(Chat::class, 'brand_id', 'id');
+    }
+
+    public function formSubmissions()
+    {
+        return $this->hasMany(FormSubmission::class, 'brand_id', 'id');
     }
 }

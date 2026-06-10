@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\VisitorController;
+use App\Http\Controllers\Admin\FormSubmissionsController;
 
 
 Route::get('/', function () {
@@ -94,6 +95,13 @@ Route::middleware(['auth', 'lastseen'])->group(function () {
     Route::get('/admin/profile', [ProfileController::class, 'profile'])->name('admin.profile.index');
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
+
+// Form Submissions - server‑side DataTables endpoint and page view
+Route::middleware(['auth', 'lastseen'])->prefix('admin')->group(function () {
+    Route::get('form-submissions', [FormSubmissionsController::class, 'index'])->name('admin.form-submissions');
+    Route::get('form-submissions/data', [FormSubmissionsController::class, 'getFormSubmissions'])->name('admin.form-submissions.data');
+    Route::get('form-submissions/{id}', [FormSubmissionsController::class, 'show'])->name('admin.form-submissions.show');
 });
 
 
