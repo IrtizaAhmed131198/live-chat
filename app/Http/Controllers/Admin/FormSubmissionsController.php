@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FormSubmission;
 use App\Models\Brand;
+use App\Models\User;
 use Yajra\DataTables\Facades\DataTables;
 
 class FormSubmissionsController extends Controller
@@ -25,7 +26,15 @@ class FormSubmissionsController extends Controller
      */
     public function getFormSubmissions(Request $request)
     {
-        $query = FormSubmission::with('brand')->latest();
+        $user_id = auth()->user()->id;
+        $user = User::with('auth_brands')->where('id', $user_id)->first();
+        $brand_ids = $user->auth_brands->pluck('id')->toArray();
+
+        if (auth()->user()->role != 1) {
+            $query = FormSubmission::with('brand')->whereIn('brand_id', $brand_ids)->latest();
+        } else {
+            $query = FormSubmission::with('brand')->latest();
+        }
 
         // Filters (same as previous implementation)
         if ($request->filled('brand_id')) {
