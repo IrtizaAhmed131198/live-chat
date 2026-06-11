@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('form_submissions', function (Blueprint $table) {
             $table->id();
-            $table->integer('website_id')->nullable();
+            $table->integer('brand_id')->nullable();
             $table->string('page_url')->nullable();
             $table->string('form_action')->nullable();
             $table->string('form_method')->nullable();
