@@ -972,6 +972,7 @@
                         message: msg,
                         chat_id: window.CHAT_ID,
                         brand_id: window.BRAND_ID,
+                        page_url: window.location.href
                     })
                 })
                 .then(res => res.json())
