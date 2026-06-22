@@ -646,10 +646,15 @@
                     window.ASSING_USER_IDS = data.user_ids || [];
                     applyChatSettings();
 
-                    if(window.AGENT_ONLINE || CHAT_SETTINGS.chat_enabled == 0 || window.ASSING_USER_IDS.length > 0){
+                    if (CHAT_SETTINGS.chat_enabled == 0) {
+                        showOfflineForm();
+                        return;
+                    }
+
+                    if (window.AGENT_ONLINE === true) {
                         fetchChat(false);
-                    }else{
-                        showOfflineForm(); // ⭐ show form
+                    } else {
+                        showOfflineForm();
                     }
                 } else if(data.status === "pending") {
                     isBrandValid = false;
@@ -967,6 +972,7 @@
                         message: msg,
                         chat_id: window.CHAT_ID,
                         brand_id: window.BRAND_ID,
+                        page_url: window.location.href
                     })
                 })
                 .then(res => res.json())

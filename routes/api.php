@@ -16,7 +16,7 @@ Route::post('/visitor-chat-activity', [VisitorController::class, 'chatActivity']
 Route::post('/visitor-activity', [VisitorController::class, 'visitorActivity']);
 Route::post('/visitor-heartbeat', [VisitorController::class, 'visitorHeartbeat']);
 Route::post('/verify-brand', [VisitorController::class, 'verifyBrand']);
-Route::post('/offline-message', [VisitorController::class, 'offlineMessage']);
+Route::post('/offline-message', [VisitorController::class, 'offlineMessage'])->name('api.offline-message');
 
 Route::post('/heatmap-track', [HeatmapController::class, 'store']);
 Route::get('/heatmap', [HeatmapController::class, 'getAdminHeatmap']);

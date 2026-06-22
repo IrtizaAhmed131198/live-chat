@@ -34,6 +34,8 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        $user = auth()->user();
+        $user->update(['is_online' => 0]);
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -42,10 +44,10 @@ class LoginController extends Controller
             'agent-status',
             'agent-offline',
             [
-                'agent_id' => auth()->id(),
-                'brand_ids' => auth()->check() && auth()->user()->auth_brands
-                        ? auth()->user()->auth_brands->pluck('id')
-                        : []
+                'agent_id' => $user->id,
+                'brand_ids' => $user->auth_brands
+                    ? $user->auth_brands->pluck('id')
+                    : []
             ]
         );
 

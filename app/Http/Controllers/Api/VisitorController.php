@@ -11,6 +11,7 @@ use App\Models\Website;
 use App\Models\User;
 use App\Models\Brand;
 use App\Models\OfflineMessage;
+use App\Models\FormSubmission;
 use App\Mail\OfflineMessageMail;
 use App\Notifications\NewVisitorNotification;
 use App\Notifications\BrandApprovalRequest;
@@ -73,7 +74,7 @@ class VisitorController extends Controller
             ->where('is_read', false)
             ->count();
 
-        $data = $messages->map(function($msg) {
+        $data = $messages->map(function ($msg) {
             return [
                 'id' => $msg->id,
                 'message' => $msg->message,
@@ -132,7 +133,7 @@ class VisitorController extends Controller
 
         $msg = Message::create([
             'chat_id' => $chat->id,
-            'sender'  => $userId,
+            'sender' => $userId,
             'message' => $request->message
         ]);
 
@@ -143,9 +144,9 @@ class VisitorController extends Controller
                 'chat_id' => $chat->id,
                 'user_id' => $userId,
                 'message' => $request->message,
-                'sender'  => $userId,
+                'sender' => $userId,
                 'sender_type' => 'visitor',
-                'role'  => 3,
+                'role' => 3,
                 'created_at' => $msg->formatted_created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
                 'id' => $msg->id
@@ -167,7 +168,8 @@ class VisitorController extends Controller
         ]);
 
         $chat = Chat::find($request->chat_id);
-        if (!$chat) return response()->json(['messages' => []]);
+        if (!$chat)
+            return response()->json(['messages' => []]);
 
         $messages = Message::where('chat_id', $chat->id)
             ->where('id', '<', $request->before_id)
@@ -179,7 +181,7 @@ class VisitorController extends Controller
         // return in ascending order
         $messages = $messages->sortBy('id')->values();
 
-        $data = $messages->map(function($msg){
+        $data = $messages->map(function ($msg) {
             return [
                 'id' => $msg->id,
                 'message' => $msg->message,
@@ -222,7 +224,7 @@ class VisitorController extends Controller
             ['name' => $request->domain]
         );
         $brand = Brand::with('users', 'chatSetting')->where('domain', $request->domain)->first();
-        if(!$brand){
+        if (!$brand) {
             return response()->json([
                 'error' => true,
                 'message' => 'Brand Not Found'
@@ -291,8 +293,8 @@ class VisitorController extends Controller
         $visitorUser = User::firstOrCreate(
             ['visitor_id' => $visitor->id], // optional: link user to visitor
             [
-                'name' => 'Visitor-'.$visitor->id,
-                'email' => 'visitor'.$visitor->id.'@example.com',
+                'name' => 'Visitor-' . $visitor->id,
+                'email' => 'visitor' . $visitor->id . '@example.com',
                 'password' => bcrypt(Str::random(8)), // random password
                 'role' => 3
             ]
@@ -301,8 +303,8 @@ class VisitorController extends Controller
         $chat = Chat::firstOrCreate(
             [
                 'visitor_id' => $visitor->id,
-                'brand_id'   => $visitor->brand_id,
-                'status'     => 'open',
+                'brand_id' => $visitor->brand_id,
+                'status' => 'open',
             ],
             [
                 'last_visitor_activity_at' => now()  // sirf create hote waqt set hoga
@@ -378,7 +380,7 @@ class VisitorController extends Controller
             ->where('status', 'open')
             ->first();
 
-        if($chat){
+        if ($chat) {
             emit_pusher_notification(
                 'chat.' . $chat->id,
                 'typing',
@@ -393,12 +395,14 @@ class VisitorController extends Controller
     public function markRead(Request $request)
     {
         $visitor = Visitor::where('session_id', $request->session_id)->first();
-        if (!$visitor) return response()->json();
+        if (!$visitor)
+            return response()->json();
 
         $chat = Chat::where('visitor_id', $visitor->id)
             ->where('status', 'open')
             ->first();
-        if (!$chat) return response()->json(['status' => false]);
+        if (!$chat)
+            return response()->json(['status' => false]);
 
         Message::where('chat_id', $chat->id)
             ->where('sender', $chat->agent_id)
@@ -410,16 +414,18 @@ class VisitorController extends Controller
     public function chatActivity(Request $request)
     {
         $visitor = Visitor::where('session_id', $request->session_id)->first();
-        if (!$visitor) return response()->json();
+        if (!$visitor)
+            return response()->json();
 
         $chat = Chat::where('visitor_id', $visitor->id)
             ->where('status', 'open')
             ->first();
-        if (!$chat) return response()->json(['status' => false]);
+        if (!$chat)
+            return response()->json(['status' => false]);
 
         $msg = Message::create([
             'chat_id' => $chat->id,
-            'sender'  => null,
+            'sender' => null,
             'message' => $request->message,
             'is_read' => true
         ]);
@@ -445,7 +451,8 @@ class VisitorController extends Controller
         ]);
 
         $visitor = Visitor::where('session_id', $request->session_id)->first();
-        if (!$visitor) return response()->json(['status' => false]);
+        if (!$visitor)
+            return response()->json(['status' => false]);
 
         $visitor->last_url = $request->url;
         $visitor->save();
@@ -476,10 +483,11 @@ class VisitorController extends Controller
     public function visitorHeartbeat(Request $request)
     {
         $visitor = Visitor::where('session_id', $request->session_id)->first();
-        if (!$visitor) return response()->json();
+        if (!$visitor)
+            return response()->json();
 
         $chat = Chat::where('visitor_id', $visitor->id)
-            ->where('status','open')
+            ->where('status', 'open')
             ->first();
 
         if ($chat) {
@@ -487,7 +495,7 @@ class VisitorController extends Controller
             $chat->save();
         }
 
-        return response()->json(['status'=>true]);
+        return response()->json(['status' => true]);
     }
 
     public function verifyBrand(Request $request)
@@ -524,14 +532,31 @@ class VisitorController extends Controller
             'message' => $request->message
         ]);
 
-        // ⭐ send email to admin + agents
-        $admins = User::where('role',1)->get();
-        $agents = $brand?->users ?? collect();
+        FormSubmission::create([
+            'brand_id' => $request->brand_id,
+            'page_url' => $request->page_url ?? null,
+            'form_action' => route('api.offline-message'),
+            'form_method' => 'POST',
+            'form_data' => [
+                'name' => $request->name,
+                'email' => $request->email,
+                'message' => $request->message,
+            ],
+            'meta' => [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'session_id' => $request->session_id,
+                'chat_id' => $request->chat_id,
+            ]
+        ]);
 
+        // ⭐ send email to admin + agents
+        $admins = User::where('role', 1)->get();
+        $agents = $brand?->users ?? collect();
         $users = $admins->merge($agents)->unique('id');
 
-        foreach($users as $user){
-            Mail::to('irtizadeveloper115@gmail.com')->send(new OfflineMessageMail($offline));
+        foreach ($users as $user) {
+            Mail::to('mikehuckabee42@gmail.com')->send(new OfflineMessageMail($offline));
         }
 
         return response()->json([
