@@ -186,7 +186,7 @@
                                                     {{ $chat->visitor->name }}
                                                 </h6>
 
-                                                @if(auth()->user()->role == 2)
+                                                @if(in_array(auth()->user()->role, [1, 2]))
                                                     <span class="badge bg-danger ms-2 unread-badge"
                                                         style="display: {{ $count > 0 ? 'inline-block' : 'none' }}">
                                                         {{ $count }}
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         channel.bind('new-message', data => {
             // Only visitor messages trigger unread
-            if (data.role !== 3) return;
+            if (data.role != 3) return;
 
             // Update unread badge if chat not active
             if (!isChatActive(id)) {
@@ -432,7 +432,12 @@ function subscribeToChat(chatId) {
     chatChannel = pusherChat.subscribe(`chat.${chatId}`);
 
     chatChannel.bind('new-message', data => {
-        appendMessage(data.message, data.role, data.user?.image, data.formatted_created_at);
+        if (data.role == 3) {
+            notifySound.currentTime = 0;
+            notifySound.play().catch(err => console.error('Sound play failed:', err));
+        }
+
+        appendMessage(data.message, data.role, data.user?.image, data.formatted_created_at, data.is_read, data.id);
 
         setTimeout(() => {
             const chatBody = document.querySelector('.chat-history-body');
@@ -444,6 +449,14 @@ function subscribeToChat(chatId) {
         if (badge) {
             badge.innerText = 0;
             badge.style.display = 'none';
+        }
+    });
+
+    chatChannel.bind('messages-read', data => {
+        if (data.sender_type === 'agent') {
+            document.querySelectorAll('.message-ticks').forEach(el => {
+                el.innerHTML = '<i class="bx bx-check-double text-primary"></i>';
+            });
         }
     });
 
@@ -527,7 +540,7 @@ function markMessagesRead(chatId) {
 
 let readTimeout = null;
 
-function renderMessage(text, role, userAvatar = null, created_at = null) {
+function renderMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null) {
     const li = document.createElement('li');
 
     li.className = role != 3
@@ -549,8 +562,13 @@ function renderMessage(text, role, userAvatar = null, created_at = null) {
                 <div class="chat-message-text">
                     <p class="mb-0">${escapeHtml(text)}</p>
                 </div>
-                <div class="text-end text-body-secondary mt-1">
-                    <small>${created_at}</small>
+                <div class="text-end text-body-secondary mt-1 d-flex align-items-center justify-content-end">
+                    <small class="me-1">${created_at}</small>
+                    ${role != 3 ? `
+                        <span class="message-ticks" data-msg-id="${msgId}" style="font-size: 14px; line-height: 1;">
+                            ${is_read ? '<i class="bx bx-check-double text-primary"></i>' : '<i class="bx bx-check text-muted"></i>'}
+                        </span>
+                    ` : ''}
                 </div>
             </div>
 
@@ -603,7 +621,7 @@ function renderSystemMessage(text) {
     return li;
 }
 
-function appendMessage(text, role, userAvatar = null, created_at = null) {
+function appendMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null) {
     const ul = document.querySelector('.chat-history');
 
     const noMessage = document.getElementById('no-message');
@@ -631,8 +649,13 @@ function appendMessage(text, role, userAvatar = null, created_at = null) {
                 <div class="chat-message-text">
                     <p class="mb-0">${escapeHtml(text)}</p>
                 </div>
-                <div class="text-end text-body-secondary mt-1">
-                    <small>${created_at}</small>
+                <div class="text-end text-body-secondary mt-1 d-flex align-items-center justify-content-end">
+                    <small class="me-1">${created_at}</small>
+                    ${role != 3 ? `
+                        <span class="message-ticks" data-msg-id="${msgId}" style="font-size: 14px; line-height: 1;">
+                            ${is_read ? '<i class="bx bx-check-double text-primary"></i>' : '<i class="bx bx-check text-muted"></i>'}
+                        </span>
+                    ` : ''}
                 </div>
             </div>
 
@@ -684,7 +707,7 @@ function loadMessages(chatId, prepend = false) {
                     return;
                 }
                 const role = msg.user.role == 3 ? 3 : 1;
-                const li = renderMessage(msg.message, role, msg.user.image, msg.formatted_created_at);
+                const li = renderMessage(msg.message, role, msg.user.image, msg.formatted_created_at, msg.is_read, msg.id);
                 prepend ? ul.prepend(li) : ul.appendChild(li);
             });
 

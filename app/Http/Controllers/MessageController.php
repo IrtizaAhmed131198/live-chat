@@ -37,6 +37,8 @@ class MessageController extends Controller
                 'role'  => auth()->user()->role ?? 2,
                 'formatted_created_at'  => $msg->formatted_created_at,
                 'created_at'  => $msg->created_at,
+                'id' => $msg->id,
+                'is_read' => false,
                 'user' => [
                     'id' => auth()->id(),
                     'image' => auth()->user()->image ?? null,
@@ -106,6 +108,15 @@ class MessageController extends Controller
             ->where('sender', $chat->visitor->id)
             ->where('is_read', false)
             ->update(['is_read' => true]);
+
+        emit_pusher_notification(
+            'chat.' . $chat->id,
+            'messages-read',
+            [
+                'chat_id' => $chat->id,
+                'sender_type' => 'visitor'
+            ]
+        );
 
         return response()->json(['status' => true]);
     }

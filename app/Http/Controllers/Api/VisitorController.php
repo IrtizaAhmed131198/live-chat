@@ -68,8 +68,11 @@ class VisitorController extends Controller
 
         $messages = $query->take($limit)->get()->sortBy('id')->values();
 
+        $visitorUser = User::where('visitor_id', $visitor->id)->first();
+        $visitorUserId = $visitorUser ? $visitorUser->id : null;
+
         $unreadCount = Message::where('chat_id', $chat->id)
-            ->where('sender', $chat->agent_id)
+            ->where('sender', '!=', $visitorUserId)
             ->whereNotNull('sender')
             ->where('is_read', false)
             ->count();
@@ -82,6 +85,7 @@ class VisitorController extends Controller
                 'sender' => $msg->sender ?? null,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
+                'is_read' => $msg->is_read,
             ];
         });
 
@@ -149,7 +153,8 @@ class VisitorController extends Controller
                 'role' => 3,
                 'created_at' => $msg->formatted_created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
-                'id' => $msg->id
+                'id' => $msg->id,
+                'is_read' => false
             ]
         );
 
@@ -189,6 +194,7 @@ class VisitorController extends Controller
                 'sender' => $msg->user->role ?? $msg->sender,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
+                'is_read' => $msg->is_read,
             ];
         });
 
@@ -404,9 +410,23 @@ class VisitorController extends Controller
         if (!$chat)
             return response()->json(['status' => false]);
 
+        $visitorUser = User::where('visitor_id', $visitor->id)->first();
+        if (!$visitorUser)
+            return response()->json(['status' => false]);
+
         Message::where('chat_id', $chat->id)
-            ->where('sender', $chat->agent_id)
+            ->where('sender', '!=', $visitorUser->id)
+            ->where('is_read', false)
             ->update(['is_read' => true]);
+
+        emit_pusher_notification(
+            'chat.' . $chat->id,
+            'messages-read',
+            [
+                'chat_id' => $chat->id,
+                'sender_type' => 'agent'
+            ]
+        );
 
         return response()->json(['status' => true]);
     }
