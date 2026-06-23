@@ -59,6 +59,17 @@
     );
     notifySound.volume = 0.6;
 
+    document.addEventListener('click', function unlockAudio() {
+        notifySound.play()
+            .then(() => {
+                notifySound.pause();
+                notifySound.currentTime = 0;
+                console.log('🔓 Audio unlocked');
+                document.removeEventListener('click', unlockAudio);
+            })
+            .catch(err => console.error('Unlock failed', err));
+    });
+
     /* ================= INIT ================= */
 
     function initChat() {
@@ -446,6 +457,7 @@
             isNew = true,
             prepend = false,
             msgId = null,
+            isRead = false,
         ) {
             const div = document.createElement("div");
             div.style.margin = "6px 0";
@@ -477,7 +489,14 @@
                     ">
                         ${text}
                     </span>
-                    ${timeText ? `<div style="font-size:10px;color:#888;margin-top:2px;">${timeText}</div>` : ""}
+                    <div style="display:flex;align-items:center;justify-content:${from == 3 ? 'flex-end' : 'flex-start'};font-size:10px;color:#888;margin-top:2px;">
+                        ${timeText ? `<span style="margin-right:4px;">${timeText}</span>` : ""}
+                        ${from == 3 ? `
+                            <span class="widget-message-ticks" data-msg-id="${msgId}" style="margin-left: 2px;">
+                                ${isRead ? '<span style="color:#42a5f5;">✔✔</span>' : '<span style="color:#bbb;">✔</span>'}
+                            </span>
+                        ` : ""}
+                    </div>
                 </div>
             `;
 
@@ -494,33 +513,30 @@
                 earliestMessageId = msgId;
             }
 
-            // 🔔 Notifications + auto-open
-            if (isNew && from != 3 && box.style.display !== "flex") {
-                // Auto-open the chat box
-                box.style.display = "flex";
-                console.log(box.style.display);
-                scrollToBottom();
-
-                // Notify agent we opened the chat
-                fetch(`${BASE_URL}/api/visitor-read`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        session_id: SESSION_ID,
-                        chat_id: window.CHAT_ID,
-                    }),
-                });
-
-                unreadCount = 0;
-                badge().style.display = "none";
-                stopTitleBlink();
-            } else if (isNew && from != 3) {
-                // Box already open — just badge/sound as normal
-                unreadCount++;
-                badge().innerText = unreadCount;
-                badge().style.display = "block";
+            // 🔔 Notifications
+            if (isNew && from != 3) {
                 notifySound.play().catch(() => {});
-                startTitleBlink(`(${unreadCount}) New message`);
+
+                if (box.style.display !== "flex") {
+                    // Auto-open the chat box
+                    box.style.display = "flex";
+                    console.log(box.style.display);
+                    scrollToBottom();
+
+                    // Notify agent we opened the chat
+                    fetch(`${BASE_URL}/api/visitor-read`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            session_id: SESSION_ID,
+                            chat_id: window.CHAT_ID,
+                        }),
+                    });
+
+                    unreadCount = 0;
+                    badge().style.display = "none";
+                    stopTitleBlink();
+                }
             }
 
             badge().title =
@@ -752,6 +768,7 @@
                                 false,
                                 false,
                                 msg.id,
+                                msg.is_read,
                             );
                         });
 
@@ -774,6 +791,7 @@
                                 true,
                                 false,
                                 data.id,
+                                data.is_read,
                             );
                             if (box.style.display === "flex") {
                                 fetch(`${BASE_URL}/api/visitor-read`, {
@@ -785,6 +803,14 @@
                                         session_id: SESSION_ID,
                                         chat_id: window.CHAT_ID,
                                     }),
+                                });
+                            }
+                        });
+
+                        channel.bind("messages-read", (data) => {
+                            if (data.sender_type === "visitor") {
+                                document.querySelectorAll(".widget-message-ticks").forEach((el) => {
+                                    el.innerHTML = '<span style="color:#42a5f5;">✔✔</span>';
                                 });
                             }
                         });
@@ -817,6 +843,7 @@
                                 false,
                                 true,
                                 msg.id,
+                                msg.is_read,
                             );
                         });
                     }
