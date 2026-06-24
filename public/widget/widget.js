@@ -965,17 +965,15 @@
             document.getElementById("typing-indicator").style.display = "none";
             document.getElementById("chat-input-container").style.display = "none";
             document.getElementById("offline-form").style.display = "block";
-        }
 
-        function showChatUI(){
-            document.getElementById("live-chat-messages").style.display = "block";
-            document.getElementById("offline-form").style.display = "none";
-            document.getElementById("chat-input-container").style.display = "flex";
-        }
+            // Attach the send handler directly on the button every time the form is shown
+            const offlineSendBtn = document.getElementById("offline-send");
 
-        document.addEventListener("click", function(e) {
-            if(e.target.id === "offline-send") {
+            // Clone to remove any previously attached listeners (avoid duplicates)
+            const freshBtn = offlineSendBtn.cloneNode(true);
+            offlineSendBtn.parentNode.replaceChild(freshBtn, offlineSendBtn);
 
+            freshBtn.addEventListener("click", function() {
                 const btn = document.getElementById("offline-send");
                 const btnText = document.getElementById("offline-btn-text");
                 const name = document.getElementById("offline-name").value;
@@ -985,13 +983,12 @@
 
                 if (!msg) return alert("Message required");
 
-                // ✅ Disable button + show spinner
                 btn.disabled = true;
                 btnText.innerHTML = `<span class="spinner"></span> Sending...`;
 
                 fetch(`${BASE_URL}/api/offline-message`, {
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         session_id: SESSION_ID,
                         name,
@@ -1003,8 +1000,7 @@
                     })
                 })
                 .then(res => res.json())
-                .then(data => {
-                    // ✅ Success UI inside widget
+                .then(() => {
                     formBox.innerHTML = `
                         <div style="text-align:center;padding:20px;">
                             <div style="font-size:40px;">✅</div>
@@ -1016,13 +1012,19 @@
                     `;
                 })
                 .catch(() => {
-                    // ❌ Error → reset button
                     btn.disabled = false;
                     btnText.innerHTML = "Send";
                     console.log("Something went wrong");
                 });
-            }
-        });
+            });
+        }
+
+        function showChatUI(){
+            document.getElementById("live-chat-messages").style.display = "block";
+            document.getElementById("offline-form").style.display = "none";
+            document.getElementById("chat-input-container").style.display = "flex";
+        }
+
     }
 
     function trackEvent(payload){
