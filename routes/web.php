@@ -48,6 +48,7 @@ Route::middleware(['auth', 'role:1', 'lastseen'])->prefix('admin')->group(functi
     Route::put('brand/update/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
     Route::delete('brand/destroy/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
     Route::post('brand/chat-settings/store', [BrandController::class, 'chatSettingsStore'])->name('admin.brand.chat.settings');
+    Route::post('brand/{id}/resync-ai', [BrandController::class, 'resyncAi'])->name('admin.brand.resync-ai');
     Route::get('brand/{brand}/install', [BrandController::class, 'install'])->name('admin.brand.install');
 
     // Route::get('website/data', [WebsiteController::class, 'getdata'])->name('admin.website.getdata');

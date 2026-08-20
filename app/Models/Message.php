@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class Message extends Model
 {
-    protected $fillable = ['chat_id', 'sender', 'message', 'is_read'];
+    protected $fillable = ['chat_id', 'sender', 'message', 'is_read', 'is_ai'];
 
     protected $appends = ['formatted_created_at'];
 

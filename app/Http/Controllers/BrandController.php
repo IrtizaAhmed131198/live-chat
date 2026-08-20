@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\TrainBrandAiJob;
 use App\Models\Brand;
 use App\Models\BrandUser;
 use App\Models\ChatSetting;
@@ -102,6 +103,9 @@ class BrandController extends Controller
 
             DB::commit();
 
+            // 🤖 Auto-train AI on website link
+            TrainBrandAiJob::dispatch($brand);
+
             return redirect()->route('admin.brand.install', $brand->id);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -138,6 +142,11 @@ class BrandController extends Controller
             'welcome_message' => 'nullable|string|max:500',
             'offline_message' => 'nullable|string|max:500',
             'chat_position' => 'required|string|in:left,right,top,bottom',
+            'ai_enabled' => 'nullable|in:0,1',
+            'ai_provider' => 'nullable|string',
+            'ai_model' => 'nullable|string',
+            'ai_prompt' => 'nullable|string',
+            'website_knowledge' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -154,6 +163,11 @@ class BrandController extends Controller
                 'welcome_message' => $request->welcome_message,
                 'offline_message' => $request->offline_message,
                 'chat_position' => $request->chat_position,
+                'ai_enabled' => $request->ai_enabled ?? 0,
+                'ai_provider' => $request->ai_provider ?? 'ollama',
+                'ai_model' => $request->ai_model ?? 'llama3',
+                'ai_prompt' => $request->ai_prompt,
+                'website_knowledge' => $request->website_knowledge,
             ]
         );
 
@@ -230,6 +244,9 @@ class BrandController extends Controller
 
             DB::commit();
 
+            // 🤖 Auto-train/re-sync AI on updated website link
+            TrainBrandAiJob::dispatch($brand);
+
             return redirect()->route('admin.brand')
                 ->with('success', 'Brand updated successfully!');
         } catch (\Exception $e) {
@@ -239,6 +256,21 @@ class BrandController extends Controller
                 ->with('error', 'Error updating brand: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+
+    public function resyncAi($id)
+    {
+        $brand = Brand::findOrFail($id);
+        TrainBrandAiJob::dispatch($brand);
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'AI website training started in background!'
+            ]);
+        }
+
+        return back()->with('success', 'AI website training started in background!');
     }
 
     public function destroy(Brand $brand)

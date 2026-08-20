@@ -701,13 +701,20 @@ function loadMessages(chatId, prepend = false) {
 
             // No need to reverse, backend sends oldest first
             messages.forEach(msg => {
-                if (!msg.user) {
+                if (!msg.user && !msg.is_ai) {
                     const li = renderSystemMessage(msg.message);
                     prepend ? ul.prepend(li) : ul.appendChild(li);
                     return;
                 }
-                const role = msg.user.role == 3 ? 3 : 1;
-                const li = renderMessage(msg.message, role, msg.user.image, msg.formatted_created_at, msg.is_read, msg.id);
+                
+                // If AI, role = 4 (or 1), we use 1 so it's right-aligned
+                const role = msg.is_ai ? 1 : (msg.user.role == 3 ? 3 : 1);
+                
+                // Set AI avatar if it's an AI message
+                const defaultAiAvatar = '{{ asset("assets/images/default.png") }}';
+                const avatar = msg.is_ai ? defaultAiAvatar : (msg.user ? msg.user.image : null);
+                
+                const li = renderMessage(msg.message, role, avatar, msg.formatted_created_at, msg.is_read, msg.id, msg.is_ai);
                 prepend ? ul.prepend(li) : ul.appendChild(li);
             });
 

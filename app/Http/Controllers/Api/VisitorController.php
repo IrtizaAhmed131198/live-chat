@@ -59,7 +59,9 @@ class VisitorController extends Controller
 
         $query = Message::with('user')
             ->where('chat_id', $chat->id)
-            ->whereNotNull('sender')
+            ->where(function ($q) {
+                $q->whereNotNull('sender')->orWhere('is_ai', true);
+            })
             ->orderBy('id', 'desc'); // newest first
 
         if ($request->before_id) {
@@ -73,7 +75,9 @@ class VisitorController extends Controller
 
         $unreadCount = Message::where('chat_id', $chat->id)
             ->where('sender', '!=', $visitorUserId)
-            ->whereNotNull('sender')
+            ->where(function ($q) {
+                $q->whereNotNull('sender')->orWhere('is_ai', true);
+            })
             ->where('is_read', false)
             ->count();
 
@@ -81,8 +85,8 @@ class VisitorController extends Controller
             return [
                 'id' => $msg->id,
                 'message' => $msg->message,
-                'role' => $msg->user->role ?? $msg->sender,
-                'sender' => $msg->sender ?? null,
+                'role' => $msg->is_ai ? 4 : ($msg->user->role ?? $msg->sender),
+                'sender' => $msg->is_ai ? 'ai' : ($msg->sender ?? null),
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
                 'is_read' => $msg->is_read,
@@ -115,7 +119,7 @@ class VisitorController extends Controller
             ], 404);
         }
 
-        $chat = Chat::with('agent', 'visitor')->where('visitor_id', $visitor->id)->latest()->first();
+        $chat = Chat::with('agent', 'visitor', 'get_brand')->where('visitor_id', $visitor->id)->latest()->first();
 
         if (!$chat || $chat->status === 'closed') {
             $chat = Chat::create([
@@ -158,6 +162,20 @@ class VisitorController extends Controller
             ]
         );
 
+        // Check if agent is offline and AI is enabled
+        $brand = $chat->get_brand ?: ($chat->brand ?: Brand::find($chat->brand_id));
+        $settings = $brand ? ($brand->chatSetting ?: \App\Models\ChatSetting::where('brand_id', $brand->id)->first()) : null;
+        $userIds = $brand ? $brand->users->pluck('id')->toArray() : [];
+        $agentOnline = !empty($userIds) && User::whereIn('id', $userIds)->where('is_online', 1)->exists();
+
+        Log::info("VisitorController: Visitor message received for Chat #{$chat->id}, Brand #{$brand?->id}, agentOnline: " . ($agentOnline ? 'true' : 'false') . ", ai_enabled: " . ($settings?->ai_enabled ? 'true' : 'false'));
+
+        if (!$agentOnline && $settings && $settings->ai_enabled) {
+            $chat->update(['is_handled_by_ai' => true]);
+            \App\Jobs\ProcessAIResponseJob::dispatch($chat);
+            Log::info("VisitorController: ProcessAIResponseJob dispatched for Chat #{$chat->id}");
+        }
+
         return response()->json([
             'status' => true,
             'chat_id' => $chat->id,
@@ -190,8 +208,8 @@ class VisitorController extends Controller
             return [
                 'id' => $msg->id,
                 'message' => $msg->message,
-                'sender_role' => $msg->user->role ?? $msg->sender,
-                'sender' => $msg->user->role ?? $msg->sender,
+                'sender_role' => $msg->is_ai ? 4 : ($msg->user->role ?? $msg->sender),
+                'sender' => $msg->is_ai ? 'ai' : ($msg->sender ?? null),
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
                 'is_read' => $msg->is_read,
@@ -366,6 +384,7 @@ class VisitorController extends Controller
             'message' => 'Visitor initialized successfully',
             'settings' => [
                 'chat_enabled' => $settings->chat_enabled ?? true,
+                'ai_enabled' => $settings->ai_enabled ?? false,
                 'primary_color' => $settings->primary_color ?? '#696cff',
                 'welcome_message' => $settings->welcome_message ?? 'Hello! How can we help you today?',
                 'offline_message' => $settings->offline_message ?? 'We are currently offline.',

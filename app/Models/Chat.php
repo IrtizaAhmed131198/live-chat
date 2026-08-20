@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Chat extends Model
 {
     protected $fillable = ['visitor_id', 'brand_id', 'agent_id', 'status', 'closed_reason', 'last_visitor_activity_at', 'last_agent_activity_at', 'warned_at',
-        'system_message_at', 'closed_at', 'agent_warned', 'system_notified'];
+        'system_message_at', 'closed_at', 'agent_warned', 'system_notified', 'is_handled_by_ai'];
 
     public function messages()
     {
@@ -37,6 +37,11 @@ class Chat extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class, 'id', 'brand_id');
+    }
+
+    public function get_brand()
+    {
+        return $this->hasOne(Brand::class, 'id', 'brand_id');
     }
 
     public function main_visitor()

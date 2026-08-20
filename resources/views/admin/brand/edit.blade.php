@@ -264,6 +264,66 @@
                                         <textarea name="offline_message" class="form-control">{{ $chatSettings->offline_message ?? '' }}</textarea>
                                     </div>
 
+                                    <div class="col-md-12 mb-3 mt-4">
+                                        <h5 class="fw-bold border-bottom pb-2">AI Fallback Settings</h5>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>Enable AI Fallback</label>
+                                        <select class="form-select" name="ai_enabled">
+                                            <option value="1" {{ isset($chatSettings) && $chatSettings->ai_enabled == 1 ? 'selected' : '' }}>Enabled</option>
+                                            <option value="0" {{ isset($chatSettings) && $chatSettings->ai_enabled == 0 ? 'selected' : '' }}>Disabled</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>AI Provider</label>
+                                        <select class="form-select" name="ai_provider" id="ai_provider" onchange="updateModelOptions()">
+                                            <option value="ollama" {{ (isset($chatSettings) && $chatSettings->ai_provider == 'ollama') || !isset($chatSettings) ? 'selected' : '' }}>Ollama (Local)</option>
+                                            <option value="openai" {{ isset($chatSettings) && $chatSettings->ai_provider == 'openai' ? 'selected' : '' }}>OpenAI (ChatGPT)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label>AI Model</label>
+                                        <input type="text" name="ai_model" id="ai_model" class="form-control" list="model_suggestions" value="{{ $chatSettings->ai_model ?? 'llama3' }}" placeholder="e.g. llama3">
+                                        <datalist id="model_suggestions">
+                                            <option value="llama3">
+                                            <option value="mistral">
+                                            <option value="gemma2">
+                                            <option value="phi3">
+                                        </datalist>
+                                        <small class="text-muted" id="model_help_text">Ollama model installed on your machine (e.g. llama3, mistral)</small>
+                                    </div>
+
+                                    <div class="col-md-12 mb-3">
+                                        <label>AI System Prompt</label>
+                                        <textarea name="ai_prompt" class="form-control" rows="3" placeholder="You are a helpful customer support agent...">{{ $chatSettings->ai_prompt ?? '' }}</textarea>
+                                        <small class="text-muted">Give the AI custom instructions on tone or persona.</small>
+                                    </div>
+
+                                    <div class="col-md-12 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <label class="fw-bold">Auto-Trained Website Knowledge</label>
+                                            <div>
+                                                @if(isset($chatSettings) && $chatSettings->ai_trained_at)
+                                                    <span class="badge bg-success me-2">
+                                                        <i class="bx bx-check-circle"></i> Trained {{ \Carbon\Carbon::parse($chatSettings->ai_trained_at)->diffForHumans() }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-warning me-2">
+                                                        <i class="bx bx-time"></i> Not Trained Yet
+                                                    </span>
+                                                @endif
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnResyncAi" onclick="resyncBrandAi({{ $brand->id }})">
+                                                    <i class="bx bx-refresh"></i> Re-sync from Website URL
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <textarea name="website_knowledge" id="website_knowledge" class="form-control" rows="6" placeholder="Website knowledge will be automatically extracted from {{ $brand->url ?: $brand->domain }}...">{{ $chatSettings->website_knowledge ?? '' }}</textarea>
+                                        <small class="text-muted">This knowledge is automatically extracted when you add/update the Brand URL. You can also edit it manually if needed.</small>
+                                    </div>
+
                                     <div class="col-md-12 mb-3">
                                         <button type="submit" class="btn btn-primary">Save Settings</button>
                                     </div>
@@ -320,7 +380,72 @@
                 }, 1500);
             });
         }
+
+        function resyncBrandAi(brandId) {
+            const btn = document.getElementById("btnResyncAi");
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Training AI...';
+
+            let url = "{{ route('admin.brand.resync-ai', ':id') }}".replace(':id', brandId);
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bx bx-check"></i> Training Started!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    location.reload();
+                }, 2000);
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert("Error starting AI training. Please check logs.");
+            });
+        }
+
+        function updateModelOptions() {
+            const provider = document.getElementById("ai_provider").value;
+            const modelInput = document.getElementById("ai_model");
+            const suggestions = document.getElementById("model_suggestions");
+            const helpText = document.getElementById("model_help_text");
+
+            if (provider === "openai") {
+                suggestions.innerHTML = `
+                    <option value="gpt-4o-mini">
+                    <option value="gpt-4o">
+                    <option value="gpt-3.5-turbo">
+                `;
+                if (!modelInput.value || modelInput.value === "llama3") {
+                    modelInput.value = "gpt-4o-mini";
+                }
+                helpText.innerText = "OpenAI model name (e.g. gpt-4o-mini, gpt-4o). Requires OPENAI_API_KEY in .env";
+            } else {
+                suggestions.innerHTML = `
+                    <option value="llama3">
+                    <option value="mistral">
+                    <option value="gemma2">
+                    <option value="phi3">
+                `;
+                if (!modelInput.value || modelInput.value === "gpt-4o-mini") {
+                    modelInput.value = "llama3";
+                }
+                helpText.innerText = "Ollama model installed on your machine (e.g. llama3, mistral)";
+            }
+        }
+
+        // Run on page load to set correct helper
+        document.addEventListener("DOMContentLoaded", function() {
+            updateModelOptions();
+        });
     </script>
-
-
 @endsection

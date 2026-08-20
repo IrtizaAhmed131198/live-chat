@@ -116,7 +116,20 @@
             if(data.brand_ids && data.brand_ids.includes(window.BRAND_ID)){
                 agentsOnline = true;
                 showChatUI();
-                fetchChat(false); // ✅ now fetch chat
+                fetchChat(false).then(() => {
+                    if (CHAT_SETTINGS && CHAT_SETTINGS.ai_enabled) {
+                        const div = document.createElement("div");
+                        div.style.textAlign = "center";
+                        div.style.margin = "10px 0";
+                        div.innerHTML = "<small style='background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #666;'>Transferring to agent...</small>";
+                        
+                        const msgBox = document.getElementById("live-chat-messages");
+                        if(msgBox) {
+                            msgBox.appendChild(div);
+                            msgBox.scrollTop = msgBox.scrollHeight;
+                        }
+                    }
+                });
             }
         });
 
@@ -126,7 +139,9 @@
 
             if(data.brand_ids && data.brand_ids.includes(window.BRAND_ID)){
                 agentsOnline = false;
-                showOfflineForm();
+                if (!CHAT_SETTINGS.ai_enabled) {
+                    showOfflineForm();
+                }
             }
         });
 
@@ -667,7 +682,7 @@
                         return;
                     }
 
-                    if (window.AGENT_ONLINE === true) {
+                    if (window.AGENT_ONLINE === true || CHAT_SETTINGS.ai_enabled) {
                         fetchChat(false);
                     } else {
                         showOfflineForm();
@@ -780,10 +795,17 @@
                         }
 
                         // subscribe to pusher
+                        if (channel) {
+                            pusher.unsubscribe(channel.name);
+                        }
                         channel = pusher.subscribe(`chat.${data.chat_id}`);
                         channel.bind("new-message", (data) => {
                             console.log(data);
                             if (data.sender === null) return;
+                            
+                            // Hide typing indicator when a new message arrives
+                            const typing = document.getElementById("typing-indicator");
+                            if (typing) typing.style.display = "none";
                             addMsg(
                                 data.message,
                                 data.role,
@@ -821,9 +843,12 @@
                                 if (!typing) return;
                                 typing.style.display = "block";
                                 clearTimeout(window.typingTimeout);
+                                
+                                let timeoutDuration = (data.role == 4) ? 300000 : 1500; // 5 mins for AI, 1.5s for human
+                                
                                 window.typingTimeout = setTimeout(() => {
                                     typing.style.display = "none";
-                                }, 1500);
+                                }, timeoutDuration);
                             }
                         });
                     } else {
