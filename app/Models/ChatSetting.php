@@ -20,7 +20,8 @@ class ChatSetting extends Model
         'ai_model',
         'ai_prompt',
         'website_knowledge',
-        'ai_trained_at'
+        'ai_trained_at',
+        'ai_handoff_delay'
     ];
 
     public function brand()

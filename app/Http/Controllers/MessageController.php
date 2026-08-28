@@ -19,12 +19,61 @@ class MessageController extends Controller
         if(!$chat){
             return response()->json(['error' => 'Chat not found'], 404);
         }
-        $visitorId = $chat->visitor->id; // get currently logged in user id (admin/agent)
+
+        // 🚫 Block agent from sending while AI is processing a response
+        if ($chat->ai_processing) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Please wait — AI is generating a response. You can send your message once it completes.',
+                'ai_processing' => true
+            ], 423); // 423 Locked
+        }
+
+        // ✅ If chat was handled by AI, switch to agent and add system message
+        if ($chat->is_handled_by_ai) {
+            $agentName = auth()->user()->name ?? 'Agent';
+
+            // Add system message: "Switched to Agent [name]"
+            $systemMsg = Message::create([
+                'chat_id' => $chat->id,
+                'sender' => null,
+                'message' => "Switched to {$agentName}",
+                'is_read' => true
+            ]);
+
+            emit_pusher_notification(
+                'chat.' . $chat->id,
+                'agent-switched',
+                [
+                    'chat_id' => $chat->id,
+                    'message' => "Switched to {$agentName}",
+                    'agent_name' => $agentName,
+                    'formatted_created_at' => $systemMsg->formatted_created_at,
+                ]
+            );
+
+            // Clear AI flags
+            $chat->update([
+                'is_handled_by_ai' => false,
+                'ai_pending' => false,
+                'ai_pending_since' => null,
+            ]);
+        }
+
+        // Also clear ai_pending if agent replies before AI delay fires
+        if ($chat->ai_pending) {
+            $chat->update([
+                'ai_pending' => false,
+                'ai_pending_since' => null,
+            ]);
+        }
+
+        $visitorId = $chat->visitor->id;
         $roleId = $chat->visitor->role;
 
         $msg = Message::create([
             'chat_id' => $request->chat_id,
-            'sender'  => auth()->id(), // store the ID
+            'sender'  => auth()->id(),
             'message' => $request->message
         ]);
 

@@ -147,6 +147,7 @@ class BrandController extends Controller
             'ai_model' => 'nullable|string',
             'ai_prompt' => 'nullable|string',
             'website_knowledge' => 'nullable|string',
+            'ai_handoff_delay' => 'nullable|integer|min:10|max:3600',
         ]);
 
         if ($validator->fails()) {
@@ -168,6 +169,7 @@ class BrandController extends Controller
                 'ai_model' => $request->ai_model ?? 'llama3',
                 'ai_prompt' => $request->ai_prompt,
                 'website_knowledge' => $request->website_knowledge,
+                'ai_handoff_delay' => $request->ai_handoff_delay ?? 60,
             ]
         );
 

@@ -277,6 +277,15 @@
                                     </div>
 
                                     <div class="col-md-4 mb-3">
+                                        <label>AI Handoff Delay (Seconds)</label>
+                                        <input type="number" name="ai_handoff_delay" class="form-control" min="10" max="3600"
+                                            value="{{ $chatSettings->ai_handoff_delay ?? 60 }}" placeholder="60">
+                                        <small class="text-muted">
+                                            Kitne seconds ke baad AI takeover kare agar agent reply na kare. Default: 60 seconds.
+                                        </small>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
                                         <label>AI Provider</label>
                                         <select class="form-select" name="ai_provider" id="ai_provider" onchange="updateModelOptions()">
                                             <option value="ollama" {{ (isset($chatSettings) && $chatSettings->ai_provider == 'ollama') || !isset($chatSettings) ? 'selected' : '' }}>Ollama (Local)</option>

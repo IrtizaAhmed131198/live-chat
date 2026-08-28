@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Chat extends Model
 {
     protected $fillable = ['visitor_id', 'brand_id', 'agent_id', 'status', 'closed_reason', 'last_visitor_activity_at', 'last_agent_activity_at', 'warned_at',
-        'system_message_at', 'closed_at', 'agent_warned', 'system_notified', 'is_handled_by_ai'];
+        'system_message_at', 'closed_at', 'agent_warned', 'system_notified', 'is_handled_by_ai',
+        'ai_pending', 'ai_pending_since', 'ai_greeted', 'ai_processing'];
+
+    protected $casts = [
+        'ai_pending_since' => 'datetime',
+    ];
 
     public function messages()
     {

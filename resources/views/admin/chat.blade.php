@@ -437,7 +437,10 @@ function subscribeToChat(chatId) {
             notifySound.play().catch(err => console.error('Sound play failed:', err));
         }
 
-        appendMessage(data.message, data.role, data.user?.image, data.formatted_created_at, data.is_read, data.id);
+        const isAi = data.is_ai == 1 || data.is_ai === true || data.role == 4;
+        const userName = isAi ? 'AI Assistant' : (data.user ? data.user.name : (data.role == 3 ? 'Visitor' : 'Agent'));
+
+        appendMessage(data.message, data.role, data.user?.image, data.formatted_created_at, data.is_read, data.id, isAi, userName);
 
         setTimeout(() => {
             const chatBody = document.querySelector('.chat-history-body');
@@ -485,6 +488,24 @@ function subscribeToChat(chatId) {
             const el = document.querySelector(`.chat-user[data-chat-id="${data.chat_id}"]`);
             if (el) el.dataset.chatStatus = 'closed';
         }
+    });
+
+    // 🤖 AI processing — block/unblock agent send during AI response generation
+    chatChannel.bind('ai-processing', data => {
+        if (data.processing) {
+            disableChatForm('⏳ AI is generating a response... Please wait.');
+        } else {
+            enableChatForm();
+        }
+    });
+
+    // 🔄 Agent switched — show system message when agent takes over from AI
+    chatChannel.bind('agent-switched', data => {
+        const ul = document.querySelector('.chat-history');
+        ul.appendChild(renderSystemMessage(data.message));
+
+        const chatBody = document.querySelector('.chat-history-body');
+        if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
     });
 }
 
@@ -540,14 +561,28 @@ function markMessagesRead(chatId) {
 
 let readTimeout = null;
 
-function renderMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null) {
+function renderMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null, is_ai = false, userName = null) {
     const li = document.createElement('li');
 
     li.className = role != 3
         ? 'chat-message chat-message-right'
         : 'chat-message';
 
-    const avatar = userAvatar || "{{ asset('assets/images/default.png') }}";
+    const defaultAvatar = "{{ asset('assets/images/default.png') }}";
+    const avatar = userAvatar || defaultAvatar;
+
+    let senderBadge = '';
+    if (is_ai || role == 4) {
+        senderBadge = `<div class="mb-1 text-end"><span class="badge bg-label-info py-1 px-2 rounded-pill shadow-xs" style="font-size: 11px; font-weight: 600;"><i class="bx bx-bot me-1"></i> AI Assistant</span></div>`;
+    } else if (role != 3) {
+        senderBadge = `<div class="mb-1 text-end"><span class="badge bg-label-primary py-1 px-2 rounded-pill shadow-xs" style="font-size: 11px; font-weight: 600;"><i class="bx bx-user me-1"></i> ${escapeHtml(userName || 'Agent')}</span></div>`;
+    } else {
+        senderBadge = `<div class="mb-1 text-start"><span class="badge bg-label-secondary py-1 px-2 rounded-pill shadow-xs" style="font-size: 11px; font-weight: 600;"><i class="bx bx-user-voice me-1"></i> Visitor</span></div>`;
+    }
+
+    const aiBubbleStyle = (is_ai || role == 4)
+        ? 'background: rgba(3, 195, 236, 0.09) !important; border: 1px solid rgba(3, 195, 236, 0.35) !important;'
+        : '';
 
     li.innerHTML = `
         <div class="d-flex overflow-hidden">
@@ -559,11 +594,12 @@ function renderMessage(text, role, userAvatar = null, created_at = null, is_read
             </div>` : ''}
 
             <div class="chat-message-wrapper flex-grow-1">
-                <div class="chat-message-text">
+                ${senderBadge}
+                <div class="chat-message-text" style="${aiBubbleStyle}">
                     <p class="mb-0">${escapeHtml(text)}</p>
                 </div>
                 <div class="text-end text-body-secondary mt-1 d-flex align-items-center justify-content-end">
-                    <small class="me-1">${created_at}</small>
+                    <small class="me-1">${created_at || ''}</small>
                     ${role != 3 ? `
                         <span class="message-ticks" data-msg-id="${msgId}" style="font-size: 14px; line-height: 1;">
                             ${is_read ? '<i class="bx bx-check-double text-primary"></i>' : '<i class="bx bx-check text-muted"></i>'}
@@ -575,7 +611,10 @@ function renderMessage(text, role, userAvatar = null, created_at = null, is_read
             ${role != 3 ? `
             <div class="user-avatar flex-shrink-0 ms-4">
                 <div class="avatar avatar-sm">
-                    <img src="${avatar}" class="rounded-circle">
+                    ${(is_ai || role == 4)
+                        ? `<span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-bot"></i></span>`
+                        : `<img src="${avatar}" class="rounded-circle">`
+                    }
                 </div>
             </div>` : ''}
         </div>
@@ -621,7 +660,7 @@ function renderSystemMessage(text) {
     return li;
 }
 
-function appendMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null) {
+function appendMessage(text, role, userAvatar = null, created_at = null, is_read = false, msgId = null, is_ai = false, userName = null) {
     const ul = document.querySelector('.chat-history');
 
     const noMessage = document.getElementById('no-message');
@@ -629,45 +668,7 @@ function appendMessage(text, role, userAvatar = null, created_at = null, is_read
         noMessage.remove();
     }
 
-    const li = document.createElement('li');
-    li.className = role != 3
-        ? 'chat-message chat-message-right'
-        : 'chat-message';
-
-    const avatar = userAvatar || "{{ asset('assets/images/default.png') }}";
-
-    li.innerHTML = `
-        <div class="d-flex overflow-hidden">
-            ${role == 3 ? `
-            <div class="user-avatar flex-shrink-0 me-4">
-                <div class="avatar avatar-sm">
-                    <img src="${avatar}" class="rounded-circle">
-                </div>
-            </div>` : ''}
-
-            <div class="chat-message-wrapper flex-grow-1">
-                <div class="chat-message-text">
-                    <p class="mb-0">${escapeHtml(text)}</p>
-                </div>
-                <div class="text-end text-body-secondary mt-1 d-flex align-items-center justify-content-end">
-                    <small class="me-1">${created_at}</small>
-                    ${role != 3 ? `
-                        <span class="message-ticks" data-msg-id="${msgId}" style="font-size: 14px; line-height: 1;">
-                            ${is_read ? '<i class="bx bx-check-double text-primary"></i>' : '<i class="bx bx-check text-muted"></i>'}
-                        </span>
-                    ` : ''}
-                </div>
-            </div>
-
-            ${role != 3 ? `
-            <div class="user-avatar flex-shrink-0 ms-4">
-                <div class="avatar avatar-sm">
-                    <img src="{{ asset('assets/images/default.png') }}" class="rounded-circle">
-                </div>
-            </div>` : ''}
-        </div>
-    `;
-
+    const li = renderMessage(text, role, userAvatar, created_at, is_read, msgId, is_ai, userName);
     ul.appendChild(li);
 
     // ✅ Scroll chat container to bottom
@@ -706,15 +707,13 @@ function loadMessages(chatId, prepend = false) {
                     prepend ? ul.prepend(li) : ul.appendChild(li);
                     return;
                 }
-                
-                // If AI, role = 4 (or 1), we use 1 so it's right-aligned
-                const role = msg.is_ai ? 1 : (msg.user.role == 3 ? 3 : 1);
-                
-                // Set AI avatar if it's an AI message
-                const defaultAiAvatar = '{{ asset("assets/images/default.png") }}';
-                const avatar = msg.is_ai ? defaultAiAvatar : (msg.user ? msg.user.image : null);
-                
-                const li = renderMessage(msg.message, role, avatar, msg.formatted_created_at, msg.is_read, msg.id, msg.is_ai);
+
+                const isAi = msg.is_ai == 1 || msg.is_ai === true;
+                const role = isAi ? 4 : (msg.user && msg.user.role == 3 ? 3 : 1);
+                const userName = isAi ? 'AI Assistant' : (msg.user ? msg.user.name : 'Agent');
+                const avatar = msg.user ? msg.user.image : null;
+
+                const li = renderMessage(msg.message, role, avatar, msg.formatted_created_at, msg.is_read, msg.id, isAi, userName);
                 prepend ? ul.prepend(li) : ul.appendChild(li);
             });
 
@@ -835,9 +834,23 @@ function sendMessage(form, input, message) {
             message: message
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (res.status === 423) {
+            // AI is processing — show alert and keep message in input
+            return res.json().then(data => {
+                alert(data.message || 'AI is generating a response. Please wait.');
+                throw new Error('ai_processing');
+            });
+        }
+        return res.json();
+    })
     .then(() => {
         input.value = '';
+    })
+    .catch(err => {
+        if (err.message !== 'ai_processing') {
+            console.error('Send message error:', err);
+        }
     })
     .finally(() => {
         isSending = false;

@@ -122,7 +122,7 @@
                         div.style.textAlign = "center";
                         div.style.margin = "10px 0";
                         div.innerHTML = "<small style='background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #666;'>Transferring to agent...</small>";
-                        
+
                         const msgBox = document.getElementById("live-chat-messages");
                         if(msgBox) {
                             msgBox.appendChild(div);
@@ -475,16 +475,31 @@
             isRead = false,
         ) {
             const div = document.createElement("div");
-            div.style.margin = "6px 0";
+            div.style.margin = "8px 0";
             div.style.textAlign = from == 3 ? "right" : "left";
             div.dataset.msgId = msgId ?? "";
 
-            // Message background
-            let bgColor =
-                from == 3
-                    ? CHAT_SETTINGS.primary_color || "#696cff"
-                    : "#f1f1f1"; // visitor = purple, agent = grey
-            let textColor = from == 3 ? "#fff" : "#000";
+            const isAi = (from == 4);
+            const isVisitor = (from == 3);
+            const isHumanAgent = (!isVisitor && !isAi);
+
+            // Message background & style
+            let bgColor = isVisitor
+                ? (CHAT_SETTINGS.primary_color || "#696cff")
+                : (isAi ? "#eef2ff" : "#f3f4f6");
+            let textColor = isVisitor ? "#fff" : "#1f2937";
+            let borderStyle = isAi ? "1px solid #c7d2fe" : (isVisitor ? "none" : "1px solid #e5e7eb");
+
+            let senderBadge = "";
+            if (isAi) {
+                senderBadge = `<div style="font-size:10px; font-weight:700; color:#4f46e5; margin-bottom:3px; display:flex; align-items:center; gap:3px;">
+                    🤖 AI Assistant
+                </div>`;
+            } else if (isHumanAgent) {
+                senderBadge = `<div style="font-size:10px; font-weight:700; color:#4b5563; margin-bottom:3px; display:flex; align-items:center; gap:3px;">
+                    👤 Support Agent
+                </div>`;
+            }
 
             // format timestamp
             let timeText = "";
@@ -493,14 +508,18 @@
             }
 
             div.innerHTML = `
-                <div style="display:inline-block; max-width:80%; text-align:left;">
+                <div style="display:inline-block; max-width:82%; text-align:left;">
+                    ${senderBadge}
                     <span style="
-                        padding:6px 10px;
-                        border-radius:6px;
+                        padding:7px 11px;
+                        border-radius:8px;
                         background:${bgColor};
                         color:${textColor};
+                        border:${borderStyle};
                         display:inline-block;
                         word-wrap: break-word;
+                        font-size:13px;
+                        line-height:1.4;
                     ">
                         ${text}
                     </span>
@@ -602,6 +621,8 @@
 
         /* ================== INITIALIZE send btn ================== */
         const sendBtn = document.getElementById("send-btn");
+        let aiHandoffTimer = null;
+        let proactiveGreetTimer = null;
 
         function sendMessage() {
             // 🚫 Prevent sending if brand invalid
@@ -611,6 +632,25 @@
             }
 
             if (!input.value.trim()) return;
+
+            // Clear any proactive greeting timer
+            clearTimeout(proactiveGreetTimer);
+
+            // Arm client-side timer for AI handoff
+            clearTimeout(aiHandoffTimer);
+            if (CHAT_SETTINGS && CHAT_SETTINGS.ai_enabled) {
+                const delayMs = (CHAT_SETTINGS.ai_handoff_delay || 60) * 1000;
+                aiHandoffTimer = setTimeout(() => {
+                    fetch(`${BASE_URL}/api/visitor-ai-trigger`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            session_id: SESSION_ID,
+                            chat_id: window.CHAT_ID,
+                        }),
+                    }).catch(() => {});
+                }, delayMs);
+            }
 
             fetch(API_URL, {
                 method: "POST",
@@ -768,14 +808,29 @@
                 .then((data) => {
                     if (!loadMore) {
 
-                        if ((!data.messages || data.messages.length === 0) && CHAT_SETTINGS.welcome_message) {
-                            setTimeout(() => {
-                                addMsg(CHAT_SETTINGS.welcome_message, 1, null, false);
-                            }, 400);
+                        if (!data.messages || data.messages.length === 0) {
+                            if (CHAT_SETTINGS.welcome_message) {
+                                setTimeout(() => {
+                                    addMsg(CHAT_SETTINGS.welcome_message, 1, null, false);
+                                }, 400);
+                            }
+
+                            // Proactive AI greeting for idle visitor after delay
+                            if (CHAT_SETTINGS && CHAT_SETTINGS.ai_enabled) {
+                                clearTimeout(proactiveGreetTimer);
+                                const delayMs = (CHAT_SETTINGS.ai_handoff_delay || 60) * 1000;
+                                proactiveGreetTimer = setTimeout(() => {
+                                    fetch(`${BASE_URL}/api/visitor-ai-greet`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ session_id: SESSION_ID }),
+                                    }).catch(() => {});
+                                }, delayMs);
+                            }
                         }
                         // INITIAL LOAD → latest to oldest
                         data.messages.forEach((msg) => {
-                            if (msg.sender === null) return;
+                            if (msg.sender === null && !msg.is_ai) return;
                             addMsg(
                                 msg.message,
                                 msg.role,
@@ -801,11 +856,27 @@
                         channel = pusher.subscribe(`chat.${data.chat_id}`);
                         channel.bind("new-message", (data) => {
                             console.log(data);
-                            if (data.sender === null) return;
-                            
+                            if (data.sender === null && !data.is_ai) return;
+
+                            // If agent or AI responded, clear pending timers
+                            if (data.role == 1 || data.role == 2) {
+                                clearTimeout(aiHandoffTimer);
+                            }
+                            if (data.role != 3) {
+                                clearTimeout(proactiveGreetTimer);
+                            }
+
                             // Hide typing indicator when a new message arrives
                             const typing = document.getElementById("typing-indicator");
                             if (typing) typing.style.display = "none";
+
+                            // Handle auto_open flag (proactive AI greeting)
+                            if (data.auto_open && box.style.display !== "flex") {
+                                box.style.display = "flex";
+                                notifySound.play().catch(() => {});
+                                scrollToBottom();
+                            }
+
                             addMsg(
                                 data.message,
                                 data.role,
@@ -843,12 +914,26 @@
                                 if (!typing) return;
                                 typing.style.display = "block";
                                 clearTimeout(window.typingTimeout);
-                                
+
                                 let timeoutDuration = (data.role == 4) ? 300000 : 1500; // 5 mins for AI, 1.5s for human
-                                
+
                                 window.typingTimeout = setTimeout(() => {
                                     typing.style.display = "none";
                                 }, timeoutDuration);
+                            }
+                        });
+
+                        // 🔄 Agent switched — show system message when agent takes over from AI
+                        channel.bind("agent-switched", (data) => {
+                            const div = document.createElement("div");
+                            div.style.textAlign = "center";
+                            div.style.margin = "10px 0";
+                            div.innerHTML = `<small style='background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #666;'>${data.message}</small>`;
+
+                            const msgBox = document.getElementById("live-chat-messages");
+                            if(msgBox) {
+                                msgBox.appendChild(div);
+                                msgBox.scrollTop = msgBox.scrollHeight;
                             }
                         });
                     } else {

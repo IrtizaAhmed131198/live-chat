@@ -87,6 +87,7 @@ class VisitorController extends Controller
                 'message' => $msg->message,
                 'role' => $msg->is_ai ? 4 : ($msg->user->role ?? $msg->sender),
                 'sender' => $msg->is_ai ? 'ai' : ($msg->sender ?? null),
+                'is_ai' => (bool)$msg->is_ai,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
                 'is_read' => $msg->is_read,
@@ -162,18 +163,22 @@ class VisitorController extends Controller
             ]
         );
 
-        // Check if agent is offline and AI is enabled
+        // Check if AI is enabled for this brand and set up delayed AI handoff
         $brand = $chat->get_brand ?: ($chat->brand ?: Brand::find($chat->brand_id));
         $settings = $brand ? ($brand->chatSetting ?: \App\Models\ChatSetting::where('brand_id', $brand->id)->first()) : null;
-        $userIds = $brand ? $brand->users->pluck('id')->toArray() : [];
-        $agentOnline = !empty($userIds) && User::whereIn('id', $userIds)->where('is_online', 1)->exists();
 
-        Log::info("VisitorController: Visitor message received for Chat #{$chat->id}, Brand #{$brand?->id}, agentOnline: " . ($agentOnline ? 'true' : 'false') . ", ai_enabled: " . ($settings?->ai_enabled ? 'true' : 'false'));
+        Log::info("VisitorController: Visitor message received for Chat #{$chat->id}, Brand #{$brand?->id}, ai_enabled: " . ($settings?->ai_enabled ? 'true' : 'false'));
 
-        if (!$agentOnline && $settings && $settings->ai_enabled) {
-            $chat->update(['is_handled_by_ai' => true]);
-            \App\Jobs\ProcessAIResponseJob::dispatch($chat);
-            Log::info("VisitorController: ProcessAIResponseJob dispatched for Chat #{$chat->id}");
+        if ($settings && $settings->ai_enabled) {
+            // Set ai_pending flag — the scheduled command chat:check-ai-handoff will trigger after delay if agent doesn't reply
+            $pendingSince = now()->toDateTimeString();
+            $chat->update([
+                'ai_pending' => true,
+                'ai_pending_since' => $pendingSince,
+            ]);
+
+            $delaySeconds = $settings->ai_handoff_delay ?? 60;
+            Log::info("VisitorController: AI handoff pending for Chat #{$chat->id}, will trigger after {$delaySeconds}s delay if agent doesn't reply");
         }
 
         return response()->json([
@@ -196,7 +201,9 @@ class VisitorController extends Controller
 
         $messages = Message::where('chat_id', $chat->id)
             ->where('id', '<', $request->before_id)
-            ->whereNotNull('sender')
+            ->where(function ($q) {
+                $q->whereNotNull('sender')->orWhere('is_ai', true);
+            })
             ->orderBy('id', 'desc')
             ->limit(10) // fetch 10 older messages
             ->get();
@@ -208,8 +215,10 @@ class VisitorController extends Controller
             return [
                 'id' => $msg->id,
                 'message' => $msg->message,
+                'role' => $msg->is_ai ? 4 : ($msg->user->role ?? $msg->sender),
                 'sender_role' => $msg->is_ai ? 4 : ($msg->user->role ?? $msg->sender),
                 'sender' => $msg->is_ai ? 'ai' : ($msg->sender ?? null),
+                'is_ai' => (bool)$msg->is_ai,
                 'created_at' => $msg->created_at,
                 'formatted_created_at' => $msg->formatted_created_at,
                 'is_read' => $msg->is_read,
@@ -385,6 +394,7 @@ class VisitorController extends Controller
             'settings' => [
                 'chat_enabled' => $settings->chat_enabled ?? true,
                 'ai_enabled' => $settings->ai_enabled ?? false,
+                'ai_handoff_delay' => $settings->ai_handoff_delay ?? 60,
                 'primary_color' => $settings->primary_color ?? '#696cff',
                 'welcome_message' => $settings->welcome_message ?? 'Hello! How can we help you today?',
                 'offline_message' => $settings->offline_message ?? 'We are currently offline.',
@@ -601,6 +611,101 @@ class VisitorController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Offline message stored'
+        ]);
+    }
+
+    public function triggerPendingAiResponse(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required',
+        ]);
+
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) {
+            return response()->json(['status' => false, 'message' => 'Visitor not found']);
+        }
+
+        $chat = Chat::where('visitor_id', $visitor->id)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$chat) {
+            return response()->json(['status' => false, 'message' => 'Open chat not found']);
+        }
+
+        // Verify if AI is pending
+        if (!$chat->ai_pending || !$chat->ai_pending_since) {
+            return response()->json(['status' => false, 'message' => 'AI handoff not pending']);
+        }
+
+        // Verify that delay has elapsed
+        $brand = $chat->get_brand ?: ($chat->brand ?: Brand::find($chat->brand_id));
+        $settings = $brand ? ($brand->chatSetting ?: \App\Models\ChatSetting::where('brand_id', $brand->id)->first()) : null;
+
+        if (!$settings || !$settings->ai_enabled) {
+            return response()->json(['status' => false, 'message' => 'AI not enabled']);
+        }
+
+        // Check if agent replied after ai_pending_since
+        $agentReplied = Message::where('chat_id', $chat->id)
+            ->where('created_at', '>', $chat->ai_pending_since)
+            ->where(function ($q) {
+                $q->whereHas('user', function ($uq) {
+                    $uq->whereIn('role', [1, 2]);
+                });
+            })
+            ->exists();
+
+        if ($agentReplied) {
+            $chat->update(['ai_pending' => false, 'ai_pending_since' => null]);
+            return response()->json(['status' => false, 'message' => 'Agent already replied']);
+        }
+
+        // Dispatch AI response job synchronously
+        \App\Jobs\ProcessAIResponseJob::dispatchSync($chat);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'AI response triggered successfully'
+        ]);
+    }
+
+    public function triggerProactiveGreeting(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required',
+        ]);
+
+        $visitor = Visitor::where('session_id', $request->session_id)->first();
+        if (!$visitor) {
+            return response()->json(['status' => false, 'message' => 'Visitor not found']);
+        }
+
+        $chat = Chat::where('visitor_id', $visitor->id)
+            ->where('status', 'open')
+            ->first();
+
+        if (!$chat || $chat->ai_greeted) {
+            return response()->json(['status' => false, 'message' => 'Chat not found or already greeted']);
+        }
+
+        // Check if messages already exist
+        $hasMessages = Message::where('chat_id', $chat->id)
+            ->where(function ($q) {
+                $q->whereNotNull('sender')->orWhere('is_ai', true);
+            })
+            ->exists();
+
+        if ($hasMessages) {
+            $chat->update(['ai_greeted' => true]);
+            return response()->json(['status' => false, 'message' => 'Chat already has messages']);
+        }
+
+        \App\Jobs\SendProactiveAIGreetingJob::dispatchSync($chat);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Proactive greeting triggered successfully'
         ]);
     }
 }

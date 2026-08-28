@@ -15,6 +15,8 @@ Route::post('/visitor-load-more', [VisitorController::class, 'loadMore']);
 Route::post('/visitor-chat-activity', [VisitorController::class, 'chatActivity']);
 Route::post('/visitor-activity', [VisitorController::class, 'visitorActivity']);
 Route::post('/visitor-heartbeat', [VisitorController::class, 'visitorHeartbeat']);
+Route::post('/visitor-ai-trigger', [VisitorController::class, 'triggerPendingAiResponse']);
+Route::post('/visitor-ai-greet', [VisitorController::class, 'triggerProactiveGreeting']);
 Route::post('/verify-brand', [VisitorController::class, 'verifyBrand']);
 Route::post('/offline-message', [VisitorController::class, 'offlineMessage'])->name('api.offline-message');
 

@@ -23,4 +23,5 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })->withSchedule(function (Schedule $schedule) {
         $schedule->command('chat:handle-inactive')->everyMinute();
+        $schedule->command('chat:check-ai-handoff')->everyMinute();
     })->create();
