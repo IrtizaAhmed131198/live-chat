@@ -20,6 +20,14 @@ class MessageController extends Controller
             return response()->json(['error' => 'Chat not found'], 404);
         }
 
+        // 🚫 Admin (Role 1) cannot send messages
+        if (auth()->user()->role == 1) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Admin cannot send messages directly in chats.'
+            ], 403);
+        }
+
         // 🚫 Block agent from sending while AI is processing a response
         if ($chat->ai_processing) {
             return response()->json([

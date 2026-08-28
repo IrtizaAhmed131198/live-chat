@@ -58,7 +58,7 @@
         </div>
     </div>
     <!-- Chat message form -->
-    @if(in_array(auth()->user()->role, [1, 2]))
+    @if(auth()->user()->role == 2)
         <div class="chat-history-footer shadow-xs">
             <form class="form-send-message d-flex justify-content-between align-items-center " data-chat-id="{{ $chatId }}">
                 <input class="form-control message-input border-0 me-4 shadow-none"

@@ -85,18 +85,45 @@
                             <!-- Notifications will be injected here -->
                             @forelse($latestNotifications as $notification)
                                 @if($notification->type === 'App\Notifications\BrandApprovalRequest')
-                                    <li class="list-group-item dropdown-notifications-item brand-approval-notification" data-notification-url="{{ $notification->data['url'] ?? '#' }}" data-notification-id="{{ $notification->id }}">
-                                        <strong>{{ $notification->data['title'] ?? 'Brand Approval' }}</strong><br>
-                                        <small>{{ $notification->data['message'] ?? '' }}</small>
+                                    <li class="list-group-item dropdown-notifications-item brand-approval-notification cursor-pointer" data-notification-url="{{ $notification->data['url'] ?? '#' }}" data-notification-id="{{ $notification->id }}">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-sm">
+                                                    <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-check-shield"></i></span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="small mb-1 fw-semibold">{{ $notification->data['title'] ?? 'Brand Approval' }}</h6>
+                                                <small class="d-block text-body mb-1">{{ $notification->data['message'] ?? '' }}</small>
+                                                <small class="text-muted"><i class="bx bx-time-five me-1"></i>{{ $notification->created_at->diffForHumans() }}</small>
+                                            </div>
+                                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                <span class="badge badge-dot bg-primary"></span>
+                                            </div>
+                                        </div>
                                     </li>
                                 @else
                                     <li class="list-group-item dropdown-notifications-item">
-                                        <strong>{{ $notification->data['title'] }}</strong><br>
-                                        <small>{{ $notification->data['message'] }}</small>
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-sm">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-bell"></i></span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="small mb-1 fw-semibold">{{ $notification->data['title'] ?? 'Notification' }}</h6>
+                                                <small class="d-block text-body mb-1">{{ $notification->data['message'] ?? '' }}</small>
+                                                <small class="text-muted"><i class="bx bx-time-five me-1"></i>{{ $notification->created_at->diffForHumans() }}</small>
+                                            </div>
+                                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                                                <span class="badge badge-dot bg-primary"></span>
+                                            </div>
+                                        </div>
                                     </li>
                                 @endif
                             @empty
-                                <li class="list-group-item text-center">
+                                <li class="list-group-item text-center text-muted py-4">
+                                    <i class="bx bx-bell-off fs-4 d-block mb-1"></i>
                                     No new notifications
                                 </li>
                             @endforelse

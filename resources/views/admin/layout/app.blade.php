@@ -222,13 +222,26 @@
                 // Append to dropdown notification
                 const html = `
                     <li class="list-group-item dropdown-notifications-item">
-                        <strong>New Visitor</strong><br>
-                        <small>${data.brand.domain}</small>
-                        <span class="badge badge-dot"></span>
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar avatar-sm">
+                                    <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-user-check"></i></span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="small mb-1 fw-semibold">New Visitor</h6>
+                                <small class="d-block text-body mb-1">${data.brand.domain} just visited.</small>
+                                <small class="text-muted"><i class="bx bx-time-five me-1"></i>Just now</small>
+                            </div>
+                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                                <span class="badge badge-dot bg-primary"></span>
+                            </div>
+                        </div>
                     </li>
                 `;
                 document.getElementById('notificationList').insertAdjacentHTML('afterbegin', html);
                 document.getElementById('notificationBadge').classList.remove('d-none');
+                document.getElementById('notificationBadge2').classList.remove('d-none');
             });
 
             var brand_approval_notifications = document.querySelectorAll('.brand-approval-notification');
